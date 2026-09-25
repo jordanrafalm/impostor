@@ -2,6 +2,8 @@
 
 Mobilna gra towarzyska typu pass-and-play z ukrytymi rolami. Jeden telefon krąży między graczami: agenci poznają tajne hasło, a impostor próbuje je odgadnąć, nie zdradzając swojej roli.
 
+Strona wsparcia i polityka prywatności: [jordanrafalm.github.io/impostor](https://jordanrafalm.github.io/impostor/).
+
 ## Rozgrywka
 
 1. Dodaj co najmniej trzech graczy.
