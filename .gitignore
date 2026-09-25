@@ -1,0 +1,32 @@
+# Gradle and build outputs
+.gradle/
+build/
+**/build/
+*.aab
+*.apk
+
+# Local IDE state
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Local Android configuration
+local.properties
+
+# Firebase and service credentials
+**/google-services.json
+**/GoogleService-Info.plist
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+
+# Xcode user and generated files
+**/xcuserdata/
+*.xcuserstate
+DerivedData/
+
+# Sensitive exports and local tools
+*.env
+*.csv
