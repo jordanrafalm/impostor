@@ -35,6 +35,7 @@ data class Entitlement(
 )
 
 enum class SubscriptionError {
+    NETWORK_UNAVAILABLE,
     STORE_UNAVAILABLE,
     PRODUCT_UNAVAILABLE,
     PURCHASE_CANCELLED,

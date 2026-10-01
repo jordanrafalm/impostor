@@ -79,6 +79,24 @@ internal class SubscriptionRepositoryTest {
         assertEquals(EntitlementSource.LOCAL_CACHE, entitlement.source)
     }
 
+    @Test
+    fun `should leave purchasing state and mark store unavailable after network failure`() = runTest {
+        // Given
+        val repository = SubscriptionRepositoryImpl(
+            FakeBillingClient(
+                purchaseResult = Result.failure(SubscriptionException(SubscriptionError.NETWORK_UNAVAILABLE)),
+            ),
+            FakeEntitlementStore(),
+        )
+
+        // When
+        val result = repository.purchase()
+
+        // Then
+        assertEquals(SubscriptionError.NETWORK_UNAVAILABLE, (result.exceptionOrNull() as SubscriptionException).error)
+        assertEquals(SubscriptionState.UNAVAILABLE, repository.entitlement.first().state)
+    }
+
     private class FakeEntitlementStore(initial: CachedEntitlement? = null) : EntitlementStore {
         var value: CachedEntitlement? = initial
         override fun read(): CachedEntitlement? = value

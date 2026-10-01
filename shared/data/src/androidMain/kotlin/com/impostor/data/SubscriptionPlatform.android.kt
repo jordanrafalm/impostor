@@ -309,6 +309,7 @@ private fun String.toPeriodLabel(): String = when (this) {
 private fun BillingResult.toSubscriptionError(): SubscriptionError = when (responseCode) {
 	BillingResponseCode.USER_CANCELED -> SubscriptionError.PURCHASE_CANCELLED
 	BillingResponseCode.ITEM_ALREADY_OWNED -> SubscriptionError.ALREADY_OWNED
+	BillingResponseCode.NETWORK_ERROR -> SubscriptionError.NETWORK_UNAVAILABLE
 	BillingResponseCode.SERVICE_UNAVAILABLE, BillingResponseCode.BILLING_UNAVAILABLE -> SubscriptionError.STORE_UNAVAILABLE
 	else -> SubscriptionError.PURCHASE_FAILED
 }

@@ -30,3 +30,25 @@ DerivedData/
 # Sensitive exports and local tools
 *.env
 *.csv
+
+# AI agent/editor tooling state (local only)
+.claude/
+.codex/
+.serena/
+.kotlin/
+AGENTS.md
+CLAUDE.md
+
+# Generated/local-only project artifacts
+iosApp/Impostor.xcodeproj/
+composeApp/release/
+tools/
+assets/
+docs/seed/
+docs/firestore-promo-code.json
+
+# Unrelated/stray local folders and loose exports
+/Mobile Party Game App/
+comet.json
+walking lady.json
+new-impostor-icon.png

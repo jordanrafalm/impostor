@@ -12,6 +12,7 @@
     "technology",
     "everyday",
     "adult",
+    "flirt",
     "polish_influencers",
     "polish_actors",
     "international_stars"
@@ -1199,139 +1200,685 @@
       "name": "18+",
       "iconKey": "sparkles",
       "prompts": [
-        "Randka",
-        "Pierwszy pocałunek",
-        "Kolacja we dwoje",
-        "Koktajl",
-        "Szampan",
-        "Kieliszek wina",
-        "Nocny klub",
-        "Wieczór panieński",
-        "Wieczór kawalerski",
-        "Flirt",
-        "Komplement",
-        "Sekretna sympatia",
-        "Aplikacja randkowa",
-        "Zaproszenie na randkę",
-        "Wspólny wyjazd",
-        "Weekend we dwoje",
-        "Hotel",
-        "Masaż",
-        "Świeczki",
-        "Romantyczna muzyka",
-        "Czerwona róża",
-        "Bukiet kwiatów",
-        "List miłosny",
-        "Walentynki",
-        "Rocznica",
-        "Zazdrość",
-        "Tajemniczy wielbiciel",
-        "Spojrzenie",
-        "Uśmiech",
-        "Szept",
-        "Taniec we dwoje",
-        "Slow dance",
-        "Karaoke o północy",
-        "Gra w butelkę",
-        "Prawda czy wyzwanie",
-        "Nocny spacer",
-        "Plaża nocą",
-        "Taras",
-        "Jacuzzi",
-        "Sauna",
-        "Basen nocą",
-        "Przebierana impreza",
-        "Domówka",
-        "Afterparty",
-        "Poranek po imprezie",
-        "Kawa do łóżka",
-        "Śniadanie we dwoje",
-        "Wspólne gotowanie",
-        "Piknik",
-        "Kino plenerowe",
-        "Koncert",
-        "Festiwal",
-        "Wspólne zdjęcie",
-        "Fotobudka",
-        "Ulubiony perfum",
-        "Czerwona szminka",
-        "Garnitur",
-        "Mała czarna",
-        "Szpilki",
-        "Muszka",
-        "Biżuteria",
-        "Pierścionek",
-        "Zaręczyny",
-        "Ślub",
-        "Podróż poślubna",
-        "Toast za miłość",
-        "Czekoladki",
-        "Truskawki",
-        "Deser",
-        "Drink z parasolką",
-        "Mojito",
-        "Margarita",
-        "Aperol",
-        "Prosecco",
-        "Barman",
-        "DJ",
-        "Parkiet",
-        "Loża VIP",
-        "Hasło do klubu",
-        "Nocny autobus",
-        "Taksówka po imprezie",
-        "Zgubiony telefon",
-        "Nieznajomy",
-        "Wymiana numerów",
-        "Wiadomość po randce",
-        "Emoji serca",
-        "Niewinna prowokacja",
-        "Zakład",
-        "Wyzwanie",
-        "Dorosła rozmowa",
-        "Granice",
-        "Zgoda",
-        "Zaufanie",
-        "Niespodzianka",
-        "Prezent bez okazji",
-        "Wspólna tajemnica",
-        "Namiętny taniec",
-        "Ciepły wieczór",
-        "Mokry pocałunek",
-        "Język w ustach",
-        "Ssanie szyi",
-        "Całowanie po ciele",
-        "Ugryzienie w ucho",
-        "Nagie ciało",
-        "Bez bielizny",
-        "Mokre majtki",
-        "Twarde sutki",
-        "Rozpalone ciało",
-        "Masaż erotyczny",
-        "Palce między nogami",
-        "Lizanie piersi",
-        "Pocałunki w brzuch",
-        "Głaskanie ud",
-        "Seks w łóżku",
-        "Jazda na koniku",
-        "Od tyłu",
-        "Na stojąco",
-        "W łazience",
-        "Wytrysk",
-        "Sperma",
-        "Na twarzy",
-        "W ustach",
-        "Mokry seks",
-        "Kajdanki",
-        "Klaps w tyłek",
-        "Szarpnięcie za włosy",
-        "Szept do ucha",
-        "Posłuszna",
-        "Cycki",
-        "Melony",
-        "Seks analny",
-        "Seks grupowy",
-        "Trójkąt"
+        {
+          "text": "Randka",
+          "hint": "Kawiarnia"
+        },
+        {
+          "text": "Pierwszy pocałunek",
+          "hint": "Nerwy"
+        },
+        {
+          "text": "Kolacja we dwoje",
+          "hint": "Świece"
+        },
+        {
+          "text": "Koktajl",
+          "hint": "Barman"
+        },
+        {
+          "text": "Szampan",
+          "hint": "Toast"
+        },
+        {
+          "text": "Kieliszek wina",
+          "hint": "Degustacja"
+        },
+        {
+          "text": "Nocny klub",
+          "hint": "DJ"
+        },
+        {
+          "text": "Wieczór panieński",
+          "hint": "Suknia"
+        },
+        {
+          "text": "Wieczór kawalerski",
+          "hint": "Krawat"
+        },
+        {
+          "text": "Flirt",
+          "hint": "Uśmiech"
+        },
+        {
+          "text": "Komplement",
+          "hint": "Rumieniec"
+        },
+        {
+          "text": "Sekretna sympatia",
+          "hint": "Liścik"
+        },
+        {
+          "text": "Aplikacja randkowa",
+          "hint": "Swipe"
+        },
+        {
+          "text": "Zaproszenie na randkę",
+          "hint": "SMS"
+        },
+        {
+          "text": "Wspólny wyjazd",
+          "hint": "Walizka"
+        },
+        {
+          "text": "Weekend we dwoje",
+          "hint": "Hotel"
+        },
+        {
+          "text": "Hotel",
+          "hint": "Recepcja"
+        },
+        {
+          "text": "Masaż",
+          "hint": "Olejek"
+        },
+        {
+          "text": "Świeczki",
+          "hint": "Zapach"
+        },
+        {
+          "text": "Romantyczna muzyka",
+          "hint": "Playlista"
+        },
+        {
+          "text": "Czerwona róża",
+          "hint": "Bukiet"
+        },
+        {
+          "text": "Bukiet kwiatów",
+          "hint": "Wazon"
+        },
+        {
+          "text": "List miłosny",
+          "hint": "Pióro"
+        },
+        {
+          "text": "Walentynki",
+          "hint": "Serduszko"
+        },
+        {
+          "text": "Rocznica",
+          "hint": "Prezent"
+        },
+        {
+          "text": "Zazdrość",
+          "hint": "Rywal"
+        },
+        {
+          "text": "Tajemniczy wielbiciel",
+          "hint": "Anonim"
+        },
+        {
+          "text": "Spojrzenie",
+          "hint": "Źrenice"
+        },
+        {
+          "text": "Uśmiech",
+          "hint": "Dołeczki"
+        },
+        {
+          "text": "Szept",
+          "hint": "Ucho"
+        },
+        {
+          "text": "Taniec we dwoje",
+          "hint": "Parkiet"
+        },
+        {
+          "text": "Slow dance",
+          "hint": "Ballada"
+        },
+        {
+          "text": "Karaoke o północy",
+          "hint": "Mikrofon"
+        },
+        {
+          "text": "Gra w butelkę",
+          "hint": "Krąg"
+        },
+        {
+          "text": "Prawda czy wyzwanie",
+          "hint": "Pytanie"
+        },
+        {
+          "text": "Nocny spacer",
+          "hint": "Latarnia"
+        },
+        {
+          "text": "Plaża nocą",
+          "hint": "Fale"
+        },
+        {
+          "text": "Taras",
+          "hint": "Widok"
+        },
+        {
+          "text": "Jacuzzi",
+          "hint": "Bąbelki"
+        },
+        {
+          "text": "Sauna",
+          "hint": "Para"
+        },
+        {
+          "text": "Basen nocą",
+          "hint": "Księżyc"
+        },
+        {
+          "text": "Przebierana impreza",
+          "hint": "Maska"
+        },
+        {
+          "text": "Domówka",
+          "hint": "Głośniki"
+        },
+        {
+          "text": "Afterparty",
+          "hint": "Zmęczenie"
+        },
+        {
+          "text": "Poranek po imprezie",
+          "hint": "Ból głowy"
+        },
+        {
+          "text": "Kawa do łóżka",
+          "hint": "Tacka"
+        },
+        {
+          "text": "Śniadanie we dwoje",
+          "hint": "Croissant"
+        },
+        {
+          "text": "Wspólne gotowanie",
+          "hint": "Fartuch"
+        },
+        {
+          "text": "Piknik",
+          "hint": "Koc"
+        },
+        {
+          "text": "Kino plenerowe",
+          "hint": "Ekran"
+        },
+        {
+          "text": "Koncert",
+          "hint": "Bilety"
+        },
+        {
+          "text": "Festiwal",
+          "hint": "Namiot"
+        },
+        {
+          "text": "Wspólne zdjęcie",
+          "hint": "Selfie"
+        },
+        {
+          "text": "Fotobudka",
+          "hint": "Rekwizyty"
+        },
+        {
+          "text": "Ulubiony perfum",
+          "hint": "Zapach"
+        },
+        {
+          "text": "Czerwona szminka",
+          "hint": "Odcisk"
+        },
+        {
+          "text": "Garnitur",
+          "hint": "Krawat"
+        },
+        {
+          "text": "Mała czarna",
+          "hint": "Szpilki"
+        },
+        {
+          "text": "Szpilki",
+          "hint": "Obcas"
+        },
+        {
+          "text": "Muszka",
+          "hint": "Kołnierzyk"
+        },
+        {
+          "text": "Biżuteria",
+          "hint": "Błysk"
+        },
+        {
+          "text": "Pierścionek",
+          "hint": "Pudełeczko"
+        },
+        {
+          "text": "Zaręczyny",
+          "hint": "Oświadczyny"
+        },
+        {
+          "text": "Ślub",
+          "hint": "Obrączki"
+        },
+        {
+          "text": "Podróż poślubna",
+          "hint": "Samolot"
+        },
+        {
+          "text": "Toast za miłość",
+          "hint": "Kieliszki"
+        },
+        {
+          "text": "Czekoladki",
+          "hint": "Pudełko"
+        },
+        {
+          "text": "Truskawki",
+          "hint": "Śmietana"
+        },
+        {
+          "text": "Deser",
+          "hint": "Łyżeczka"
+        },
+        {
+          "text": "Drink z parasolką",
+          "hint": "Plaża"
+        },
+        {
+          "text": "Mojito",
+          "hint": "Mięta"
+        },
+        {
+          "text": "Margarita",
+          "hint": "Sól"
+        },
+        {
+          "text": "Aperol",
+          "hint": "Pomarańcza"
+        },
+        {
+          "text": "Prosecco",
+          "hint": "Bąbelki"
+        },
+        {
+          "text": "Barman",
+          "hint": "Shaker"
+        },
+        {
+          "text": "DJ",
+          "hint": "Słuchawki"
+        },
+        {
+          "text": "Parkiet",
+          "hint": "Lustrzana kula"
+        },
+        {
+          "text": "Loża VIP",
+          "hint": "Ochroniarz"
+        },
+        {
+          "text": "Hasło do klubu",
+          "hint": "Szyfr"
+        },
+        {
+          "text": "Nocny autobus",
+          "hint": "Przystanek"
+        },
+        {
+          "text": "Taksówka po imprezie",
+          "hint": "Licznik"
+        },
+        {
+          "text": "Zgubiony telefon",
+          "hint": "Panika"
+        },
+        {
+          "text": "Nieznajomy",
+          "hint": "Zagadka"
+        },
+        {
+          "text": "Wymiana numerów",
+          "hint": "Serwetka"
+        },
+        {
+          "text": "Wiadomość po randce",
+          "hint": "Ekran"
+        },
+        {
+          "text": "Emoji serca",
+          "hint": "Klawiatura"
+        },
+        {
+          "text": "Niewinna prowokacja",
+          "hint": "Uśmieszek"
+        },
+        {
+          "text": "Zakład",
+          "hint": "Uścisk dłoni"
+        },
+        {
+          "text": "Wyzwanie",
+          "hint": "Adrenalina"
+        },
+        {
+          "text": "Dorosła rozmowa",
+          "hint": "Szczerość"
+        },
+        {
+          "text": "Granice",
+          "hint": "Szacunek"
+        },
+        {
+          "text": "Zgoda",
+          "hint": "Słowo"
+        },
+        {
+          "text": "Zaufanie",
+          "hint": "Pewność"
+        },
+        {
+          "text": "Niespodzianka",
+          "hint": "Zasłonięte oczy"
+        },
+        {
+          "text": "Prezent bez okazji",
+          "hint": "Wstążka"
+        },
+        {
+          "text": "Wspólna tajemnica",
+          "hint": "Szept"
+        },
+        {
+          "text": "Namiętny taniec",
+          "hint": "Biodra"
+        },
+        {
+          "text": "Ciepły wieczór",
+          "hint": "Koc"
+        },
+        {
+          "text": "Mokry pocałunek",
+          "hint": "Język"
+        },
+        {
+          "text": "Język w ustach",
+          "hint": "Pocałunek"
+        },
+        {
+          "text": "Ssanie szyi",
+          "hint": "Malinka"
+        },
+        {
+          "text": "Całowanie po ciele",
+          "hint": "Dreszcz"
+        },
+        {
+          "text": "Ugryzienie w ucho",
+          "hint": "Szept"
+        },
+        {
+          "text": "Nagie ciało",
+          "hint": "Prześcieradło"
+        },
+        {
+          "text": "Bez bielizny",
+          "hint": "Odwaga"
+        },
+        {
+          "text": "Mokre majtki",
+          "hint": "Podniecenie"
+        },
+        {
+          "text": "Twarde sutki",
+          "hint": "Dotyk"
+        },
+        {
+          "text": "Rozpalone ciało",
+          "hint": "Gorączka"
+        },
+        {
+          "text": "Masaż erotyczny",
+          "hint": "Olejek"
+        },
+        {
+          "text": "Palce między nogami",
+          "hint": "Dotyk"
+        },
+        {
+          "text": "Lizanie piersi",
+          "hint": "Język"
+        },
+        {
+          "text": "Pocałunki w brzuch",
+          "hint": "Pępek"
+        },
+        {
+          "text": "Głaskanie ud",
+          "hint": "Dłonie"
+        },
+        {
+          "text": "Seks w łóżku",
+          "hint": "Pościel"
+        },
+        {
+          "text": "Jazda na koniku",
+          "hint": "Rytm"
+        },
+        {
+          "text": "Od tyłu",
+          "hint": "Pozycja"
+        },
+        {
+          "text": "Na stojąco",
+          "hint": "Ściana"
+        },
+        {
+          "text": "W łazience",
+          "hint": "Prysznic"
+        },
+        {
+          "text": "Wytrysk",
+          "hint": "Finał"
+        },
+        {
+          "text": "Sperma",
+          "hint": "Ręcznik"
+        },
+        {
+          "text": "Na twarzy",
+          "hint": "Rzęsy"
+        },
+        {
+          "text": "W ustach",
+          "hint": "Smak"
+        },
+        {
+          "text": "Mokry seks",
+          "hint": "Pot"
+        },
+        {
+          "text": "Kajdanki",
+          "hint": "Łóżko"
+        },
+        {
+          "text": "Klaps w tyłek",
+          "hint": "Dźwięk"
+        },
+        {
+          "text": "Szarpnięcie za włosy",
+          "hint": "Kucyk"
+        },
+        {
+          "text": "Szept do ucha",
+          "hint": "Dreszcz"
+        },
+        {
+          "text": "Posłuszna",
+          "hint": "Rozkaz"
+        },
+        {
+          "text": "Cycki",
+          "hint": "Dekolt"
+        },
+        {
+          "text": "Melony",
+          "hint": "Biustonosz"
+        },
+        {
+          "text": "Seks analny",
+          "hint": "Tyłek"
+        },
+        {
+          "text": "Seks grupowy",
+          "hint": "Impreza"
+        },
+        {
+          "text": "Trójkąt",
+          "hint": "Dwie osoby"
+        }
+      ]
+    },
+    {
+      "id": "flirt",
+      "name": "Flirt",
+      "iconKey": "heart",
+      "prompts": [
+        {
+          "text": "Podryw",
+          "hint": "Numer telefonu"
+        },
+        {
+          "text": "Zalotność",
+          "hint": "Uśmiech"
+        },
+        {
+          "text": "Kokieteria",
+          "hint": "Rzęsy"
+        },
+        {
+          "text": "Uwodzenie",
+          "hint": "Spojrzenie"
+        },
+        {
+          "text": "Pożądanie",
+          "hint": "Namiętność"
+        },
+        {
+          "text": "Namiętność",
+          "hint": "Pocałunek"
+        },
+        {
+          "text": "Chemia",
+          "hint": "Iskra"
+        },
+        {
+          "text": "Iskra",
+          "hint": "Napięcie"
+        },
+        {
+          "text": "Napięcie",
+          "hint": "Dreszcz"
+        },
+        {
+          "text": "Dreszczyk",
+          "hint": "Adrenalina"
+        },
+        {
+          "text": "Adrenalina",
+          "hint": "Ryzyko"
+        },
+        {
+          "text": "Prowokacja",
+          "hint": "Zakład"
+        },
+        {
+          "text": "Aluzja",
+          "hint": "Żart"
+        },
+        {
+          "text": "Dwuznaczność",
+          "hint": "Komentarz"
+        },
+        {
+          "text": "Podtekst",
+          "hint": "Rozmowa"
+        },
+        {
+          "text": "Intryga",
+          "hint": "Plotka"
+        },
+        {
+          "text": "Sekret",
+          "hint": "Tajemnica"
+        },
+        {
+          "text": "Tajemnica",
+          "hint": "Zagadka"
+        },
+        {
+          "text": "Rumieniec",
+          "hint": "Zawstydzenie"
+        },
+        {
+          "text": "Mrugnięcie",
+          "hint": "Oko"
+        },
+        {
+          "text": "Zachwyt",
+          "hint": "Komplement"
+        },
+        {
+          "text": "Bliskość",
+          "hint": "Dotyk"
+        },
+        {
+          "text": "Czar",
+          "hint": "Urok"
+        },
+        {
+          "text": "Fascynacja",
+          "hint": "Ciekawość"
+        },
+        {
+          "text": "Urok",
+          "hint": "Charyzma"
+        },
+        {
+          "text": "Pewność siebie",
+          "hint": "Odwaga"
+        },
+        {
+          "text": "Nieśmiałość",
+          "hint": "Rumieniec"
+        },
+        {
+          "text": "Śmiałość",
+          "hint": "Ryzyko"
+        },
+        {
+          "text": "Ryzyko",
+          "hint": "Hazard"
+        },
+        {
+          "text": "Stawka",
+          "hint": "Zakład"
+        },
+        {
+          "text": "Pokusa",
+          "hint": "Grzech"
+        },
+        {
+          "text": "Emocje",
+          "hint": "Napięcie"
+        },
+        {
+          "text": "Rywal",
+          "hint": "Zazdrość"
+        },
+        {
+          "text": "Zagadka",
+          "hint": "Tajemnica"
+        },
+        {
+          "text": "Pościg",
+          "hint": "Adrenalina"
+        }
       ]
     },
     {
@@ -1339,26 +1886,118 @@
       "name": "Polscy influencerzy",
       "iconKey": "sparkles",
       "prompts": [
-        {"text": "Kuba Wojewódzki", "hint": "Talk-show"},
-        {"text": "Karol Wiśniewski", "hint": "Friz"},
-        {"text": "Weronika Sowa", "hint": "Wersow"},
-        {"text": "Michał Baron", "hint": "Boxdel"},
-        {"text": "Marta Błoch", "hint": "Murcix"},
-        {"text": "Katarzyna Alexander", "hint": "Fagata"},
-        {"text": "Julia Żugaj", "hint": "Tancerka"},
-        {"text": "Maja Kuczyńska", "hint": "Taniec"},
-        {"text": "Lexy Chaplin", "hint": "Boks"},
-        {"text": "Natsu", "hint": "Team X"},
-        {"text": "Kacper Błoński", "hint": "Walka"},
-        {"text": "Monika Kociołek", "hint": "TikTok"},
-        {"text": "Kamil Labudda", "hint": "Budda"},
-        {"text": "Michał Sikorski", "hint": "Pączek"},
-        {"text": "Dawid Kwiatkowski", "hint": "Instagram"},
-        {"text": "Andziaks", "hint": "Vlog"},
-        {"text": "Gimper", "hint": "Gaming"},
-        {"text": "Krzysztof Gonciarz", "hint": "Japonia"},
-        {"text": "Maffashion", "hint": "Moda"},
-        {"text": "Deynn", "hint": "Fitness"}
+        {
+          "text": "Kuba Wojewódzki",
+          "hint": "Talk-show"
+        },
+        {
+          "text": "Karol Wiśniewski",
+          "hint": "Minecraft"
+        },
+        {
+          "text": "Weronika Sowa",
+          "hint": "Vlog"
+        },
+        {
+          "text": "Michał Baron",
+          "hint": "Fame MMA"
+        },
+        {
+          "text": "Marta Błoch",
+          "hint": "Ekipa"
+        },
+        {
+          "text": "Agata Fąk",
+          "hint": "Freak fighty"
+        },
+        {
+          "text": "Julia Żugaj",
+          "hint": "Tancerka"
+        },
+        {
+          "text": "Maja Kuczyńska",
+          "hint": "Tunel aerodynamiczny"
+        },
+        {
+          "text": "Lexy Chaplin",
+          "hint": "Boks"
+        },
+        {
+          "text": "Natsu",
+          "hint": "Team X"
+        },
+        {
+          "text": "Kacper Błoński",
+          "hint": "Walka"
+        },
+        {
+          "text": "Monika Kociołek",
+          "hint": "TikTok"
+        },
+        {
+          "text": "Kamil Labudda",
+          "hint": "Motoryzacja"
+        },
+        {
+          "text": "Michał Sikorski",
+          "hint": "Pączek"
+        },
+        {
+          "text": "Dawid Kwiatkowski",
+          "hint": "Instagram"
+        },
+        {
+          "text": "Andziaks",
+          "hint": "Vlog"
+        },
+        {
+          "text": "Gimper",
+          "hint": "Gaming"
+        },
+        {
+          "text": "Krzysztof Gonciarz",
+          "hint": "Japonia"
+        },
+        {
+          "text": "Maffashion",
+          "hint": "Moda"
+        },
+        {
+          "text": "Deynn",
+          "hint": "Fitness"
+        },
+        {
+          "text": "Karol Gązwa",
+          "hint": "Subskrypcje"
+        },
+        {
+          "text": "Hanna Puchalska",
+          "hint": "Genzie"
+        },
+        {
+          "text": "Jessica Mercedes Kirschner",
+          "hint": "Kolonia"
+        },
+        {
+          "text": "Iwona Blecharczyk",
+          "hint": "Ciężarówka"
+        },
+        {
+          "text": "Jakub Chuptyś",
+          "hint": "Podcast"
+        },
+        {
+          "text": "Marcin Banot",
+          "hint": "Wspinaczka"
+        },
+        {
+          "text": "Tomasz Ćwiąkała",
+          "hint": "Canal+"
+        },
+        {
+          "text": "Remigiusz Wierzgoń",
+          "hint": "Skecze"
+        }
       ]
     },
     {
@@ -1366,26 +2005,118 @@
       "name": "Polscy aktorzy",
       "iconKey": "sparkles",
       "prompts": [
-        {"text": "Piotr Adamczyk", "hint": "Papież"},
-        {"text": "Robert Więckiewicz", "hint": "Wałęsa"},
-        {"text": "Tomasz Kot", "hint": "Zimna wojna"},
-        {"text": "Borys Szyc", "hint": "Vinci"},
-        {"text": "Maciej Stuhr", "hint": "Testosteron"},
-        {"text": "Cezary Pazura", "hint": "Kiler"},
-        {"text": "Marek Kondrat", "hint": "Dzień świra"},
-        {"text": "Janusz Gajos", "hint": "Czterej pancerni"},
-        {"text": "Andrzej Seweryn", "hint": "Król"},
-        {"text": "Marcin Dorociński", "hint": "Jack Strong"},
-        {"text": "Jakub Gierszał", "hint": "Sala samobójców"},
-        {"text": "Dawid Ogrodnik", "hint": "Chce się żyć"},
-        {"text": "Agata Kulesza", "hint": "Ida"},
-        {"text": "Kinga Preis", "hint": "Komisarz"},
-        {"text": "Maja Ostaszewska", "hint": "Teatr"},
-        {"text": "Magdalena Cielecka", "hint": "Belfer"},
-        {"text": "Joanna Kulig", "hint": "Zimna wojna"},
-        {"text": "Anna Dymna", "hint": "Teatr"},
-        {"text": "Danuta Stenka", "hint": "Nigdy w życiu"},
-        {"text": "Beata Tyszkiewicz", "hint": "Dama"}
+        {
+          "text": "Piotr Adamczyk",
+          "hint": "Papież"
+        },
+        {
+          "text": "Robert Więckiewicz",
+          "hint": "Wałęsa"
+        },
+        {
+          "text": "Tomasz Kot",
+          "hint": "Zimna wojna"
+        },
+        {
+          "text": "Borys Szyc",
+          "hint": "Vinci"
+        },
+        {
+          "text": "Maciej Stuhr",
+          "hint": "Testosteron"
+        },
+        {
+          "text": "Cezary Pazura",
+          "hint": "Kiler"
+        },
+        {
+          "text": "Marek Kondrat",
+          "hint": "Dzień świra"
+        },
+        {
+          "text": "Janusz Gajos",
+          "hint": "Czterej pancerni"
+        },
+        {
+          "text": "Andrzej Seweryn",
+          "hint": "Król"
+        },
+        {
+          "text": "Marcin Dorociński",
+          "hint": "Jack Strong"
+        },
+        {
+          "text": "Jakub Gierszał",
+          "hint": "Sala samobójców"
+        },
+        {
+          "text": "Dawid Ogrodnik",
+          "hint": "Chce się żyć"
+        },
+        {
+          "text": "Agata Kulesza",
+          "hint": "Ida"
+        },
+        {
+          "text": "Kinga Preis",
+          "hint": "Komisarz"
+        },
+        {
+          "text": "Maja Ostaszewska",
+          "hint": "Teatr"
+        },
+        {
+          "text": "Magdalena Cielecka",
+          "hint": "Belfer"
+        },
+        {
+          "text": "Joanna Kulig",
+          "hint": "Zimna wojna"
+        },
+        {
+          "text": "Anna Dymna",
+          "hint": "Teatr"
+        },
+        {
+          "text": "Danuta Stenka",
+          "hint": "Nigdy w życiu"
+        },
+        {
+          "text": "Beata Tyszkiewicz",
+          "hint": "Dama"
+        },
+        {
+          "text": "Bogusław Linda",
+          "hint": "Psy"
+        },
+        {
+          "text": "Zbigniew Zamachowski",
+          "hint": "Dekalog"
+        },
+        {
+          "text": "Jerzy Stuhr",
+          "hint": "Seksmisja"
+        },
+        {
+          "text": "Daniel Olbrychski",
+          "hint": "Potop"
+        },
+        {
+          "text": "Krystyna Janda",
+          "hint": "Człowiek z marmuru"
+        },
+        {
+          "text": "Tomasz Schuchardt",
+          "hint": "Chrzest"
+        },
+        {
+          "text": "Antoni Królikowski",
+          "hint": "Bodo"
+        },
+        {
+          "text": "Weronika Rosati",
+          "hint": "Pitbull"
+        }
       ]
     },
     {
@@ -1393,27 +2124,137 @@
       "name": "Zagraniczne gwiazdy",
       "iconKey": "sparkles",
       "prompts": [
-        {"text": "Taylor Swift", "hint": "Gitara"},
-        {"text": "Beyoncé", "hint": "Destiny's Child"},
-        {"text": "Rihanna", "hint": "Barbados"},
-        {"text": "Lady Gaga", "hint": "Poker Face"},
-        {"text": "Adele", "hint": "Londyn"},
-        {"text": "Justin Bieber", "hint": "Kanada"},
-        {"text": "Leonardo DiCaprio", "hint": "Titanic"},
-        {"text": "Brad Pitt", "hint": "Hollywood"},
-        {"text": "Angelina Jolie", "hint": "Maleficent"},
-        {"text": "Tom Cruise", "hint": "Mission Impossible"},
-        {"text": "Dwayne Johnson", "hint": "Rock"},
-        {"text": "Will Smith", "hint": "Bel-Air"},
-        {"text": "Jennifer Aniston", "hint": "Przyjaciele"},
-        {"text": "Keanu Reeves", "hint": "Matrix"},
-        {"text": "Emma Watson", "hint": "Hermiona"},
-        {"text": "Cristiano Ronaldo", "hint": "Portugalia"},
-        {"text": "Lionel Messi", "hint": "Argentyna"},
-        {"text": "Michael Jordan", "hint": "Koszykówka"},
-        {"text": "Oprah Winfrey", "hint": "Talk-show"},
-        {"text": "Kim Kardashian", "hint": "Reality show"}
-      ]
+        {
+          "text": "Taylor Swift",
+          "hint": "Gitara"
+        },
+        {
+          "text": "Beyoncé",
+          "hint": "Destiny's Child"
+        },
+        {
+          "text": "Rihanna",
+          "hint": "Barbados"
+        },
+        {
+          "text": "Lady Gaga",
+          "hint": "Poker Face"
+        },
+        {
+          "text": "Adele",
+          "hint": "Londyn"
+        },
+        {
+          "text": "Justin Bieber",
+          "hint": "Kanada"
+        },
+        {
+          "text": "Leonardo DiCaprio",
+          "hint": "Titanic"
+        },
+        {
+          "text": "Brad Pitt",
+          "hint": "Hollywood"
+        },
+        {
+          "text": "Angelina Jolie",
+          "hint": "Maleficent"
+        },
+        {
+          "text": "Tom Cruise",
+          "hint": "Mission Impossible"
+        },
+        {
+          "text": "Dwayne Johnson",
+          "hint": "Rock"
+        },
+        {
+          "text": "Will Smith",
+          "hint": "Bel-Air"
+        },
+        {
+          "text": "Jennifer Aniston",
+          "hint": "Przyjaciele"
+        },
+        {
+          "text": "Keanu Reeves",
+          "hint": "Matrix"
+        },
+        {
+          "text": "Emma Watson",
+          "hint": "Hermiona"
+        },
+        {
+          "text": "Cristiano Ronaldo",
+          "hint": "Portugalia"
+        },
+        {
+          "text": "Lionel Messi",
+          "hint": "Argentyna"
+        },
+        {
+          "text": "Michael Jordan",
+          "hint": "Koszykówka"
+        },
+        {
+          "text": "Oprah Winfrey",
+          "hint": "Talk-show"
+        },
+        {
+          "text": "Kim Kardashian",
+          "hint": "Reality show"
+        },
+        {
+          "text": "Johnny Depp",
+          "hint": "Jack Sparrow"
+        },
+        {
+          "text": "Scarlett Johansson",
+          "hint": "Black Widow"
+        },
+        {
+          "text": "Robert Downey Jr.",
+          "hint": "Iron Man"
+        },
+        {
+          "text": "Meryl Streep",
+          "hint": "Diabeł ubiera się u Prady"
+        },
+        {
+          "text": "Zendaya",
+          "hint": "Euphoria"
+        },
+        {
+          "text": "Chris Hemsworth",
+          "hint": "Thor"
+        },
+        {
+          "text": "Billie Eilish",
+          "hint": "Bad Guy"
+        },
+        {
+          "text": "Ed Sheeran",
+          "hint": "Shape of You"
+        },
+        {
+          "text": "Serena Williams",
+          "hint": "Tenis"
+        },
+        {
+          "text": "Novak Djokovic",
+          "hint": "Serbia"
+        }
+      Witaj w Impostor! 🎭
+      
+      Impostor to towarzyska gra słowna dla znajomych i rodziny. Jeden gracz nie zna hasła i musi się wtopić w tłum, zadając pytania i udzielając odpowiedzi tak, by nie zostać zdemaskowanym — reszta graczy stara się go namierzyć.
+      
+      Co znajdziesz w aplikacji:
+      • Kilkanaście kategorii haseł — od zwierząt, miejsc i jedzenia, przez sport i technologię, po polskich influencerów, aktorów i światowe gwiazdy
+      • Kategorię 18+ dla odważniejszych grup
+      • System podpowiedzi ułatwiający start impostorowi
+      • Prosty, szybki setup — wystarczy jedno urządzenie, żeby zagrać w większym gronie
+      
+      Zbierz ekipę, wybierz kategorie i sprawdźcie, kto najlepiej udaje, że wie, o co chodzi!      ]
     }
   ]
 }

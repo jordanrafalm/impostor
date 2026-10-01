@@ -3,13 +3,10 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     id("com.android.application")
+    id("com.google.gms.google-services")
     kotlin("multiplatform")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
-}
-
-if (file("google-services.json").isFile) {
-    apply(plugin = "com.google.gms.google-services")
 }
 
 kotlin {
@@ -33,6 +30,11 @@ kotlin {
         }
         androidMain.dependencies {
             implementation("androidx.activity:activity-compose:1.10.1")
+            implementation("androidx.core:core-splashscreen:1.0.1")
+            // Pin the transitive androidx.fragment dependency pulled in via
+            // play-services-base (billing/firestore) to a current, non-vulnerable
+            // release; this project does not use Fragments directly.
+            implementation("androidx.fragment:fragment:1.9.1")
         }
     }
 
@@ -44,9 +46,7 @@ kotlin {
             // Kotlin/Native link-time dependency on those frameworks.
             isStatic = true
             freeCompilerArgs += "-Xbinary=bundleId=com.impostor.composeapp"
-            if (target.name != "iosX64") {
-                composeAppXcFramework.add(this)
-            }
+            composeAppXcFramework.add(this)
         }
     }
 }
@@ -59,8 +59,8 @@ android {
         applicationId = "com.rafal.impostorparty"
         minSdk = 26
         targetSdk = 36
-        versionCode = 7
-        versionName = "1.0.4"
+        versionCode = 10
+        versionName = "1.1.0"
     }
     buildFeatures { compose = true }
 
@@ -72,6 +72,17 @@ android {
     }
 
     sourceSets["main"].assets.srcDir("../shared/data/src/commonMain/resources")
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
+        }
+    }
 }
 
 compose.resources { publicResClass = true }

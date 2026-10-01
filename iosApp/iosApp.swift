@@ -7,9 +7,7 @@ import UIKit
 @main
 struct iosApp: App {
     init() {
-        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
-            FirebaseApp.configure()
-        }
+        FirebaseApp.configure()
         StoreKitBridge.install()
     }
 

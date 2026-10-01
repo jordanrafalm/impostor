@@ -13,7 +13,7 @@ internal class SeedCatalogRepositoryTest {
     val categories = mapOf(
             "polish_influencers" to ("Polscy influencerzy" to listOf(
         "Kuba Wojewódzki", "Karol Wiśniewski", "Weronika Sowa", "Michał Baron", "Marta Błoch",
-        "Katarzyna Alexander", "Julia Żugaj", "Maja Kuczyńska", "Lexy Chaplin", "Natsu",
+        "Agata Fąk", "Julia Żugaj", "Maja Kuczyńska", "Lexy Chaplin", "Natsu",
         "Kacper Błoński", "Monika Kociołek", "Kamil Labudda", "Michał Sikorski", "Dawid Kwiatkowski",
         "Andziaks", "Gimper", "Krzysztof Gonciarz", "Maffashion", "Deynn",
       )),

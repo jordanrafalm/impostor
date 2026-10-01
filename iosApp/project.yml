@@ -1,7 +1,7 @@
 name: Impostor
 afterGenerate:
-  - script: cd .. && ./gradlew :composeApp:assembleComposeAppReleaseXCFramework --no-daemon
-    name: Build Compose XCFramework
+  - script: cd .. && ./gradlew :composeApp:assembleComposeAppDebugXCFramework --no-daemon
+    name: Build Compose Debug XCFramework
 options:
   bundleIdPrefix: com.impostor
   deploymentTarget:
@@ -18,7 +18,10 @@ targets:
     sources:
       - path: iosApp.swift
       - path: Assets.xcassets
+    resources:
+      - path: GoogleService-Info.plist
     settings:
+      DEVELOPMENT_TEAM: 9B9STC79QK
       CODE_SIGN_STYLE: Automatic
       PRODUCT_BUNDLE_IDENTIFIER: com.rafal.impostorparty
       GENERATE_INFOPLIST_FILE: NO
@@ -26,16 +29,17 @@ targets:
       CODE_SIGN_ENTITLEMENTS: Impostor.entitlements
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       SWIFT_VERSION: 5.0
+      "ARCHS[sdk=iphonesimulator*]": arm64
       ENABLE_USER_SCRIPT_SANDBOXING: NO
       FRAMEWORK_SEARCH_PATHS:
         - $(inherited)
-        - $(SRCROOT)/../composeApp/build/XCFrameworks/release/composeApp.xcframework/ios-arm64
-        - $(SRCROOT)/../composeApp/build/XCFrameworks/release/composeApp.xcframework/ios-arm64-simulator
+        - $(SRCROOT)/../composeApp/build/XCFrameworks/debug/composeApp.xcframework/ios-arm64
+        - $(SRCROOT)/../composeApp/build/XCFrameworks/debug/composeApp.xcframework/ios-arm64-simulator
       OTHER_LDFLAGS:
         - $(inherited)
         - -ObjC
     dependencies:
-      - framework: ../composeApp/build/XCFrameworks/release/composeApp.xcframework
+      - framework: ../composeApp/build/XCFrameworks/debug/composeApp.xcframework
         embed: true
       - package: Firebase
         product: FirebaseCore
@@ -49,8 +53,10 @@ targets:
     postBuildScripts:
       - name: Copy runtime configuration and bundled catalog
         inputFiles:
+          - "${SRCROOT}/GoogleService-Info.plist"
           - "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts.json"
         outputFiles:
+          - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts.json"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@2x.png"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@3x.png"
@@ -58,9 +64,7 @@ targets:
           - "${DWARF_DSYM_FOLDER_PATH}/ComposeApp.framework.dSYM/Contents/Resources/DWARF/ComposeApp"
         script: |
           mkdir -p "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
-          if [ -f "${SRCROOT}/GoogleService-Info.plist" ]; then
-            cp "${SRCROOT}/GoogleService-Info.plist" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
-          fi
+          cp "${SRCROOT}/GoogleService-Info.plist" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
           cp "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts.json" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts.json"
           cp "${SRCROOT}/Assets.xcassets/AppIcon.appiconset/icon-60@2x.png" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@2x.png"
           cp "${SRCROOT}/Assets.xcassets/AppIcon.appiconset/icon-60@3x.png" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@3x.png"

@@ -112,7 +112,10 @@ class SubscriptionRepositoryImpl(
     private fun errorEntitlement(error: Throwable, previous: Entitlement): Entitlement = previous.copy(
         state = when ((error as? SubscriptionException)?.error) {
             SubscriptionError.PURCHASE_PENDING -> SubscriptionState.PURCHASING
-            SubscriptionError.STORE_UNAVAILABLE, SubscriptionError.PRODUCT_UNAVAILABLE -> SubscriptionState.UNAVAILABLE
+            SubscriptionError.NETWORK_UNAVAILABLE,
+            SubscriptionError.STORE_UNAVAILABLE,
+            SubscriptionError.PRODUCT_UNAVAILABLE,
+            -> SubscriptionState.UNAVAILABLE
             else -> previous.state
         },
     )

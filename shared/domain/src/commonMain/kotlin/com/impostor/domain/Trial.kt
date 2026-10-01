@@ -4,6 +4,9 @@ import kotlinx.coroutines.flow.StateFlow
 
 const val FreeTrialGamesLimit = 3
 
+/** Categories that are never gated behind the trial limit or Premium. */
+val AlwaysFreeCategoryIds = setOf("animals", "places", "sports")
+
 data class TrialState(
     val startedGames: Int,
 ) {

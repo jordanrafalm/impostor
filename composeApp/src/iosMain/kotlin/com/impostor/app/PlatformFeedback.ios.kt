@@ -1,6 +1,10 @@
 package com.impostor.app
 
 import platform.AudioToolbox.AudioServicesPlaySystemSound
+import platform.UIKit.UIImpactFeedbackGenerator
+import platform.UIKit.UIImpactFeedbackStyle
+import platform.UIKit.UINotificationFeedbackGenerator
+import platform.UIKit.UINotificationFeedbackType
 
 private class IosSoundPlayer : SoundPlayer {
     override fun playThermalStart() {
@@ -15,11 +19,24 @@ private class IosSoundPlayer : SoundPlayer {
 actual fun platformSoundPlayer(): SoundPlayer = IosSoundPlayer()
 
 private class IosThermalFeedback : ThermalFeedback {
-    override fun start() = Unit
+    private val impactGenerator = UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleMedium)
+    private val pulseGenerator = UIImpactFeedbackGenerator(style = UIImpactFeedbackStyle.UIImpactFeedbackStyleLight)
+    private val notificationGenerator = UINotificationFeedbackGenerator()
 
-    override fun pulse() = Unit
+    override fun start() {
+        impactGenerator.prepare()
+        impactGenerator.impactOccurred()
+    }
 
-    override fun complete() = Unit
+    override fun pulse() {
+        pulseGenerator.prepare()
+        pulseGenerator.impactOccurred()
+    }
+
+    override fun complete() {
+        notificationGenerator.prepare()
+        notificationGenerator.notificationOccurred(UINotificationFeedbackType.UINotificationFeedbackTypeSuccess)
+    }
 }
 
 actual fun platformThermalFeedback(): ThermalFeedback = IosThermalFeedback()

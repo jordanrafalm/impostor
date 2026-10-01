@@ -22,11 +22,11 @@ actual fun platformSoundPlayer(): SoundPlayer = AndroidSoundPlayer()
 
 private class AndroidThermalFeedback : ThermalFeedback {
     override fun start() {
-        vibrate(durationMillis = 70, amplitude = 255)
+        vibrate(durationMillis = 45, amplitude = 170)
     }
 
     override fun pulse() {
-        vibrate(durationMillis = 18, amplitude = 180)
+        vibrate(durationMillis = 12, amplitude = 100)
     }
 
     override fun complete() {

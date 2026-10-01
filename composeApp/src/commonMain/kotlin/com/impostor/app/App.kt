@@ -73,6 +73,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -162,7 +163,7 @@ fun ImpostorApp() {
     val unlockedCategories = if (trialState.canStartGame(entitlement)) {
         allCategoryIds
     } else {
-        emptySet()
+        allCategoryIds.intersect(com.impostor.domain.AlwaysFreeCategoryIds)
     }
 
     LaunchedEffect(allCategoryIds) {
@@ -204,7 +205,9 @@ fun ImpostorApp() {
                         onCometLongPress = { showComet = true },
                         onStart = start@{
                             if (startingGame || route != Route.Home) return@start
-                            if (!trialRepository.state.value.canStartGame(entitlement)) {
+                            val usesOnlyAlwaysFreeCategories = selectedCategories.isNotEmpty() &&
+                                selectedCategories.all { it in com.impostor.domain.AlwaysFreeCategoryIds }
+                            if (!usesOnlyAlwaysFreeCategories && !trialRepository.state.value.canStartGame(entitlement)) {
                                 route = Route.Premium
                                 return@start
                             }
@@ -220,7 +223,7 @@ fun ImpostorApp() {
                                     startingGame = true
                                     scope.launch {
                                         try {
-                                            if (!premiumUnlocked) {
+                                            if (!premiumUnlocked && !usesOnlyAlwaysFreeCategories) {
                                                 RecordStartedGameUseCase(trialRepository).invoke(session.sessionId)
                                             }
                                             route = Route.Reveal(session)
@@ -307,12 +310,16 @@ private fun Shell(
     onHintsChanged: (Boolean) -> Unit,
     onCometLongPress: () -> Unit,
     onStart: () -> Unit,
-): Unit = Column(
-    modifier = Modifier.fillMaxSize().imePadding().padding(horizontal = 24.dp, vertical = 20.dp),
-    horizontalAlignment = Alignment.CenterHorizontally,
-    verticalArrangement = Arrangement.SpaceBetween,
-) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+): Unit {
+    var showRules by remember { mutableStateOf(false) }
+
+    Box(Modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier.fillMaxSize().imePadding().padding(horizontal = 24.dp, vertical = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text("GRA IMPREZOWA", color = Frost.copy(alpha = .78f), fontSize = 11.sp, letterSpacing = 5.sp)
         Spacer(Modifier.height(8.dp))
         LongPressLogo(onLongPress = onCometLongPress)
@@ -323,11 +330,11 @@ private fun Shell(
         )
         Spacer(Modifier.height(28.dp))
         HomeReveal(index = 0, height = 88.dp) {
-            FrostSettingButton("Gracze", players.size.toString(), onPlayers)
+            FrostSettingButton("Gracze", players.size.toString(), onPlayers, autoPulse = true, pulseDelayMillis = 0L)
         }
         Spacer(Modifier.height(8.dp))
         HomeReveal(index = 1, height = 88.dp) {
-            FrostSettingButton("Kategorie", "→", onCategories)
+            FrostSettingButton("Kategorie", "→", onCategories, autoPulse = true, pulseDelayMillis = 600L)
         }
         Spacer(Modifier.height(8.dp))
         HomeReveal(index = 2, height = 72.dp) {
@@ -352,6 +359,8 @@ private fun Shell(
             onClick = onStart,
             style = FrostButtonStyle.Primary,
             modifier = Modifier.fillMaxWidth(),
+            autoPulse = true,
+            pulseDelayMillis = 1200L,
         )
         Spacer(Modifier.height(10.dp))
         FrostButton(
@@ -359,7 +368,58 @@ private fun Shell(
             onClick = onCodes,
             style = FrostButtonStyle.Subtle,
             modifier = Modifier.fillMaxWidth(),
+            autoPulse = true,
+            pulseDelayMillis = 1800L,
         )
+            }
+        }
+        FrostButton(
+            text = "?",
+            onClick = { showRules = true },
+            modifier = Modifier.align(Alignment.TopStart).padding(20.dp).size(52.dp),
+            closeButton = true,
+        )
+        if (showRules) {
+            GameRulesOverlay(onDismiss = { showRules = false })
+        }
+    }
+}
+
+@Composable
+private fun GameRulesOverlay(onDismiss: () -> Unit) {
+    Box(
+        Modifier.fillMaxSize()
+            .background(Ink.copy(alpha = .72f))
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitFirstDown()
+                    waitForUpOrCancellation()
+                    onDismiss()
+                }
+            },
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            Modifier.fillMaxWidth()
+                .padding(24.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+                .border(1.dp, Cyan.copy(alpha = .6f), RoundedCornerShape(24.dp))
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Text("JAK GRAĆ", color = Color.White, fontSize = 24.sp, letterSpacing = 2.sp)
+            Text("1. Ustaw graczy i kategorię, a potem rozpocznij grę.", color = Frost, fontSize = 16.sp)
+            Text("2. Każda osoba przytrzymuje ekran, aby poznać swoją rolę i hasło.", color = Frost, fontSize = 16.sp)
+            Text("3. Cywile znają hasło. Impostor próbuje je odgadnąć, nie zdradzając się.", color = Frost, fontSize = 16.sp)
+            Text("4. Po rundzie rozmawiajcie i wskażcie osobę, która jest Impostorem.", color = Frost, fontSize = 16.sp)
+            FrostButton(
+                text = "ZAMKNIJ",
+                onClick = onDismiss,
+                modifier = Modifier.fillMaxWidth(),
+                style = FrostButtonStyle.Subtle,
+            )
+        }
     }
 }
 
@@ -516,6 +576,8 @@ internal fun FrostButton(
     enabled: Boolean = true,
     closeButton: Boolean = false,
     onLongPress: (() -> Unit)? = null,
+    autoPulse: Boolean = false,
+    pulseDelayMillis: Long = 0L,
 ) {
     FrostButtonSurface(
         onClick = onClick,
@@ -524,6 +586,8 @@ internal fun FrostButton(
         enabled = enabled,
         closeButton = closeButton,
         onLongPress = onLongPress,
+        autoPulse = autoPulse,
+        pulseDelayMillis = pulseDelayMillis,
     ) {
         Text(
             text = text,
@@ -567,6 +631,8 @@ private fun FrostButtonSurface(
     enabled: Boolean = true,
     closeButton: Boolean = false,
     onLongPress: (() -> Unit)? = null,
+    autoPulse: Boolean = false,
+    pulseDelayMillis: Long = 0L,
     content: @Composable () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -588,6 +654,15 @@ private fun FrostButtonSurface(
     LaunchedEffect(hovered) {
         if (hoverWasObserved) runSweep()
         hoverWasObserved = true
+    }
+
+    if (autoPulse) {
+        LaunchedEffect(Unit) {
+            while (isActive) {
+                delay(2500 + pulseDelayMillis)
+                runSweep()
+            }
+        }
     }
 
     val shape = RoundedCornerShape(if (closeButton) 18.dp else if (style == FrostButtonStyle.Subtle) 28.dp else 24.dp)
@@ -661,11 +736,15 @@ internal fun FrostSettingButton(
     label: String,
     value: String,
     onClick: () -> Unit,
+    autoPulse: Boolean = false,
+    pulseDelayMillis: Long = 0L,
 ) {
     FrostButtonSurface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().height(88.dp),
         style = FrostButtonStyle.Glass,
+        autoPulse = autoPulse,
+        pulseDelayMillis = pulseDelayMillis,
     ) {
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 4.dp),
@@ -788,7 +867,7 @@ private fun PlayersScreen(
     var clearedDefaultPlayerIds by remember { mutableStateOf(emptySet<String>()) }
 
     Column(
-        Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp, vertical = 20.dp),
+        Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 20.dp),
     ) {
         Box(Modifier.fillMaxWidth().height(56.dp)) {
             FrostButton(
@@ -809,41 +888,6 @@ private fun PlayersScreen(
                 color = Frost,
                 fontSize = 18.sp,
                 modifier = Modifier.align(Alignment.CenterEnd),
-            )
-        }
-        Spacer(Modifier.height(18.dp))
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.weight(1f).heightIn(min = 56.dp)
-                    .clip(RoundedCornerShape(22.dp))
-                    .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-                    .border(1.dp, PanelBorder, RoundedCornerShape(22.dp))
-                    .padding(horizontal = 18.dp, vertical = 14.dp),
-            ) {
-                BasicTextField(
-                    value = newPlayerName,
-                    onValueChange = { newPlayerName = normalizePlayerName(it) },
-                    modifier = Modifier.fillMaxWidth(),
-                    textStyle = TextStyle(color = Color.White, fontSize = 17.sp),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-                    decorationBox = { field ->
-                        if (newPlayerName.isEmpty()) {
-                            Text("Wpisz imię gracza...", color = Frost.copy(alpha = .58f), fontSize = 17.sp)
-                        }
-                        field()
-                    },
-                )
-            }
-            Spacer(Modifier.width(10.dp))
-            FrostButton(
-                text = "+",
-                onClick = {
-                    val displayName = normalizePlayerName(newPlayerName).ifEmpty { "Gracz ${players.size + 1}" }
-                    onPlayers(players + Player("p${players.size + 1}", displayName))
-                    newPlayerName = ""
-                },
-                modifier = Modifier.size(56.dp),
             )
         }
         Spacer(Modifier.height(18.dp))
@@ -905,6 +949,41 @@ private fun PlayersScreen(
             }
         }
     }
+    Spacer(Modifier.height(18.dp))
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier.weight(1f).heightIn(min = 56.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
+                .border(1.dp, PanelBorder, RoundedCornerShape(22.dp))
+                .padding(horizontal = 18.dp, vertical = 14.dp),
+        ) {
+            BasicTextField(
+                value = newPlayerName,
+                onValueChange = { newPlayerName = normalizePlayerName(it) },
+                modifier = Modifier.fillMaxWidth(),
+                textStyle = TextStyle(color = Color.White, fontSize = 17.sp),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+                decorationBox = { field ->
+                    if (newPlayerName.isEmpty()) {
+                        Text("Wpisz imię gracza...", color = Frost.copy(alpha = .58f), fontSize = 17.sp)
+                    }
+                    field()
+                },
+            )
+        }
+        Spacer(Modifier.width(10.dp))
+        FrostButton(
+            text = "+",
+            onClick = {
+                val displayName = normalizePlayerName(newPlayerName).ifEmpty { "Gracz ${players.size + 1}" }
+                onPlayers(players + Player("p${players.size + 1}", displayName))
+                newPlayerName = ""
+            },
+            modifier = Modifier.size(56.dp),
+        )
+    }
     Spacer(Modifier.height(16.dp))
     FrostButton(text = "GOTOWE", onClick = onBack, modifier = Modifier.fillMaxWidth(), style = FrostButtonStyle.Subtle)
     }
@@ -941,7 +1020,8 @@ private fun CategoriesScreen(
         if (premiumUnlocked) "Premium odblokowuje wszystkie kategorie."
         else if (trialState.hasFreeCategories)
             "Wszystkie kategorie odblokowane. Pozostało darmowych gier: ${trialState.remainingFreeGames}."
-        else "Wykorzystano 3 darmowe gry. Subskrypcja Premium odblokuje wszystkie kategorie.",
+        else "Wykorzystano 3 darmowe gry. Zwierzęta, Miejsca i Sport zostają darmowe na zawsze; " +
+            "Subskrypcja Premium odblokuje pozostałe kategorie.",
         color = Frost,
         fontSize = 14.sp,
     )
@@ -1013,18 +1093,29 @@ private fun PremiumSubscriptionScreen(
     })
     var product by remember { mutableStateOf<com.impostor.domain.SubscriptionProduct?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
+    var isLoadingProduct by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
     val purchase = remember(repository) { PurchasePremiumUseCase(repository) }
     val restore = remember(repository) { RestorePurchasesUseCase(repository) }
 
+    suspend fun loadProduct() {
+        isLoadingProduct = true
+        message = null
+        try {
+            repository.loadProduct()
+                .onSuccess {
+                    product = it
+                    analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
+                }
+                .onFailure { message = subscriptionMessage(it) }
+        } finally {
+            isLoadingProduct = false
+        }
+    }
+
     LaunchedEffect(Unit) {
         analytics.log(AnalyticsEvent.PREMIUM_SCREEN_OPENED)
-        repository.loadProduct()
-            .onSuccess {
-                product = it
-                analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
-            }
-            .onFailure { message = subscriptionMessage(it) }
+        loadProduct()
         // Restore is store-account authenticated (AppStore.sync() on iOS) and must stay user-initiated only.
     }
     LaunchedEffect(entitlement.state, entitlement.source) {
@@ -1046,6 +1137,14 @@ private fun PremiumSubscriptionScreen(
         Text(product?.let { "${it.formattedPrice} / ${it.periodLabel}" } ?: "Subskrypcja jest obecnie niedostępna", color = Frost)
         Text(entitlement.state.name.lowercase().replace('_', ' '), color = if (entitlement.state == SubscriptionState.ACTIVE) Cyan else Frost)
         if (message != null) Text(message!!, color = Color(0xFFFF8A8A))
+        if (product == null) {
+            FrostButton(
+                text = if (isLoadingProduct) "ŁADOWANIE..." else "PONÓW PRÓBĘ",
+                onClick = { scope.launch { loadProduct() } },
+                enabled = !isLoadingProduct,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
         FrostButton(
             text = "SUBSKRYBUJ",
             onClick = {
@@ -1099,6 +1198,7 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
     SubscriptionError.PURCHASE_PENDING -> "Zakup oczekuje na potwierdzenie."
     SubscriptionError.PURCHASE_CANCELLED -> "Zakup został anulowany."
     SubscriptionError.ALREADY_OWNED -> "Subskrypcja jest już aktywna. Przywróć zakupy."
+    SubscriptionError.NETWORK_UNAVAILABLE -> "Brak połączenia z internetem. Sprawdź Wi-Fi lub dane komórkowe i spróbuj ponownie."
     SubscriptionError.PRODUCT_UNAVAILABLE, SubscriptionError.STORE_UNAVAILABLE -> "Sklep jest obecnie niedostępny."
     SubscriptionError.RESTORE_FAILED -> "Nie udało się przywrócić zakupów."
     SubscriptionError.PURCHASE_FAILED, null -> "Zakup nie powiódł się."
@@ -1125,7 +1225,8 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
             Text(
                 players.firstOrNull { it.id == assignment.playerId }?.displayName ?: assignment.playerId,
                 color = Frost,
-                fontSize = 18.sp,
+                fontSize = 26.sp,
+                fontWeight = FontWeight.Bold,
                 letterSpacing = 2.sp,
                 modifier = Modifier.weight(1f),
             )
@@ -1151,7 +1252,6 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
                     awaitEachGesture {
                         awaitFirstDown()
                         hasStartedReveal = true
-                        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                         thermalFeedback.start()
                         val thaw = scope.launch {
                             reveal.animateTo(1f, tween(1_000, easing = LinearEasing))
@@ -1168,7 +1268,6 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
                             pulseJob.cancel()
                             thaw.cancel()
                             thermalFeedback.complete()
-                            haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
                             scope.launch {
                                 reveal.animateTo(0f, tween(380, easing = FastOutLinearInEasing))
                             }
@@ -1278,28 +1377,36 @@ private fun FrostGlass(
             )
         }
 
-        listOf(.18f to .16f, .33f to .25f, .58f to .18f, .76f to .31f).forEach { (x, length) ->
-            drawRoundRect(
-                color = frostColor.copy(alpha = .32f),
-                topLeft = androidx.compose.ui.geometry.Offset(size.width * x, size.height * (.72f + x * .12f)),
-                size = androidx.compose.ui.geometry.Size(size.minDimension * .025f, size.height * length),
-                cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.minDimension * .02f),
+        listOf(.16f to .16f, .78f to .2f, .3f to .67f, .76f to .75f).forEach { (x, y) ->
+            drawCircle(
+                color = frostColor.copy(alpha = .2f),
+                radius = size.minDimension * .025f,
+                center = Offset(size.width * x, size.height * y),
             )
         }
-        val radius = (thaw * .95f - .2f) * size.maxDimension * .75f
-        if (radius > 0f) {
+        val thawPoints = listOf(
+            Triple(.5f, .5f, 0f),
+            Triple(.18f, .3f, .18f),
+            Triple(.8f, .32f, .3f),
+            Triple(.3f, .8f, .42f),
+            Triple(.76f, .74f, .54f),
+        )
+        thawPoints.forEach { (x, y, delay) ->
+            val progress = ((thaw - delay) / (1f - delay)).coerceIn(0f, 1f)
+            if (progress == 0f) return@forEach
+            val radius = progress * size.maxDimension * if (delay == 0f) .72f else .36f
             drawCircle(
                 brush = Brush.radialGradient(
                     colorStops = arrayOf(
                         0f to Color.Black,
-                        .82f to Color.Black,
+                        .72f to Color.Black,
                         1f to Color.Transparent,
                     ),
-                    center = center,
+                    center = Offset(size.width * x, size.height * y),
                     radius = radius,
                 ),
                 radius = radius,
-                center = center,
+                center = Offset(size.width * x, size.height * y),
                 blendMode = BlendMode.DstOut,
             )
         }
