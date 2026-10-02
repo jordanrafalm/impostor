@@ -35,6 +35,7 @@ enum class AnalyticsEvent {
     SUBSCRIPTION_PURCHASE_RESULT,
     SUBSCRIPTION_RESTORE_RESULT,
     PREMIUM_ENTITLEMENT_CHANGED,
+    GAME_STARTED_CATEGORY,
 }
 
 interface AnalyticsService {

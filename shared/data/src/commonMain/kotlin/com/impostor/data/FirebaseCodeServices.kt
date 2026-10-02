@@ -59,6 +59,10 @@ internal class FirebaseAnalyticsService : AnalyticsService {
                 AnalyticsEvent.PREMIUM_ENTITLEMENT_CHANGED -> {
                     Firebase.analytics.logEvent("premium_entitlement_changed", mapOf("state" to safeResult(parameters)))
                 }
+                AnalyticsEvent.GAME_STARTED_CATEGORY -> {
+                    val categoryId = parameters["category_id"] ?: return@runCatching
+                    Firebase.analytics.logEvent("game_started_category", mapOf("category_id" to categoryId))
+                }
             }
         }
     }

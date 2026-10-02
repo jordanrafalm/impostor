@@ -12,7 +12,11 @@ plugins {
 kotlin {
     val composeAppXcFramework = XCFramework()
 
-    androidTarget()
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
     iosX64()
     iosArm64()
     iosSimulatorArm64()
@@ -27,6 +31,9 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation("io.github.alexzhirkevich:compottie:2.0.0")
+        }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
         }
         androidMain.dependencies {
             implementation("androidx.activity:activity-compose:1.10.1")
@@ -59,10 +66,17 @@ android {
         applicationId = "com.rafal.impostorparty"
         minSdk = 26
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.1.0"
+        versionCode = 11
+        versionName = "1.1.1"
     }
-    buildFeatures { compose = true }
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 
     lint {
         // These detectors crash with the Kotlin 2.2 UAST used by the current AGP/toolchain.

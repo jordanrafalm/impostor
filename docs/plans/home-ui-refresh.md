@@ -10,6 +10,8 @@ Przebudować ekran startowy Impostor zgodnie z dostarczonym makietowym kierunkie
 - Istniejący `IceBackdrop` zostaje wspólnym, animowanym tłem: gradient, aurora, krople i ziarno.
 - Nie zmieniamy domeny, nawigacji, płatności ani Firebase. Zmiana pozostaje w `composeApp/commonMain`.
 - W aplikacji mobilnej nie ma klasycznego hovera; efekt jest zapewniony dla myszy/trackpada, a jego dotykowym odpowiednikiem jest tap.
+- Przycisk „ODBLOKUJ PEŁNĄ WERSJĘ” pojawia się po wyczerpaniu trzech darmowych gier albo po przytrzymaniu „GRAJ” przez 5 sekund.
+- Bieżący numer wersji aplikacji jest pokazany małym tekstem w prawym górnym rogu Home i pobierany z metadanych platformy.
 
 ## Kroki wdrożenia
 
@@ -25,3 +27,4 @@ Przebudować ekran startowy Impostor zgodnie z dostarczonym makietowym kierunkie
 - Przycisk otrzymuje przejazd poświaty zarówno przy hover enter, jak i hover exit; tap uruchamia identyczny efekt.
 - UI i animacje działają z jednego kodu `commonMain` dla Androida oraz iOS.
 - Brak nowych zależności i brak dostępu Firebase w UI.
+- Krótkie kliknięcie „GRAJ” nadal rozpoczyna rozgrywkę; samo długie przytrzymanie ujawnia przycisk odblokowania.
