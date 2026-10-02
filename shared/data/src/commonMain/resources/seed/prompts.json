@@ -1270,7 +1270,7 @@
         },
         {
           "text": "Masaż",
-          "hint": "Olejek"
+          "hint": "Relaks"
         },
         {
           "text": "Świeczki",
@@ -1358,7 +1358,7 @@
         },
         {
           "text": "Sauna",
-          "hint": "Para"
+          "hint": "Gorąco"
         },
         {
           "text": "Basen nocą",
@@ -1434,7 +1434,7 @@
         },
         {
           "text": "Szpilki",
-          "hint": "Obcas"
+          "hint": "Buty"
         },
         {
           "text": "Muszka",
@@ -1694,7 +1694,7 @@
         },
         {
           "text": "Kajdanki",
-          "hint": "Łóżko"
+          "hint": "Zabawa"
         },
         {
           "text": "Klaps w tyłek",
@@ -1731,6 +1731,338 @@
         {
           "text": "Trójkąt",
           "hint": "Dwie osoby"
+        },
+        {
+          "text": "Banan",
+          "hint": "Owoc"
+        },
+        {
+          "text": "Ogórek",
+          "hint": "Warzywo"
+        },
+        {
+          "text": "Kiełbasa",
+          "hint": "Grill"
+        },
+        {
+          "text": "Lizak",
+          "hint": "Słodycz"
+        },
+        {
+          "text": "Lód",
+          "hint": "Lato"
+        },
+        {
+          "text": "Śmietanka",
+          "hint": "Kawa"
+        },
+        {
+          "text": "Krem",
+          "hint": "Tort"
+        },
+        {
+          "text": "Olejek",
+          "hint": "Masaż"
+        },
+        {
+          "text": "Jazda",
+          "hint": "Rower"
+        },
+        {
+          "text": "Wspinaczka",
+          "hint": "Ścianka"
+        },
+        {
+          "text": "Nurkowanie",
+          "hint": "Basen"
+        },
+        {
+          "text": "Prysznic",
+          "hint": "Rano"
+        },
+        {
+          "text": "Mokro",
+          "hint": "Deszcz"
+        },
+        {
+          "text": "Ślisko",
+          "hint": "Podłoga"
+        },
+        {
+          "text": "Twardy",
+          "hint": "Chleb"
+        },
+        {
+          "text": "Miękki",
+          "hint": "Poduszka"
+        },
+        {
+          "text": "Głęboki",
+          "hint": "Sen"
+        },
+        {
+          "text": "Rytm",
+          "hint": "Muzyka"
+        },
+        {
+          "text": "Pozycja",
+          "hint": "Joga"
+        },
+        {
+          "text": "Wejście",
+          "hint": "Drzwi"
+        },
+        {
+          "text": "Bujanie",
+          "hint": "Huśtawka"
+        },
+        {
+          "text": "Falowanie",
+          "hint": "Morze"
+        },
+        {
+          "text": "Drżenie",
+          "hint": "Zimno"
+        },
+        {
+          "text": "Wibracja",
+          "hint": "Telefon"
+        },
+        {
+          "text": "Dreszcz",
+          "hint": "Horror"
+        },
+        {
+          "text": "Szczyt",
+          "hint": "Góra"
+        },
+        {
+          "text": "Eksplozja",
+          "hint": "Fajerwerki"
+        },
+        {
+          "text": "Łóżko",
+          "hint": "Sen"
+        },
+        {
+          "text": "Pościel",
+          "hint": "Bawełna"
+        },
+        {
+          "text": "Świeca",
+          "hint": "Romantyzm"
+        },
+        {
+          "text": "Lustro",
+          "hint": "Łazienka"
+        },
+        {
+          "text": "Bielizna",
+          "hint": "Szuflada"
+        },
+        {
+          "text": "Koronka",
+          "hint": "Delikatna"
+        },
+        {
+          "text": "Pończochy",
+          "hint": "Nogi"
+        },
+        {
+          "text": "Pocałunek",
+          "hint": "Usta"
+        },
+        {
+          "text": "Ugryzienie",
+          "hint": "Zabawa"
+        },
+        {
+          "text": "Lizanie",
+          "hint": "Lód"
+        },
+        {
+          "text": "Ssanie",
+          "hint": "Lizak"
+        },
+        {
+          "text": "Klaps",
+          "hint": "Zabawa"
+        },
+        {
+          "text": "Dominacja",
+          "hint": "Gra"
+        },
+        {
+          "text": "Rozkosz",
+          "hint": "Przyjemność"
+        },
+        {
+          "text": "Namiętność",
+          "hint": "Uczucie"
+        },
+        {
+          "text": "Intymność",
+          "hint": "Prywatność"
+        },
+        {
+          "text": "Szyja",
+          "hint": "Szalik"
+        },
+        {
+          "text": "Kark",
+          "hint": "Masaż"
+        },
+        {
+          "text": "Obojczyk",
+          "hint": "Kość"
+        },
+        {
+          "text": "Piersi",
+          "hint": "Biustonosz"
+        },
+        {
+          "text": "Biust",
+          "hint": "Rozmiar"
+        },
+        {
+          "text": "Sutki",
+          "hint": "Wrażliwe"
+        },
+        {
+          "text": "Brzuch",
+          "hint": "Mięśnie"
+        },
+        {
+          "text": "Pępek",
+          "hint": "Środek"
+        },
+        {
+          "text": "Biodra",
+          "hint": "Pas"
+        },
+        {
+          "text": "Uda",
+          "hint": "Nogi"
+        },
+        {
+          "text": "Pośladki",
+          "hint": "Tył"
+        },
+        {
+          "text": "Plecy",
+          "hint": "Masaż"
+        },
+        {
+          "text": "Dłonie",
+          "hint": "Ręce"
+        },
+        {
+          "text": "Palce",
+          "hint": "Dłoń"
+        },
+        {
+          "text": "Nadgarstki",
+          "hint": "Zegarek"
+        },
+        {
+          "text": "Ramiona",
+          "hint": "Siła"
+        },
+        {
+          "text": "Włosy",
+          "hint": "Czesanie"
+        },
+        {
+          "text": "Skóra",
+          "hint": "Ciało"
+        },
+        {
+          "text": "Nogi",
+          "hint": "Chodzenie"
+        },
+        {
+          "text": "Kolana",
+          "hint": "Zgięcie"
+        },
+        {
+          "text": "Łydki",
+          "hint": "Mięśnie"
+        },
+        {
+          "text": "Stopy",
+          "hint": "Buty"
+        },
+        {
+          "text": "Pięty",
+          "hint": "Szpilki"
+        },
+        {
+          "text": "Palce u stóp",
+          "hint": "Stopy"
+        },
+        {
+          "text": "Uszy",
+          "hint": "Słuch"
+        },
+        {
+          "text": "Policzki",
+          "hint": "Twarz"
+        },
+        {
+          "text": "Broda",
+          "hint": "Twarz"
+        },
+        {
+          "text": "Żebra",
+          "hint": "Klatka"
+        },
+        {
+          "text": "Bark",
+          "hint": "Ramię"
+        },
+        {
+          "text": "Przedramię",
+          "hint": "Ręka"
+        },
+        {
+          "text": "Dłoń",
+          "hint": "Ręka"
+        },
+        {
+          "text": "Paznokcie",
+          "hint": "Manicure"
+        },
+        {
+          "text": "Zęby",
+          "hint": "Uśmiech"
+        },
+        {
+          "text": "Podniebienie",
+          "hint": "Usta"
+        },
+        {
+          "text": "Gardło",
+          "hint": "Głos"
+        },
+        {
+          "text": "Klatka piersiowa",
+          "hint": "Oddech"
+        },
+        {
+          "text": "Kręgosłup",
+          "hint": "Plecy"
+        },
+        {
+          "text": "Biodro",
+          "hint": "Ruch"
+        },
+        {
+          "text": "Pachwina",
+          "hint": "Uda"
+        },
+        {
+          "text": "Wewnętrzna strona uda",
+          "hint": "Noga"
         }
       ]
     },
@@ -2244,17 +2576,7 @@
           "text": "Novak Djokovic",
           "hint": "Serbia"
         }
-      Witaj w Impostor! 🎭
-      
-      Impostor to towarzyska gra słowna dla znajomych i rodziny. Jeden gracz nie zna hasła i musi się wtopić w tłum, zadając pytania i udzielając odpowiedzi tak, by nie zostać zdemaskowanym — reszta graczy stara się go namierzyć.
-      
-      Co znajdziesz w aplikacji:
-      • Kilkanaście kategorii haseł — od zwierząt, miejsc i jedzenia, przez sport i technologię, po polskich influencerów, aktorów i światowe gwiazdy
-      • Kategorię 18+ dla odważniejszych grup
-      • System podpowiedzi ułatwiający start impostorowi
-      • Prosty, szybki setup — wystarczy jedno urządzenie, żeby zagrać w większym gronie
-      
-      Zbierz ekipę, wybierz kategorie i sprawdźcie, kto najlepiej udaje, że wie, o co chodzi!      ]
+      ]
     }
   ]
 }

@@ -1,6 +1,6 @@
 # Firebase setup
 
-Firebase is an optional remote entitlement source. The bundled catalog and pass-and-play gameplay remain usable without a network connection.
+Firebase provides optional remote prompt additions. The bundled catalog and pass-and-play gameplay remain usable without a network connection.
 
 ## Supplied Firebase project
 
@@ -23,6 +23,21 @@ The configuration files are intentionally ignored by Git. Never print their cont
 6. The Android host initializes through `com.google.gms.google-services`. GitLive uses the platform Firebase SDKs behind the shared `:shared:data` boundary.
 
 The config files are ignored by Git. Do not paste their contents into logs, issue reports, or source files.
+
+## Remote prompt catalog
+
+The bundled `prompts.json` remains the baseline catalog and is always available offline. On app startup, the app uses the bundled catalog plus the last successfully cached Firestore prompt snapshot, then attempts a background refresh. A successful refresh adds active prompts to the local catalog and persists the snapshot for later offline launches. A Firebase or network failure leaves the bundled catalog and last valid cached snapshot in use without showing an error to players.
+
+Create a Firestore collection named `prompts`. Add one document per prompt using a stable document ID and these fields:
+
+```text
+categoryId: "animals"     # must match a bundled category ID
+text: "Wydra"
+hint: "Rzeka"
+active: true
+```
+
+The app only adds active documents with valid non-empty text and hint for a category present in the bundled catalog. Use unique, stable document IDs. Publishing is read-only from the app: add or edit documents through Firebase Console or a trusted server/admin process. No Firebase write credential is included in the app.
 
 ## Promo code migration
 
@@ -59,6 +74,10 @@ The current adapter does not require authentication because promo-code documents
 rules_version = '2';
 service cloud.firestore {
 	match /databases/{database}/documents {
+		match /prompts/{promptId} {
+			allow read: if true;
+			allow write: if false;
+		}
 		match /promoCodes/{code} {
 			allow read: if true;
 			allow write: if false;

@@ -13,7 +13,7 @@ Strona wsparcia i polityka prywatności: [jordanrafalm.github.io/impostor](https
 5. Po ujawnieniu wszystkich ról aplikacja wskazuje osobę rozpoczynającą dyskusję.
 6. Gracze zadają pytania, próbują odnaleźć impostora, a impostor stara się rozpoznać hasło.
 
-Gra działa lokalnie i nie wymaga konta ani połączenia z siecią do podstawowej rozgrywki. Zawiera katalog haseł, trzy darmowe rozgrywki oraz opcjonalną subskrypcję odblokowującą pełny katalog.
+Gra działa lokalnie i nie wymaga konta ani połączenia z siecią do podstawowej rozgrywki. Zawiera katalog haseł, pięć darmowych rozgrywek oraz opcjonalną subskrypcję odblokowującą pełny katalog.
 
 ## Najważniejsze funkcje
 
@@ -64,7 +64,7 @@ flowchart LR
 
 ### Dane gry
 
-Katalog haseł (`shared/data/src/commonMain/resources/seed/prompts.json`) jest jedynym źródłem treści gry, w pełni dostępnym offline. Każdy wpis to para tekst + ręcznie dobrana podpowiedź (semantycznie pośrednia, nigdy pseudonim lub bezpośrednie powiązanie z odpowiedzią). Obecnie obejmuje kilkanaście kategorii, m.in. zwierzęta, miejsca, jedzenie, sport, technologię, kategorię 18+, flirt oraz polskich i zagranicznych celebrytów.
+Katalog w `shared/data/src/commonMain/resources/seed/prompts.json` jest zawsze dostępny offline. Przy uruchomieniu aplikacja łączy go z ostatnim lokalnie zapisanym katalogiem zdalnym i pobiera aktywne dodatkowe hasła z Firestore w tle. Udane pobranie zapisuje się na urządzeniu do użycia także bez internetu; błąd pobierania nie blokuje gry i nie wyświetla komunikatu. Każde hasło zawiera tekst i ręcznie dobraną podpowiedź (semantycznie pośrednią, nigdy pseudonim lub bezpośrednie powiązanie z odpowiedzią). Schemat i sposób publikacji opisuje [docs/firebase.md](docs/firebase.md).
 
 ### Firebase i płatności (opcjonalne)
 

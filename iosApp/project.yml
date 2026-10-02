@@ -1,11 +1,12 @@
 name: Impostor
 afterGenerate:
-  - script: cd .. && ./gradlew :composeApp:assembleComposeAppDebugXCFramework --no-daemon
+  - script: cd .. && export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-19.jdk/Contents/Home" && ./gradlew :composeApp:assembleComposeAppDebugXCFramework --no-daemon
     name: Build Compose Debug XCFramework
 options:
   bundleIdPrefix: com.impostor
   deploymentTarget:
     iOS: "17.2"
+  developmentLanguage: pl
 packages:
   Firebase:
     url: https://github.com/firebase/firebase-ios-sdk.git
@@ -24,6 +25,7 @@ targets:
       DEVELOPMENT_TEAM: 9B9STC79QK
       CODE_SIGN_STYLE: Automatic
       PRODUCT_BUNDLE_IDENTIFIER: com.rafal.impostorparty
+      DEVELOPMENT_LANGUAGE: pl
       GENERATE_INFOPLIST_FILE: NO
       INFOPLIST_FILE: Info.plist
       CODE_SIGN_ENTITLEMENTS: Impostor.entitlements
@@ -34,7 +36,7 @@ targets:
       FRAMEWORK_SEARCH_PATHS:
         - $(inherited)
         - $(SRCROOT)/../composeApp/build/XCFrameworks/debug/composeApp.xcframework/ios-arm64
-        - $(SRCROOT)/../composeApp/build/XCFrameworks/debug/composeApp.xcframework/ios-arm64-simulator
+        - $(SRCROOT)/../composeApp/build/XCFrameworks/debug/composeApp.xcframework/ios-arm64_x86_64-simulator
       OTHER_LDFLAGS:
         - $(inherited)
         - -ObjC
@@ -50,6 +52,13 @@ targets:
     scheme:
       testTargets: []
       gatherCoverageData: false
+    prebuildScripts:
+      - name: Build Kotlin/Compose Multiplatform Framework
+        script: |
+          set -e
+          export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-19.jdk/Contents/Home"
+          cd "${SRCROOT}/.."
+          ./gradlew :composeApp:assembleComposeAppDebugXCFramework --no-daemon
     postBuildScripts:
       - name: Copy runtime configuration and bundled catalog
         inputFiles:

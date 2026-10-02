@@ -3,7 +3,7 @@ package com.impostor.data
 import android.content.Context
 import com.impostor.domain.CatalogRepository
 
-private var catalogContext: Context? = null
+internal var catalogContext: Context? = null
 
 fun initializeBundledCatalog(context: Context) {
     catalogContext = context.applicationContext

@@ -2,7 +2,7 @@ package com.impostor.domain
 
 import kotlinx.coroutines.flow.StateFlow
 
-const val FreeTrialGamesLimit = 3
+const val FreeTrialGamesLimit = 5
 
 /** Categories that are never gated behind the trial limit or Premium. */
 val AlwaysFreeCategoryIds = setOf("animals", "places", "sports")

@@ -10,19 +10,19 @@ internal class TrialRepositoryTest {
     @Test
     fun `should count each started session once and stop at the trial limit`() = runTest {
         // Given
-        val store = FakeTrialStore(CachedTrialState(2, null))
+        val store = FakeTrialStore(CachedTrialState(4, null))
         val repository = TrialRepositoryImpl(store)
 
         // When
-        val thirdGame = repository.recordStartedGame("game-3")
-        val repeatedThirdGame = repository.recordStartedGame("game-3")
-        val fourthGame = repository.recordStartedGame("game-4")
+        val fifthGame = repository.recordStartedGame("game-5")
+        val repeatedFifthGame = repository.recordStartedGame("game-5")
+        val sixthGame = repository.recordStartedGame("game-6")
 
         // Then
-        assertEquals(3, thirdGame.startedGames)
-        assertEquals(thirdGame, repeatedThirdGame)
-        assertEquals(3, fourthGame.startedGames)
-        assertEquals(3, store.value.startedGames)
+        assertEquals(5, fifthGame.startedGames)
+        assertEquals(fifthGame, repeatedFifthGame)
+        assertEquals(5, sixthGame.startedGames)
+        assertEquals(5, store.value.startedGames)
     }
 
     @Test
@@ -42,11 +42,11 @@ internal class TrialRepositoryTest {
     }
 
     @Test
-    fun `should preserve three used games across repository recreation`() = runTest {
+    fun `should preserve five used games across repository recreation`() = runTest {
         val store = FakeTrialStore(CachedTrialState(0, null))
-        repeat(3) { index ->
+        repeat(5) { index ->
             val repository = TrialRepositoryImpl(store)
-            assertEquals(3 - index, repository.state.value.remainingFreeGames)
+            assertEquals(5 - index, repository.state.value.remainingFreeGames)
             repository.recordStartedGame("game-$index")
         }
         val reopened = TrialRepositoryImpl(store)

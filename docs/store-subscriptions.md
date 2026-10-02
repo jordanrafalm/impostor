@@ -50,7 +50,7 @@ Required manual checks: fresh install, reinstall, explicit restore, renewal, can
 
 ## Free games (1.0.2)
 
-Fresh installs have three free game starts shared across all categories. All categories
+Fresh installs have five free game starts shared across all categories. All categories
 are available during this allowance. Starting a valid game persists one use before
 revealing roles; leaving the game or restarting the app does not refund it. Invalid
 setups and opening categories do not consume uses. After the third start the current
