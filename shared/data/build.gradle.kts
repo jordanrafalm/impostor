@@ -16,6 +16,7 @@ kotlin {
             implementation(project(":shared:domain"))
             implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
             implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+            implementation("dev.gitlive:firebase-auth:2.1.0")
             implementation("dev.gitlive:firebase-firestore:2.1.0")
             implementation("dev.gitlive:firebase-analytics:2.1.0")
         }

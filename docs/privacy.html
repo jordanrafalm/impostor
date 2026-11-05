@@ -21,7 +21,8 @@
 
     <section>
       <h2>2. Dane przetwarzane przez aplikację</h2>
-      <p>Aplikacja nie wymaga zakładania konta. Imiona graczy i ustawienia rozgrywki są używane do prowadzenia gry na urządzeniu.</p>
+      <p>Aplikacja nie wymaga zakładania konta. Ustawienia gry są przechowywane lokalnie. Imiona są używane na urządzeniu do prowadzenia rozgrywki i — zgodnie z opisem poniżej — wysyłane do Firebase po rozpoczęciu gry.</p>
+      <p>Przy każdym prawidłowym rozpoczęciu gry aplikacja automatycznie przesyła do Firebase listę wpisanych imion graczy oraz serwerowy znacznik czasu. Imiona są udostępniane właścicielowi projektu Firebase w celu przeglądania zgłoszeń. Przesyłka nie zawiera haseł do gry, kategorii, ról, identyfikatora gry ani identyfikatora urządzenia. Do zapisu używane jest uwierzytelnienie anonimowe Firebase; nie jest wymagane osobne potwierdzenie wysyłki. Brak sieci lub błąd wysyłki nie blokuje rozgrywki.</p>
       <p>Firebase Analytics może zbierać dane techniczne i statystyczne, takie jak typ urządzenia, wersja systemu, wersja aplikacji, przybliżony region oraz informacje o korzystaniu z funkcji. Dane te służą do poprawy stabilności i jakości aplikacji.</p>
     </section>
 
@@ -37,12 +38,12 @@
 
     <section>
       <h2>5. Usługi zewnętrzne</h2>
-      <p>Aplikacja korzysta z usług Firebase dostarczanych przez Google. Przetwarzanie danych przez Apple, Google i Firebase podlega również politykom prywatności tych podmiotów.</p>
+      <p>Aplikacja korzysta z usług Firebase dostarczanych przez Google, w tym Firestore do przechowywania przesłanych imion i znacznika czasu. Właściciel projektu Firebase może przeglądać te wpisy w konsoli Firebase; aplikacja nie udostępnia ich innym graczom. Przetwarzanie danych przez Apple, Google i Firebase podlega również politykom prywatności tych podmiotów.</p>
     </section>
 
     <section>
       <h2>6. Okres przechowywania i bezpieczeństwo</h2>
-      <p>Dane są przechowywane tylko przez okres potrzebny do świadczenia usług, prowadzenia statystyk i spełnienia obowiązków prawnych. Stosowane są rozsądne środki techniczne ograniczające nieuprawniony dostęp.</p>
+      <p>Imiona przesłane do kolekcji Firebase są przechowywane bezterminowo; nie skonfigurowano automatycznego usuwania. Właściciel projektu może usunąć wpisy administracyjnie. Pozostałe dane są przechowywane przez okres potrzebny do świadczenia usług, prowadzenia statystyk i spełnienia obowiązków prawnych. Stosowane są rozsądne środki techniczne ograniczające nieuprawniony dostęp.</p>
     </section>
 
     <section>

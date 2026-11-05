@@ -8,9 +8,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,6 +35,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -52,9 +51,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.TimeMark
+import kotlin.time.TimeSource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
@@ -72,7 +73,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
@@ -82,7 +82,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.input.KeyboardType
-import com.impostor.data.syncedCatalogRepository
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.impostor.data.bundledCatalogRepository
 import com.impostor.data.analyticsService
 import com.impostor.data.SubscriptionRepositoryImpl
 import com.impostor.data.TrialRepositoryImpl
@@ -115,12 +117,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import org.jetbrains.compose.resources.painterResource
 import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import impostor.composeapp.generated.resources.Res
+import impostor.composeapp.generated.resources.sex_category_background
 
 private val Ink = Color(0xFF050914)
 private val Navy = Color(0xFF162846)
@@ -139,54 +143,26 @@ private sealed interface Route {
     data class GameStart(val session: GameSession) : Route
 }
 
-internal fun shouldShowPremiumUnlock(
-    remainingFreeGames: Int,
-    premiumUnlocked: Boolean,
-    revealedByHold: Boolean,
-): Boolean = !premiumUnlocked && (remainingFreeGames == 0 || revealedByHold)
-
-private val routeSaver = listSaver<Route, String>(
-    save = { route ->
-        when (route) {
-            Route.Splash -> listOf("splash")
-            Route.Home -> listOf("home")
-            Route.Players -> listOf("players")
-            Route.Categories -> listOf("categories")
-            Route.Premium -> listOf("premium")
-            is Route.Reveal -> listOf("reveal") + saveGameSession(route.session)
-            is Route.GameStart -> listOf("game-start") + saveGameSession(route.session)
-        }
-    },
-    restore = { saved ->
-        when (saved.firstOrNull()) {
-            "splash" -> Route.Splash.takeIf { saved.size == 1 }
-            "home" -> Route.Home.takeIf { saved.size == 1 }
-            "players" -> Route.Players.takeIf { saved.size == 1 }
-            "categories" -> Route.Categories.takeIf { saved.size == 1 }
-            "premium" -> Route.Premium.takeIf { saved.size == 1 }
-            "reveal" -> restoreGameSession(saved.drop(1))?.let(Route::Reveal)
-            "game-start" -> restoreGameSession(saved.drop(1))?.let(Route::GameStart)
-            else -> null
-        }
-    },
-)
-
 @Composable
 fun ImpostorApp() {
-    var route by rememberSaveable(stateSaver = routeSaver) { mutableStateOf<Route>(Route.Splash) }
-    var showComet by rememberSaveable { mutableStateOf(false) }
-    var players by rememberSaveable(stateSaver = playerListSaver) { mutableStateOf(loadPlayers()) }
-    var selectedCategories by rememberSaveable(stateSaver = stringSetSaver) {
-        mutableStateOf(setOf(readSelectedCategoryId() ?: "animals"))
+    var route by remember { mutableStateOf<Route>(Route.Splash) }
+    var showComet by remember { mutableStateOf(false) }
+    var showSexCategoryIntro by remember {
+        val savedEligibility = readSexCategoryIntroEligibility()
+        val eligibility = resolveSexCategoryIntroEligibility(
+            storedEligibility = savedEligibility,
+            detectedExistingInstallation = if (savedEligibility == null) isExistingInstallation() else false,
+        )
+        if (savedEligibility == null) writeSexCategoryIntroEligibility(eligibility)
+        mutableStateOf(shouldShowSexCategoryIntro(eligibility, hasDismissedSexCategoryIntro()))
     }
-    var impostorCount by rememberSaveable { mutableStateOf(1) }
-    var hintsEnabled by rememberSaveable { mutableStateOf(false) }
-    var error by rememberSaveable(stateSaver = setupValidationReasonSaver) {
-        mutableStateOf<SetupValidation.Reason?>(null)
-    }
-    var partyReminderInitialized by rememberSaveable { mutableStateOf(false) }
-    var premiumUnlockRevealedByHold by rememberSaveable { mutableStateOf(false) }
-    val repository = remember { syncedCatalogRepository() }
+    var sexIntroIsUpgradeNotice by remember { mutableStateOf(showSexCategoryIntro) }
+    var players by remember { mutableStateOf(loadPlayers()) }
+    var selectedCategories by remember { mutableStateOf(setOf(readSelectedCategoryId() ?: "animals")) }
+    var impostorCount by remember { mutableStateOf(1) }
+    var hintsEnabled by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<SetupValidation.Reason?>(null) }
+    val repository = remember { bundledCatalogRepository() }
     val subscriptionRepository = remember { SubscriptionRepositoryImpl() }
     val trialRepository = remember { TrialRepositoryImpl() }
     val scope = rememberCoroutineScope()
@@ -201,17 +177,12 @@ fun ImpostorApp() {
     val trialState by trialRepository.state.collectAsState()
     val categories = remember { repository.categories() }
     val allCategoryIds = remember(categories) { categories.map { it.id }.toSet() }
-    var prompts by remember { mutableStateOf(repository.prompts(categories.map { it.id }.toSet())) }
+    val prompts = remember { repository.prompts(categories.map { it.id }.toSet()) }
     val premiumUnlocked = entitlement.unlocksAllCategories()
     val unlockedCategories = if (trialState.canStartGame(entitlement)) {
         allCategoryIds
     } else {
         allCategoryIds.intersect(com.impostor.domain.AlwaysFreeCategoryIds)
-    }
-
-    LaunchedEffect(repository) {
-        repository.refresh()
-        prompts = repository.prompts(allCategoryIds)
     }
 
     LaunchedEffect(allCategoryIds) {
@@ -225,22 +196,8 @@ fun ImpostorApp() {
     }
 
     LaunchedEffect(Unit) {
-        if (route == Route.Splash) route = Route.Home
-        if (!partyReminderInitialized) {
-            platformNotificationScheduler().requestPermissionAndSchedulePartyReminder()
-            partyReminderInitialized = true
-        }
-    }
-    LaunchedEffect(Unit) {
-        // The locally cached entitlement is optimistic (survives app/process restarts) but only
-        // unlocks categories once re-verified against the store; re-verify silently on every fresh
-        // composition (cold start and screen-rotation Activity recreations alike) so an active
-        // subscriber doesn't get locked out until they manually open "Przywróć zakupy".
-        if (entitlement.source == com.impostor.domain.EntitlementSource.LOCAL_CACHE &&
-            entitlement.state == SubscriptionState.ACTIVE
-        ) {
-            subscriptionRepository.restorePurchases()
-        }
+        route = Route.Home
+        platformNotificationScheduler().requestPermissionAndSchedulePartyReminder()
     }
     Box(Modifier.fillMaxSize()) {
         IceBackdrop()
@@ -251,21 +208,9 @@ fun ImpostorApp() {
             AnimatedContent(route) { current ->
                 when (current) {
                     Route.Splash -> SplashScreen()
-                    Route.Home -> HomeScreen(
-                        players = players,
-                        impostorCount = impostorCount,
-                        hintsEnabled = hintsEnabled,
-                        error = error,
-                        showPremiumUnlock = shouldShowPremiumUnlock(
-                            remainingFreeGames = trialState.remainingFreeGames,
-                            premiumUnlocked = premiumUnlocked,
-                            revealedByHold = premiumUnlockRevealedByHold,
-                        ),
-                        onRevealPremiumUnlock = { premiumUnlockRevealedByHold = true },
-                        onPlayers = { route = Route.Players },
-                        onCategories = { route = Route.Categories },
-                        onCodes = { route = Route.Premium },
-                        onImpostorDecrease = {
+                    Route.Home -> HomeScreen(players, impostorCount, hintsEnabled, error,
+                        onPlayers = { route = Route.Players }, onCategories = { route = Route.Categories },
+                        onCodes = { route = Route.Premium }, onImpostorDecrease = {
                             error = null
                             impostorCount = (impostorCount - 1).coerceAtLeast(1)
                         }, onImpostorIncrease = {
@@ -277,6 +222,10 @@ fun ImpostorApp() {
                             hintsEnabled = it
                         },
                         onCometLongPress = { showComet = true },
+                        onShowSexCategoryIntro = {
+                            sexIntroIsUpgradeNotice = false
+                            showSexCategoryIntro = true
+                        },
                         onStart = start@{
                             if (startingGame || route != Route.Home) return@start
                             val usesOnlyAlwaysFreeCategories = selectedCategories.isNotEmpty() &&
@@ -294,12 +243,6 @@ fun ImpostorApp() {
                                         prompts,
                                         sessionId = Random.nextLong().toString(),
                                     )
-                                    selectedCategories.forEach { categoryId ->
-                                        analytics.log(
-                                            com.impostor.domain.AnalyticsEvent.GAME_STARTED_CATEGORY,
-                                            mapOf("category_id" to categoryId),
-                                        )
-                                    }
                                     startingGame = true
                                     scope.launch {
                                         try {
@@ -350,6 +293,13 @@ fun ImpostorApp() {
                 }
             }
         }
+        if (route == Route.Home && showSexCategoryIntro) {
+            SexCategoryIntroDialog {
+                if (sexIntroIsUpgradeNotice) markSexCategoryIntroDismissed()
+                sexIntroIsUpgradeNotice = false
+                showSexCategoryIntro = false
+            }
+        }
         if (showComet) {
             CometOverlay(onDismiss = { showComet = false })
         }
@@ -382,8 +332,6 @@ private fun Shell(
 
 @Composable private fun HomeScreen(
     players: List<Player>, impostorCount: Int, hintsEnabled: Boolean, error: SetupValidation.Reason?,
-    showPremiumUnlock: Boolean,
-    onRevealPremiumUnlock: () -> Unit,
     onPlayers: () -> Unit,
     onCategories: () -> Unit,
     onCodes: () -> Unit,
@@ -391,9 +339,10 @@ private fun Shell(
     onImpostorIncrease: () -> Unit,
     onHintsChanged: (Boolean) -> Unit,
     onCometLongPress: () -> Unit,
+    onShowSexCategoryIntro: () -> Unit,
     onStart: () -> Unit,
 ): Unit {
-    var showRules by rememberSaveable { mutableStateOf(false) }
+    var showRules by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize()) {
         Column(
@@ -404,7 +353,10 @@ private fun Shell(
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text("GRA IMPREZOWA", color = Frost.copy(alpha = .78f), fontSize = 11.sp, letterSpacing = 5.sp)
         Spacer(Modifier.height(8.dp))
-        LongPressLogo(onLongPress = onCometLongPress)
+        LongPressLogo(
+            onLongPress = onCometLongPress,
+            onTripleTap = onShowSexCategoryIntro,
+        )
         Spacer(Modifier.height(2.dp))
         Box(
             Modifier.width(120.dp).height(1.dp)
@@ -439,33 +391,22 @@ private fun Shell(
         FrostButton(
             text = "G R A J",
             onClick = onStart,
-            onLongPress = onRevealPremiumUnlock,
-            onLongPressDurationMillis = 5_000,
             style = FrostButtonStyle.Primary,
             modifier = Modifier.fillMaxWidth(),
             autoPulse = true,
             pulseDelayMillis = 1200L,
         )
-        if (showPremiumUnlock) {
-            Spacer(Modifier.height(10.dp))
-            FrostButton(
-                text = "♧  ODBLOKUJ PEŁNĄ WERSJĘ",
-                onClick = onCodes,
-                style = FrostButtonStyle.Subtle,
-                modifier = Modifier.fillMaxWidth(),
-                autoPulse = true,
-                pulseDelayMillis = 1800L,
-            )
-        }
+        Spacer(Modifier.height(18.dp))
+        FrostButton(
+            text = "♧  ODBLOKUJ PEŁNĄ WERSJĘ",
+            onClick = onCodes,
+            style = FrostButtonStyle.Subtle,
+            modifier = Modifier.fillMaxWidth(),
+            autoPulse = true,
+            pulseDelayMillis = 1800L,
+        )
             }
         }
-        Text(
-            "v${appVersion()}",
-            color = Frost.copy(alpha = .56f),
-            fontSize = 10.sp,
-            letterSpacing = .5.sp,
-            modifier = Modifier.align(Alignment.TopEnd).padding(24.dp),
-        )
         FrostButton(
             text = "?",
             onClick = { showRules = true },
@@ -474,6 +415,82 @@ private fun Shell(
         )
         if (showRules) {
             GameRulesOverlay(onDismiss = { showRules = false })
+        }
+    }
+}
+
+@Composable
+private fun SexCategoryIntroDialog(onDismiss: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+        ),
+    ) {
+        Box(
+            Modifier.fillMaxWidth()
+                .widthIn(max = 420.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .border(1.dp, Cyan.copy(alpha = .58f), RoundedCornerShape(28.dp)),
+        ) {
+            Image(
+                painter = painterResource(Res.drawable.sex_category_background),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize(),
+            )
+            Box(
+                Modifier.matchParentSize()
+                    .background(Color(0xB20A1530)),
+            )
+            Column(
+                Modifier.fillMaxWidth().padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Text(
+                    "NOWA KATEGORIA",
+                    color = Frost.copy(alpha = .84f),
+                    fontSize = 11.sp,
+                    letterSpacing = 3.sp,
+                )
+                Text(
+                    "SEX",
+                    color = Color.White,
+                    fontSize = 30.sp,
+                    letterSpacing = 4.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    "Kategoria SEX zawiera bardziej bezpośrednie hasła dla dorosłych. " +
+                        "Możesz ją włączyć w ustawieniach kategorii.",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                )
+                Box(
+                    Modifier.fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .border(1.dp, Cyan.copy(alpha = .7f), RoundedCornerShape(18.dp))
+                        .clickable(onClick = onDismiss),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.sex_category_background),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                    Box(Modifier.matchParentSize().background(Color(0x66000000)))
+                    Text(
+                        "OK",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        letterSpacing = 3.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            }
         }
     }
 }
@@ -517,8 +534,15 @@ private fun GameRulesOverlay(onDismiss: () -> Unit) {
 }
 
 @Composable
-private fun LongPressLogo(onLongPress: () -> Unit) {
+private fun LongPressLogo(
+    onLongPress: () -> Unit,
+    onTripleTap: () -> Unit,
+) {
     var isHolding by remember { mutableStateOf(false) }
+    var tapCount by remember { mutableStateOf(0) }
+    var lastTapMark by remember { mutableStateOf<TimeMark?>(null) }
+    val currentOnTripleTap by rememberUpdatedState(onTripleTap)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
     val progress by animateFloatAsState(
         targetValue = if (isHolding) 1f else 0f,
         animationSpec = tween(if (isHolding) 2000 else 120),
@@ -527,17 +551,25 @@ private fun LongPressLogo(onLongPress: () -> Unit) {
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier.pointerInput(onLongPress) {
+        modifier = Modifier.pointerInput(Unit) {
             awaitEachGesture {
                 awaitFirstDown()
                 isHolding = true
-                val timedOut = withTimeoutOrNull(2000) {
-                    waitForUpOrCancellation()
-                    false
-                } == null
+                val completedTap = withTimeoutOrNull(2000) {
+                    waitForUpOrCancellation() != null
+                } == true
                 isHolding = false
-                if (timedOut) {
-                    onLongPress()
+                if (completedTap) {
+                    val previous = lastTapMark
+                    tapCount = if (previous != null && previous.elapsedNow() < 650.milliseconds) tapCount + 1 else 1
+                    lastTapMark = TimeSource.Monotonic.markNow()
+                    if (tapCount == 3) {
+                        tapCount = 0
+                        lastTapMark = null
+                        currentOnTripleTap()
+                    }
+                } else {
+                    currentOnLongPress()
                     waitForUpOrCancellation()
                 }
             }
@@ -669,7 +701,6 @@ internal fun FrostButton(
     enabled: Boolean = true,
     closeButton: Boolean = false,
     onLongPress: (() -> Unit)? = null,
-    onLongPressDurationMillis: Long = 2_000,
     autoPulse: Boolean = false,
     pulseDelayMillis: Long = 0L,
 ) {
@@ -680,7 +711,6 @@ internal fun FrostButton(
         enabled = enabled,
         closeButton = closeButton,
         onLongPress = onLongPress,
-        onLongPressDurationMillis = onLongPressDurationMillis,
         autoPulse = autoPulse,
         pulseDelayMillis = pulseDelayMillis,
     ) {
@@ -726,7 +756,6 @@ private fun FrostButtonSurface(
     enabled: Boolean = true,
     closeButton: Boolean = false,
     onLongPress: (() -> Unit)? = null,
-    onLongPressDurationMillis: Long = 2_000,
     autoPulse: Boolean = false,
     pulseDelayMillis: Long = 0L,
     content: @Composable () -> Unit,
@@ -791,7 +820,7 @@ private fun FrostButtonSurface(
                 Modifier.pointerInput(longPressAction, enabled) {
                     awaitEachGesture {
                         awaitFirstDown(requireUnconsumed = false)
-                        val completedBeforeLongPress = withTimeoutOrNull(onLongPressDurationMillis) {
+                        val completedBeforeLongPress = withTimeoutOrNull(2_000) {
                             waitForUpOrCancellation()
                             true
                         } == true
@@ -959,10 +988,8 @@ private fun PlayersScreen(
     onBack: () -> Unit,
     onPlayers: (List<Player>) -> Unit,
 ) {
-    var newPlayerName by rememberSaveable { mutableStateOf("") }
-    var clearedDefaultPlayerIds by rememberSaveable(stateSaver = stringSetSaver) {
-        mutableStateOf(emptySet())
-    }
+    var newPlayerName by remember { mutableStateOf("") }
+    var clearedDefaultPlayerIds by remember { mutableStateOf(emptySet<String>()) }
 
     Column(
         Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 20.dp),
@@ -1098,8 +1125,8 @@ private fun CategoriesScreen(
     onOpenPremium: () -> Unit,
     onSelected: (Set<String>) -> Unit,
 ) {
-    var showPremiumPrompt by rememberSaveable { mutableStateOf(false) }
-    var showWalkingLady by rememberSaveable { mutableStateOf(false) }
+    var showPremiumPrompt by remember { mutableStateOf(false) }
+    var showWalkingLady by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 32.dp)) {
@@ -1118,7 +1145,7 @@ private fun CategoriesScreen(
         if (premiumUnlocked) "Premium odblokowuje wszystkie kategorie."
         else if (trialState.hasFreeCategories)
             "Wszystkie kategorie odblokowane. Pozostało darmowych gier: ${trialState.remainingFreeGames}."
-        else "Wykorzystano 5 darmowych gier. Zwierzęta, Miejsca i Sport zostają darmowe na zawsze; " +
+        else "Wykorzystano 3 darmowe gry. Zwierzęta, Miejsca i Sport zostają darmowe na zawsze; " +
             "Subskrypcja Premium odblokuje pozostałe kategorie.",
         color = Frost,
         fontSize = 14.sp,
@@ -1191,29 +1218,18 @@ private fun PremiumSubscriptionScreen(
     })
     var product by remember { mutableStateOf<com.impostor.domain.SubscriptionProduct?>(null) }
     var message by remember { mutableStateOf<String?>(null) }
-    var isLoadingProduct by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
     val purchase = remember(repository) { PurchasePremiumUseCase(repository) }
     val restore = remember(repository) { RestorePurchasesUseCase(repository) }
 
-    suspend fun loadProduct() {
-        isLoadingProduct = true
-        message = null
-        try {
-            repository.loadProduct()
-                .onSuccess {
-                    product = it
-                    analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
-                }
-                .onFailure { message = subscriptionMessage(it) }
-        } finally {
-            isLoadingProduct = false
-        }
-    }
-
     LaunchedEffect(Unit) {
         analytics.log(AnalyticsEvent.PREMIUM_SCREEN_OPENED)
-        loadProduct()
+        repository.loadProduct()
+            .onSuccess {
+                product = it
+                analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
+            }
+            .onFailure { message = subscriptionMessage(it) }
         // Restore is store-account authenticated (AppStore.sync() on iOS) and must stay user-initiated only.
     }
     LaunchedEffect(entitlement.state, entitlement.source) {
@@ -1235,14 +1251,6 @@ private fun PremiumSubscriptionScreen(
         Text(product?.let { "${it.formattedPrice} / ${it.periodLabel}" } ?: "Subskrypcja jest obecnie niedostępna", color = Frost)
         Text(entitlement.state.name.lowercase().replace('_', ' '), color = if (entitlement.state == SubscriptionState.ACTIVE) Cyan else Frost)
         if (message != null) Text(message!!, color = Color(0xFFFF8A8A))
-        if (product == null) {
-            FrostButton(
-                text = if (isLoadingProduct) "ŁADOWANIE..." else "PONÓW PRÓBĘ",
-                onClick = { scope.launch { loadProduct() } },
-                enabled = !isLoadingProduct,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
         FrostButton(
             text = "SUBSKRYBUJ",
             onClick = {
@@ -1296,8 +1304,8 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
     SubscriptionError.PURCHASE_PENDING -> "Zakup oczekuje na potwierdzenie."
     SubscriptionError.PURCHASE_CANCELLED -> "Zakup został anulowany."
     SubscriptionError.ALREADY_OWNED -> "Subskrypcja jest już aktywna. Przywróć zakupy."
-    SubscriptionError.NETWORK_UNAVAILABLE -> "Brak połączenia z internetem. Sprawdź Wi-Fi lub dane komórkowe i spróbuj ponownie."
-    SubscriptionError.PRODUCT_UNAVAILABLE, SubscriptionError.STORE_UNAVAILABLE -> "Sklep jest obecnie niedostępny."
+    SubscriptionError.NETWORK_UNAVAILABLE -> "Brak połączenia z internetem."
+    SubscriptionError.PRODUCT_UNAVAILABLE, SubscriptionError.STORE_UNAVAILABLE, SubscriptionError.NETWORK_UNAVAILABLE -> "Sklep jest obecnie niedostępny."
     SubscriptionError.RESTORE_FAILED -> "Nie udało się przywrócić zakupów."
     SubscriptionError.PURCHASE_FAILED, null -> "Zakup nie powiódł się."
 }
@@ -1309,17 +1317,11 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
 ) {
     val assignment = session.assignments[session.revealIndex]
     val reveal = remember(session.revealIndex) { Animatable(0f) }
-    val identityAlpha = remember(session.revealIndex) { Animatable(1f) }
-    var identityDismissed by remember(session.revealIndex) { mutableStateOf(false) }
     var hasStartedReveal by remember(session.revealIndex) { mutableStateOf(false) }
     val canProceed = hasStartedReveal
     val haptics = LocalHapticFeedback.current
     val thermalFeedback = remember { platformThermalFeedback() }
     val scope = rememberCoroutineScope()
-    val density = LocalDensity.current
-    val buttonBounceDp = remember(session.revealIndex) { Animatable(0f) }
-
-    val playerName = players.firstOrNull { it.id == assignment.playerId }?.displayName ?: assignment.playerId
 
     Column(
         Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 24.dp),
@@ -1327,7 +1329,7 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                playerName,
+                players.firstOrNull { it.id == assignment.playerId }?.displayName ?: assignment.playerId,
                 color = Frost,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
@@ -1350,98 +1352,57 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
             Modifier
                 .fillMaxWidth()
                 .weight(1f)
-                .clip(RoundedCornerShape(28.dp)),
-        ) {
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .background(Color.White.copy(alpha = .08f))
-                    .pointerInput(session.revealIndex) {
-                        awaitEachGesture {
-                            awaitFirstDown()
-                            thermalFeedback.start()
-                            val thaw = scope.launch {
-                                if (!identityDismissed) {
-                                    identityAlpha.animateTo(
-                                        0f,
-                                        tween(360, easing = FastOutSlowInEasing),
-                                    )
-                                    identityDismissed = true
-                                }
-                                hasStartedReveal = true
-                                reveal.animateTo(1f, tween(1_000, easing = LinearEasing))
-                            }
-                            val pulseJob = scope.launch {
-                                while (isActive) {
-                                    delay(120)
-                                    thermalFeedback.pulse()
-                                }
-                            }
-                            try {
-                                waitForUpOrCancellation()
-                            } finally {
-                                pulseJob.cancel()
-                                thaw.cancel()
-                                thermalFeedback.complete()
-                                if (!identityDismissed && identityAlpha.value > 0f) {
-                                    scope.launch {
-                                        identityAlpha.animateTo(
-                                            1f,
-                                            tween(160, easing = FastOutSlowInEasing),
-                                        )
-                                    }
-                                }
-                                scope.launch {
-                                    reveal.animateTo(0f, tween(380, easing = FastOutLinearInEasing))
-                                }
-                                if (hasStartedReveal) {
-                                    scope.launch {
-                                        buttonBounceDp.animateTo(-24f, tween(180, easing = FastOutSlowInEasing))
-                                        buttonBounceDp.animateTo(0f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
-                                    }
-                                }
+                .clip(RoundedCornerShape(28.dp))
+                .background(Color.White.copy(alpha = .08f))
+                .pointerInput(session.revealIndex) {
+                    awaitEachGesture {
+                        awaitFirstDown()
+                        hasStartedReveal = true
+                        thermalFeedback.start()
+                        val thaw = scope.launch {
+                            reveal.animateTo(1f, tween(1_000, easing = LinearEasing))
+                        }
+                        val pulseJob = scope.launch {
+                            while (isActive) {
+                                delay(120)
+                                thermalFeedback.pulse()
                             }
                         }
-                    },
-                Alignment.Center,
+                        try {
+                            waitForUpOrCancellation()
+                        } finally {
+                            pulseJob.cancel()
+                            thaw.cancel()
+                            thermalFeedback.complete()
+                            scope.launch {
+                                reveal.animateTo(0f, tween(380, easing = FastOutLinearInEasing))
+                            }
+                        }
+                    }
+                },
+            Alignment.Center,
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(28.dp)
+                    .blur((10.dp * (1f - reveal.value)).coerceAtLeast(0.dp)),
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .padding(28.dp)
-                        .blur((10.dp * (1f - reveal.value)).coerceAtLeast(0.dp)),
-                ) {
-                    Text(
-                        session.prompt.revealText(assignment.role, session.hintsEnabled),
-                        color = Color.White,
-                        fontSize = 34.sp,
-                    )
-                    Text(
-                        if (assignment.role == Role.AGENT) "CYWIL" else "IMPOSTOR",
-                        color = if (assignment.role == Role.IMPOSTOR) Color(0xFFFF758F) else Cyan,
-                        fontSize = 18.sp,
-                        letterSpacing = 3.sp,
-                    )
-                }
-                FrostGlass(
-                    reveal = reveal.value,
+                Text(
+                    session.prompt.revealText(assignment.role, session.hintsEnabled),
+                    color = Color.White,
+                    fontSize = 34.sp,
                 )
                 Text(
-                    "${playerName.uppercase()} TO JA",
-                    style = LocalTextStyle.current.copy(
-                        brush = Brush.verticalGradient(
-                            listOf(Color(0xFF4F8FD6), Color(0xFF2F6FB0), Color(0xFF1B4C85)),
-                        ),
-                    ),
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(28.dp)
-                        .graphicsLayer { alpha = identityAlpha.value },
+                    if (assignment.role == Role.AGENT) "CYWIL" else "IMPOSTOR",
+                    color = if (assignment.role == Role.IMPOSTOR) Color(0xFFFF758F) else Cyan,
+                    fontSize = 18.sp,
+                    letterSpacing = 3.sp,
                 )
             }
+            FrostGlass(
+                reveal = reveal.value,
+            )
         }
         FrostButton(
             text = if (session.revealIndex == session.assignments.lastIndex) "ROZPOCZNIJ RUNDĘ" else "NASTĘPNY GRACZ",
@@ -1450,11 +1411,7 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
                 if (canProceed && next == session) onRoute(Route.GameStart(session)) else onRoute(Route.Reveal(next))
             },
             enabled = canProceed,
-            modifier = Modifier
-                .fillMaxWidth()
-                .graphicsLayer {
-                    translationY = with(density) { buttonBounceDp.value.dp.toPx() }
-                },
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

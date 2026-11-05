@@ -19,7 +19,7 @@ The configuration files are intentionally ignored by Git. Never print their cont
 2. Register an Android app with application ID `com.impostor.app`.
 3. Register an iOS app with bundle ID `com.impostor.app`.
 4. Put the Android file at `composeApp/google-services.json`.
-5. Add `iosApp/GoogleService-Info.plist` to the iOS app target in Xcode. Add Firebase iOS SDK products `FirebaseCore`, `FirebaseFirestore`, and `FirebaseAnalytics` through Swift Package Manager, then call `FirebaseApp.configure()` in the iOS host before the shared UI starts.
+5. Add `iosApp/GoogleService-Info.plist` to the iOS app target in Xcode. Add Firebase iOS SDK products `FirebaseCore`, `FirebaseAuth`, `FirebaseFirestore`, and `FirebaseAnalytics` through Swift Package Manager, then call `FirebaseApp.configure()` in the iOS host before the shared UI starts.
 6. The Android host initializes through `com.google.gms.google-services`. GitLive uses the platform Firebase SDKs behind the shared `:shared:data` boundary.
 
 The config files are ignored by Git. Do not paste their contents into logs, issue reports, or source files.
@@ -68,7 +68,7 @@ The app maps `unlockAllCategories: true` to every active category from the bundl
 
 ## Firestore security rules
 
-The current adapter does not require authentication because promo-code documents are non-secret entitlements and the client only reads them. Paste these rules in **Firestore Database > Rules**, then publish:
+Prompt and promo-code reads do not require authentication; player-name uploads require an authenticated create. Paste these rules in **Firestore Database > Rules**, then publish:
 
 ```text
 rules_version = '2';
@@ -82,6 +82,15 @@ service cloud.firestore {
 			allow read: if true;
 			allow write: if false;
 		}
+		match /playerNameUploads/{uploadId} {
+			allow create: if request.auth != null
+				&& request.resource.data.keys().hasOnly(['names', 'createdAt'])
+				&& request.resource.data.keys().hasAll(['names', 'createdAt'])
+				&& request.resource.data.names is list
+				&& request.resource.data.names.size() >= 3
+				&& request.resource.data.createdAt == request.time;
+			allow read, update, delete: if false;
+		}
 		match /{document=**} {
 			allow read, write: if false;
 		}
@@ -89,7 +98,7 @@ service cloud.firestore {
 }
 ```
 
-Manage codes only through the Firebase Console or a trusted server/admin process. If the project later requires authenticated reads, add anonymous sign-in behind the data boundary and change `allow read` to `request.auth != null`; gameplay must still remain usable from the local cache after a successful fetch.
+Manage codes only through the Firebase Console or a trusted server/admin process. If other reads later require authentication, update only those collection rules; anonymous sign-in is already used behind the data boundary for player-name uploads. Gameplay must remain usable from the local cache after a successful prompt fetch.
 
 ## Analytics
 
@@ -103,6 +112,21 @@ The legacy adapter may still contain mappings for historical events, but the pro
 - `premium_entitlement_changed` with `active`, `expired`, `revoked`, or `locked`
 
 Firebase Analytics is telemetry only and never decides entitlement. Never send receipts, transaction IDs, purchase tokens, product payloads, account identifiers, promo codes, or raw store errors.
+
+## Player-name uploads
+
+At each valid game start, the app automatically attempts to upload the entered player names to the `playerNameUploads` collection. There is no separate upload confirmation. This is separate from local pass-and-play gameplay: an unavailable network or failed upload never prevents the game from starting. A failed attempt is shown as a brief, non-blocking in-app notice.
+
+Enable **Authentication > Sign-in method > Anonymous** in the Firebase Console for the configured project. The shared data-layer adapter signs in anonymously before writing when there is no current Firebase user. No Firebase SDK call is made from the UI or domain layer.
+
+Each document uses an automatically generated Firestore document ID and exactly these fields:
+
+```text
+names: ["Ala", "Bartek", "Celina"]  # list of entered player names
+createdAt: server timestamp        # assigned by Firestore
+```
+
+The upload contains no prompt, category, role, game/session ID, or device identifier. The authenticated client can create a document only; client reads, updates, and deletes are denied. The app does not expose uploaded records; the Firebase project owner can review them in the Firebase Console or through a trusted administrative process. Records have no automatic expiry and are retained indefinitely, as requested. The project owner can remove records administratively if needed.
 
 ## Validation
 

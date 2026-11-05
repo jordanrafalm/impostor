@@ -32,16 +32,9 @@ kotlin {
             implementation(compose.components.resources)
             implementation("io.github.alexzhirkevich:compottie:2.0.0")
         }
-        commonTest.dependencies {
-            implementation(kotlin("test"))
-        }
         androidMain.dependencies {
             implementation("androidx.activity:activity-compose:1.10.1")
             implementation("androidx.core:core-splashscreen:1.0.1")
-            // Pin the transitive androidx.fragment dependency pulled in via
-            // play-services-base (billing/firestore) to a current, non-vulnerable
-            // release; this project does not use Fragments directly.
-            implementation("androidx.fragment:fragment:1.9.1")
         }
     }
 
@@ -66,8 +59,8 @@ android {
         applicationId = "com.rafal.impostorparty"
         minSdk = 26
         targetSdk = 36
-        versionCode = 15
-        versionName = "1.1.5"
+        versionCode = 16
+        versionName = "1.1.6"
     }
     buildFeatures {
         compose = true
@@ -86,17 +79,6 @@ android {
     }
 
     sourceSets["main"].assets.srcDir("../shared/data/src/commonMain/resources")
-
-    buildTypes {
-        release {
-            isMinifyEnabled = true
-            isShrinkResources = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
-            )
-        }
-    }
 }
 
 compose.resources { publicResClass = true }
