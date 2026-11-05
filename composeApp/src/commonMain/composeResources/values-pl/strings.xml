@@ -31,6 +31,9 @@
     <string name="player_name_placeholder">Wpisz imię gracza...</string>
     <string name="done">GOTOWE</string>
     <string name="categories_title">KATEGORIE</string>
+    <string name="categories_most_popular">Najbardziej popularne %1$s</string>
+    <string name="home_playing_now">GRAJĄ TERAZ</string>
+    <string name="categories_rest">Pozostałe</string>
     <string name="premium_unlocks_all_categories">Premium odblokowuje wszystkie kategorie.</string>
     <string name="categories_remaining_games">Wszystkie kategorie odblokowane. Pozostało darmowych gier: %1$d.</string>
     <string name="categories_free_limit">Wykorzystano 3 darmowe gry. Zwierzęta, Miejsca i Sport zostają darmowe na zawsze; Subskrypcja Premium odblokuje pozostałe kategorie.</string>

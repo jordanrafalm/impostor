@@ -31,6 +31,9 @@
     <string name="player_name_placeholder">Enter a player name...</string>
     <string name="done">DONE</string>
     <string name="categories_title">CATEGORIES</string>
+    <string name="categories_most_popular">Most popular %1$s</string>
+    <string name="home_playing_now">PLAYING NOW</string>
+    <string name="categories_rest">Others</string>
     <string name="premium_unlocks_all_categories">Premium unlocks all categories.</string>
     <string name="categories_remaining_games">All categories are unlocked. Free games remaining: %1$d.</string>
     <string name="categories_free_limit">All 3 free games have been used. Animals, Places, and Sports stay free forever; Premium unlocks the remaining categories.</string>

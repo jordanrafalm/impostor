@@ -265,7 +265,7 @@ fun ImpostorApp() {
                         impostorCount = impostorCount.coerceAtMost((it.size - 1).coerceAtLeast(1))
                     })
                     Route.Categories -> CategoriesScreen(
-                        options = categories.map { it.displayName to it.id },
+                        options = sortByPopularity(categories.map { it.displayName to it.id }) { it.second },
                         selected = selectedCategories,
                         unlocked = unlockedCategories,
                         trialState = trialState,
@@ -362,7 +362,15 @@ private fun Shell(
             Modifier.width(120.dp).height(1.dp)
                 .background(Brush.horizontalGradient(listOf(Color.Transparent, Cyan.copy(alpha = .8f), Color.Transparent))),
         )
-        Spacer(Modifier.height(28.dp))
+        Spacer(Modifier.height(10.dp))
+        val playingNow = remember { playersOnline(currentLocalMoment()) }
+        Text(
+            "${stringResource(Res.string.home_playing_now)}: $playingNow",
+            color = Cyan,
+            fontSize = 13.sp,
+            letterSpacing = 2.sp,
+        )
+        Spacer(Modifier.height(18.dp))
         HomeReveal(index = 0, height = 88.dp) {
             FrostSettingButton(stringResource(Res.string.home_players), players.size.toString(), onPlayers, autoPulse = true, pulseDelayMillis = 0L)
         }
@@ -1192,24 +1200,34 @@ private fun CategoriesScreen(
         modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        options.chunked(2).forEach { categoryRow ->
+        val categoryButton: @Composable (Pair<String, String>, Modifier) -> Unit = { (name, id), modifier ->
+            val isUnlocked = id in unlocked
+            FrostButton(
+                text = if (!isUnlocked) "🔒  $name" else if (id in selected) "✓  $name" else name,
+                onClick = {
+                    if (isUnlocked) {
+                        onSelected(setOf(id))
+                    } else {
+                        showPremiumPrompt = true
+                    }
+                },
+                onLongPress = if (id == "adult") ({ showWalkingLady = true }) else null,
+                enabled = true,
+                modifier = modifier,
+            )
+        }
+        Text(
+            stringResource(Res.string.categories_most_popular, remember { currentLocalMoment().dateLabel }),
+            color = Cyan,
+            fontSize = 14.sp,
+        )
+        options.take(3).forEach { categoryButton(it, Modifier.fillMaxWidth()) }
+        if (options.size > 3) {
+            Text(stringResource(Res.string.categories_rest), color = Cyan, fontSize = 14.sp)
+        }
+        options.drop(3).chunked(2).forEach { categoryRow ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                categoryRow.forEach { (name, id) ->
-                    val isUnlocked = id in unlocked
-                    FrostButton(
-                        text = if (!isUnlocked) "🔒  $name" else if (id in selected) "✓  $name" else name,
-                        onClick = {
-                            if (isUnlocked) {
-                                onSelected(setOf(id))
-                            } else {
-                                showPremiumPrompt = true
-                            }
-                        },
-                        onLongPress = if (id == "adult") ({ showWalkingLady = true }) else null,
-                        enabled = true,
-                        modifier = Modifier.weight(1f),
-                    )
-                }
+                categoryRow.forEach { categoryButton(it, Modifier.weight(1f)) }
                 if (categoryRow.size == 1) Spacer(Modifier.weight(1f))
             }
         }
