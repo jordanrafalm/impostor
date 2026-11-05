@@ -111,4 +111,18 @@ class GameDomainTest {
             validator.invoke(GameSetup(listOf(Player("1", "A"), Player("2", "B"), Player("3", "C")), emptySet(), 1)),
         )
     }
+
+    @Test
+    fun `should reject duplicate player IDs`() {
+        val setup = GameSetup(
+            players = listOf(Player("p1", "A"), Player("p1", "B"), Player("p3", "C")),
+            selectedCategoryIds = setOf("animals"),
+            impostorCount = 1,
+        )
+
+        assertEquals(
+            SetupValidation.Invalid(SetupValidation.Reason.DUPLICATE_PLAYER_IDS),
+            ValidateGameSetupUseCase().invoke(setup),
+        )
+    }
 }

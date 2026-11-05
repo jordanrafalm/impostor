@@ -34,7 +34,7 @@ flowchart LR
     UI[composeApp<br/>Compose Multiplatform UI] --> Domain[shared:domain<br/>czyste reguły gry]
     Data[shared:data<br/>repozytoria] --> Domain
     UI --> Platform[Adaptery Android / iOS<br/>preferencje, haptyka, powiadomienia]
-    Data --> Seed[Katalog haseł<br/>prompts.json, offline]
+    Data --> Seed[Katalog haseł<br/>prompts-pl.json / prompts-en.json, offline]
     Data -. opcjonalnie .-> Firebase[Firebase<br/>Firestore / Analytics]
     Data -. opcjonalnie .-> Store[Google Play Billing /<br/>StoreKit 2]
 ```
@@ -48,7 +48,7 @@ flowchart LR
 - `RemoteCode.kt`, `PlayerNamesCodec.kt` — walidacja kodów promocyjnych i kodowanie lokalnej listy graczy.
 
 **`shared:data`** — implementacje repozytoriów za interfejsami z domeny, z adapterami `expect`/`actual` dla Android, iOS i JVM (testy):
-- `SeedCatalogRepository` — wczytuje i paruje osadzony katalog haseł (`prompts.json`), buduje mapę podpowiedzi.
+- `SeedCatalogRepository` — wczytuje i paruje osadzony katalog haseł zależny od języka (`prompts-pl.json` / `prompts-en.json`), buduje mapę podpowiedzi.
 - `BundledCatalogRepository.*.kt` — platformowe ładowanie zasobu JSON (Android assets, iOS bundle, JVM classpath).
 - `TrialRepository`, `SubscriptionRepository`, `SubscriptionPlatform.*.kt` — lokalny licznik prób oraz adaptery zakupów (Google Play Billing na Androidzie, StoreKit 2 przez most Swift na iOS).
 - `FirebaseCodeServices.kt`, `RemoteCodeServices.kt`, `FirebasePlatformServices.*.kt` — opcjonalna warstwa zdalnych kodów promocyjnych i telemetrii Firebase; aplikacja działa w pełni offline bez tych plików konfiguracyjnych.
@@ -64,7 +64,7 @@ flowchart LR
 
 ### Dane gry
 
-Katalog w `shared/data/src/commonMain/resources/seed/prompts.json` jest zawsze dostępny offline. Przy uruchomieniu aplikacja łączy go z ostatnim lokalnie zapisanym katalogiem zdalnym i pobiera aktywne dodatkowe hasła z Firestore w tle. Udane pobranie zapisuje się na urządzeniu do użycia także bez internetu; błąd pobierania nie blokuje gry i nie wyświetla komunikatu. Każde hasło zawiera tekst i ręcznie dobraną podpowiedź (semantycznie pośrednią, nigdy pseudonim lub bezpośrednie powiązanie z odpowiedzią). Schemat i sposób publikacji opisuje [docs/firebase.md](docs/firebase.md).
+The app follows the first supported system language (`pl` or `en`); unsupported-only preferences use English. The bundled catalogs are `shared/data/src/commonMain/resources/seed/prompts-pl.json` and `prompts-en.json`, with stable category and prompt IDs across languages. The English catalog includes translated prompt text and curated hints; the loader safely falls back to Polish if it is missing or invalid. The app combines the selected bundle with locale-matched cached Firestore prompts and refreshes in the background. Remote prompt documents without `locale` remain Polish for compatibility. See [docs/firebase.md](docs/firebase.md).
 
 ### Firebase i płatności (opcjonalne)
 

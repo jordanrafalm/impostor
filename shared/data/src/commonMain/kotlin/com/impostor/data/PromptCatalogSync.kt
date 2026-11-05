@@ -15,6 +15,7 @@ data class RemotePrompt(
     val text: String?,
     val hint: String?,
     val active: Boolean,
+    val locale: String? = null,
 )
 
 interface RemotePromptSource {
@@ -34,9 +35,16 @@ private data class PromptSnapshot(
 )
 
 @Serializable
-private data class SnapshotPrompt(val id: String, val categoryId: String, val text: String, val hint: String)
+private data class SnapshotPrompt(
+    val id: String,
+    val categoryId: String,
+    val text: String,
+    val hint: String,
+    val locale: String = AppLocale.POLISH.languageTag,
+)
 
-private const val SNAPSHOT_VERSION = 1
+private const val SNAPSHOT_VERSION = 2
+private const val PREVIOUS_SNAPSHOT_VERSION = 1
 private const val MAX_FIELD_LENGTH = 200
 private val snapshotJson = Json { ignoreUnknownKeys = true }
 
@@ -48,6 +56,7 @@ class SyncedCatalogRepository(
     private val bundled: CatalogRepository,
     private val source: RemotePromptSource,
     private val store: PromptSnapshotStore,
+    private val locale: AppLocale = currentAppLocale(),
 ) : CatalogRepository {
     private val categories = bundled.categories()
     private val categoryIds = categories.map { it.id }.toSet()
@@ -55,7 +64,10 @@ class SyncedCatalogRepository(
     private val bundledIds = bundledPrompts.mapTo(mutableSetOf()) { it.id }
 
     @Volatile
-    private var remotePrompts: List<Prompt> = loadCachedPrompts()
+    private var cachedRemotePrompts: List<RemotePrompt> = loadCachedPrompts()
+
+    @Volatile
+    private var remotePrompts: List<Prompt> = validatePrompts(cachedRemotePrompts, categoryIds, locale)
 
     override fun categories(): List<Category> = categories
 
@@ -71,13 +83,14 @@ class SyncedCatalogRepository(
         } catch (_: Exception) {
             return
         }
-        val valid = validatePrompts(records, categoryIds)
+        val valid = validateRemotePrompts(records, categoryIds)
         if (valid.isEmpty()) return
-        val merged = mergePrompts(remotePrompts, valid).filter { it.id !in bundledIds }
-        if (merged == remotePrompts) return
+        val merged = mergeRemotePrompts(cachedRemotePrompts, valid)
+            .filter { it.id !in bundledIds }
+        if (merged == cachedRemotePrompts) return
         val persisted = try {
             store.write(snapshotJson.encodeToString(PromptSnapshot(prompts = merged.map {
-                SnapshotPrompt(it.id, it.categoryId, it.text, it.hint)
+                SnapshotPrompt(it.id, it.categoryId.orEmpty(), it.text.orEmpty(), it.hint.orEmpty(), it.locale ?: "pl")
             })))
             true
         } catch (cancellation: CancellationException) {
@@ -86,17 +99,23 @@ class SyncedCatalogRepository(
             false
         }
         // Keep the in-memory view consistent with what a restart would load only when persisted.
-        if (persisted) remotePrompts = merged
+        if (persisted) {
+            cachedRemotePrompts = merged
+            remotePrompts = validatePrompts(cachedRemotePrompts, categoryIds, locale)
+        }
     }
 
-    private fun loadCachedPrompts(): List<Prompt> = try {
+    private fun loadCachedPrompts(): List<RemotePrompt> = try {
         store.read()?.let { raw ->
             val snapshot = snapshotJson.decodeFromString<PromptSnapshot>(raw)
-            if (snapshot.schemaVersion != SNAPSHOT_VERSION) return emptyList()
-            validatePrompts(
-                snapshot.prompts.map { RemotePrompt(it.id, it.categoryId, it.text, it.hint, active = true) },
-                categoryIds,
-            )
+            if (snapshot.schemaVersion != SNAPSHOT_VERSION &&
+                snapshot.schemaVersion != PREVIOUS_SNAPSHOT_VERSION
+            ) {
+                return emptyList()
+            }
+            validateRemotePrompts(snapshot.prompts.map {
+                RemotePrompt(it.id, it.categoryId, it.text, it.hint, active = true, locale = it.locale)
+            }, categoryIds)
         }.orEmpty()
     } catch (cancellation: CancellationException) {
         throw cancellation
@@ -105,7 +124,10 @@ class SyncedCatalogRepository(
     }
 }
 
-internal fun validatePrompts(records: List<RemotePrompt>, knownCategoryIds: Set<String>): List<Prompt> =
+private fun validateRemotePrompts(
+    records: List<RemotePrompt>,
+    knownCategoryIds: Set<String>,
+): List<RemotePrompt> =
     records.asSequence()
         .filter { it.active }
         .mapNotNull { record ->
@@ -113,14 +135,52 @@ internal fun validatePrompts(records: List<RemotePrompt>, knownCategoryIds: Set<
             val text = record.text?.trim().orEmpty()
             val hint = record.hint?.trim().orEmpty()
             val categoryId = record.categoryId?.trim().orEmpty()
+            val locale = normalizedRemoteLocale(record.locale)
             if (id.isEmpty() || id.length > MAX_FIELD_LENGTH || categoryId !in knownCategoryIds ||
                 text.isEmpty() || text.length > MAX_FIELD_LENGTH ||
-                hint.isEmpty() || hint.length > MAX_FIELD_LENGTH
-            ) null else Prompt(id, categoryId, text, hint)
+                hint.isEmpty() || hint.length > MAX_FIELD_LENGTH || locale == null
+            ) {
+                null
+            } else {
+                record.copy(
+                    id = id,
+                    categoryId = categoryId,
+                    text = text,
+                    hint = hint,
+                    locale = locale,
+                )
+            }
         }
-        .distinctBy { it.id }
-        .sortedBy { it.id }
+        .distinctBy { it.locale to it.id }
+        .sortedWith(compareBy<RemotePrompt> { it.locale }.thenBy { it.id })
         .toList()
+
+private fun normalizedRemoteLocale(locale: String?): String? {
+    val language = locale?.trim()?.substringBefore('-')?.substringBefore('_')?.lowercase()
+        ?: AppLocale.POLISH.languageTag
+    return language.takeIf { it == AppLocale.POLISH.languageTag || it == AppLocale.ENGLISH.languageTag }
+}
+
+private fun validatePrompts(
+    records: List<RemotePrompt>,
+    knownCategoryIds: Set<String>,
+    locale: AppLocale,
+): List<Prompt> = validateRemotePrompts(records, knownCategoryIds)
+    .filter { normalizedRemoteLocale(it.locale) == locale.languageTag }
+    .map { Prompt(it.id, it.categoryId.orEmpty(), it.text.orEmpty(), it.hint.orEmpty()) }
+
+private fun mergeRemotePrompts(
+    previous: List<RemotePrompt>,
+    incoming: List<RemotePrompt>,
+): List<RemotePrompt> {
+    val merged = linkedMapOf<Pair<String, String>, RemotePrompt>()
+    (previous + incoming).forEach { record ->
+        val locale = normalizedRemoteLocale(record.locale) ?: return@forEach
+        val key = locale to record.id
+        if (key !in merged) merged[key] = record
+    }
+    return merged.values.toList()
+}
 
 internal fun mergePrompts(bundled: List<Prompt>, remote: List<Prompt>): List<Prompt> {
     val seen = bundled.mapTo(mutableSetOf()) { it.id }

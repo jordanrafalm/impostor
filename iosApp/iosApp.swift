@@ -150,13 +150,13 @@ private final class StoreKitBridge {
     }
 
     private func periodLabel(_ period: Product.SubscriptionPeriod?) -> String {
-        guard let period else { return "month" }
+        guard let period else { return "1 month" }
         switch period.unit {
-        case .day: return period.value == 1 ? "day" : "days"
-        case .week: return period.value == 1 ? "week" : "weeks"
-        case .month: return period.value == 1 ? "month" : "months"
-        case .year: return period.value == 1 ? "year" : "years"
-        @unknown default: return "period"
+        case .day: return "\(period.value) day"
+        case .week: return "\(period.value) week"
+        case .month: return "\(period.value) month"
+        case .year: return "\(period.value) year"
+        @unknown default: return "\(period.value) period"
         }
     }
 

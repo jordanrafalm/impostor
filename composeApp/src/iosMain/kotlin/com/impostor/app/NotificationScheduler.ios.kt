@@ -9,6 +9,8 @@ import platform.Foundation.NSCalendarUnitWeekday
 import platform.Foundation.NSCalendarUnitYear
 import platform.Foundation.NSDate
 import platform.Foundation.NSDateComponents
+import platform.Foundation.NSBundle
+import platform.Foundation.NSNotificationCenter
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
@@ -18,11 +20,19 @@ import platform.UserNotifications.UNNotificationRequest
 import platform.UserNotifications.UNNotificationSound
 import platform.UserNotifications.UNUserNotificationCenter
 
-private const val PARTY_REMINDER_TITLE = "Impreza?"
-private const val PARTY_REMINDER_BODY = "Zagraj ze znajomymi w Impostora!"
 private const val PARTY_REMINDER_COUNT = 60
 
 private class IosNotificationScheduler : NotificationScheduler {
+    init {
+        NSNotificationCenter.defaultCenter.addObserverForName(
+            "UIApplicationDidBecomeActiveNotification",
+            null,
+            null,
+        ) {
+            scheduleMonthlyPartyReminder(UNUserNotificationCenter.currentNotificationCenter())
+        }
+    }
+
     override fun requestPermissionAndSchedulePartyReminder() {
         val center = UNUserNotificationCenter.currentNotificationCenter()
         center.requestAuthorizationWithOptions(
@@ -67,8 +77,8 @@ private fun scheduleMonthlyPartyReminder(center: UNUserNotificationCenter) {
             fromDate = date,
         )
         val content = UNMutableNotificationContent()
-        content.setTitle(PARTY_REMINDER_TITLE)
-        content.setBody(PARTY_REMINDER_BODY)
+        content.setTitle(localizedNotificationString("party_reminder_title"))
+        content.setBody(localizedNotificationString("party_reminder_body"))
         content.setSound(UNNotificationSound.defaultSound)
         val request = UNNotificationRequest.requestWithIdentifier(
             identifier = "party-reminder-$index",
@@ -121,4 +131,9 @@ private fun partyReminderDay(calendar: NSCalendar, year: Int, month: Int): Int {
     return 1 + (targetWeekday - weekday + 7) % 7
 }
 
-actual fun platformNotificationScheduler(): NotificationScheduler = IosNotificationScheduler()
+private val iosNotificationScheduler: NotificationScheduler by lazy { IosNotificationScheduler() }
+
+private fun localizedNotificationString(key: String): String =
+    NSBundle.mainBundle.localizedStringForKey(key, value = null, table = null)
+
+actual fun platformNotificationScheduler(): NotificationScheduler = iosNotificationScheduler

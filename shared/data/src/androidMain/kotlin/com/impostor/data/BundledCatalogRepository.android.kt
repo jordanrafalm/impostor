@@ -10,8 +10,12 @@ fun initializeBundledCatalog(context: Context) {
 }
 
 actual fun bundledCatalogRepository(): CatalogRepository {
-    val json = requireNotNull(catalogContext) {
+    val context = requireNotNull(catalogContext) {
         "Bundled catalog must be initialized before use"
-    }.assets.open("seed/prompts.json").bufferedReader().use { it.readText() }
-    return SeedCatalogRepository(json)
+    }
+    return localizedCatalogRepository(currentAppLocale()) { fileName ->
+        runCatching {
+            context.assets.open("seed/$fileName").bufferedReader().use { it.readText() }
+        }.getOrNull()
+    }
 }

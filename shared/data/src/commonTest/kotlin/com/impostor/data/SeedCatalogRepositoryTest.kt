@@ -8,6 +8,44 @@ import kotlin.test.assertTrue
 
 internal class SeedCatalogRepositoryTest {
     @Test
+    fun `should use the requested English catalog when it is available`() {
+        // Given
+        val englishCatalog = seed("Animals", "Otter", "River")
+        val polishCatalog = seed("Zwierzęta", "Wydra", "Rzeka")
+
+        // When
+        val repository = localizedCatalogRepository(AppLocale.ENGLISH) { fileName ->
+            when (fileName) {
+                "prompts-en.json" -> englishCatalog
+                "prompts-pl.json" -> polishCatalog
+                else -> null
+            }
+        }
+
+        // Then
+        assertEquals("Animals", repository.categories().single().displayName)
+        assertEquals("animals-001", repository.prompts(setOf("animals")).single().id)
+    }
+
+    @Test
+    fun `should fall back to Polish when the English catalog is missing or invalid`() {
+        // Given
+        val polishCatalog = seed("Zwierzęta", "Wydra", "Rzeka")
+
+        // When
+        val missingEnglish = localizedCatalogRepository(AppLocale.ENGLISH) { fileName ->
+            if (fileName == "prompts-pl.json") polishCatalog else null
+        }
+        val invalidEnglish = localizedCatalogRepository(AppLocale.ENGLISH) { fileName ->
+            if (fileName == "prompts-en.json") "{invalid" else polishCatalog
+        }
+
+        // Then
+        assertEquals("Zwierzęta", missingEnglish.categories().single().displayName)
+        assertEquals("Zwierzęta", invalidEnglish.categories().single().displayName)
+    }
+
+    @Test
     fun `should provide complete premium celebrity categories`() {
         // Given
         val categories = mapOf(
@@ -92,4 +130,19 @@ internal class SeedCatalogRepositoryTest {
         assertEquals("Liść", prompts.first { it.text == "Drzewo" }.hint)
         assertTrue(prompts.all { it.hint != it.text })
     }
+
+    private fun seed(categoryName: String, prompt: String, hint: String): String = """
+        {
+          "schemaVersion": 1,
+          "activeCategoryIds": ["animals"],
+          "categories": [
+            {
+              "id": "animals",
+              "name": "$categoryName",
+              "iconKey": "paw",
+              "prompts": [{"id": "animals-001", "text": "$prompt", "hint": "$hint"}]
+            }
+          ]
+        }
+    """.trimIndent()
 }

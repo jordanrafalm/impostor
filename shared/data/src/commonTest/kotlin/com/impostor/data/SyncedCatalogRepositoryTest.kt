@@ -29,8 +29,14 @@ internal class SyncedCatalogRepositoryTest {
         }
     }
 
-    private fun remote(id: String, category: String? = "animals", text: String? = "Wydra", hint: String? = "Rzeka", active: Boolean = true) =
-        RemotePrompt(id, category, text, hint, active)
+    private fun remote(
+        id: String,
+        category: String? = "animals",
+        text: String? = "Wydra",
+        hint: String? = "Rzeka",
+        active: Boolean = true,
+        locale: String? = null,
+    ) = RemotePrompt(id, category, text, hint, active, locale)
 
     private fun ids(repository: CatalogRepository) = repository.prompts(setOf("animals")).map { it.id }
 
@@ -140,5 +146,99 @@ internal class SyncedCatalogRepositoryTest {
 
         assertFailsWith<CancellationException> { repository.refresh() }
         assertTrue(ids(repository) == listOf("animals-001"))
+    }
+
+    @Test
+    fun `should keep untagged and Polish remote prompts out of the English catalog`() = runTest {
+        // Given
+        val store = FakeStore()
+        val source = FakeSource {
+            listOf(
+                remote("untagged"),
+                remote("polish", text = "Wydra", locale = "pl-PL"),
+                remote("english", text = "Otter", hint = "River", locale = "en-GB"),
+            )
+        }
+        val repository = SyncedCatalogRepository(bundled, source, store, AppLocale.ENGLISH)
+
+        // When
+        repository.refresh()
+
+        // Then
+        assertEquals(listOf("animals-001", "english"), ids(repository))
+        assertEquals("Otter", repository.prompts(setOf("animals")).last().text)
+    }
+
+    @Test
+    fun `should preserve remote prompts for each locale in the shared snapshot`() = runTest {
+        // Given
+        val store = FakeStore()
+        val source = FakeSource {
+            listOf(
+                remote("localized", text = "Wydra", locale = "pl"),
+                remote("localized", text = "Otter", hint = "River", locale = "en"),
+            )
+        }
+
+        // When
+        SyncedCatalogRepository(bundled, source, store, AppLocale.ENGLISH).refresh()
+        val polishRestart = SyncedCatalogRepository(
+            bundled,
+            FakeSource { error("offline") },
+            store,
+            AppLocale.POLISH,
+        )
+
+        // Then
+        assertEquals(listOf("animals-001", "localized"), ids(polishRestart))
+        assertEquals("Wydra", polishRestart.prompts(setOf("animals")).last().text)
+    }
+
+    @Test
+    fun `should preserve the Polish default for remote records without a locale`() = runTest {
+        // Given
+        val repository = SyncedCatalogRepository(
+            bundled,
+            FakeSource { listOf(remote("untagged")) },
+            FakeStore(),
+            AppLocale.POLISH,
+        )
+
+        // When
+        repository.refresh()
+
+        // Then
+        assertEquals(listOf("animals-001", "untagged"), ids(repository))
+    }
+
+    @Test
+    fun `should read legacy snapshots as Polish records`() = runTest {
+        // Given
+        val legacySnapshot = """
+            {
+              "schemaVersion": 1,
+              "prompts": [
+                {"id": "legacy", "categoryId": "animals", "text": "Wydra", "hint": "Rzeka"}
+              ]
+            }
+        """.trimIndent()
+
+        // When
+        val polishRepository = SyncedCatalogRepository(
+            bundled,
+            FakeSource { error("offline") },
+            FakeStore(legacySnapshot),
+            AppLocale.POLISH,
+        )
+        val englishRepository = SyncedCatalogRepository(
+            bundled,
+            FakeSource { error("offline") },
+            FakeStore(legacySnapshot),
+            AppLocale.ENGLISH,
+        )
+
+        // Then
+        assertEquals(listOf("animals-001", "legacy"), ids(polishRepository))
+        assertEquals(listOf("animals-001"), ids(englishRepository))
     }
 }

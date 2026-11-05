@@ -10,14 +10,12 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.core.content.ContextCompat
+import com.rafal.impostorparty.R
 import java.util.Calendar
 
 private const val PARTY_REMINDER_CHANNEL_ID = "party_reminders"
 private const val PARTY_REMINDER_NOTIFICATION_ID = 2200
 private const val PARTY_REMINDER_REQUEST_CODE = 2200
-
-private const val PARTY_REMINDER_TITLE = "Impreza?"
-private const val PARTY_REMINDER_BODY = "Zagraj ze znajomymi w Impostora!"
 
 internal class PartyReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -80,7 +78,7 @@ private fun showPartyReminder(context: Context) {
     notificationManager.createNotificationChannel(
         NotificationChannel(
             PARTY_REMINDER_CHANNEL_ID,
-            "Zaproszenia do gry",
+            context.getString(R.string.party_reminder_channel),
             NotificationManager.IMPORTANCE_DEFAULT,
         ),
     )
@@ -94,8 +92,8 @@ private fun showPartyReminder(context: Context) {
     )
     val notification = android.app.Notification.Builder(context, PARTY_REMINDER_CHANNEL_ID)
         .setSmallIcon(android.R.drawable.ic_dialog_info)
-        .setContentTitle(PARTY_REMINDER_TITLE)
-        .setContentText(PARTY_REMINDER_BODY)
+        .setContentTitle(context.getString(R.string.party_reminder_title))
+        .setContentText(context.getString(R.string.party_reminder_body))
         .setAutoCancel(true)
         .setContentIntent(contentIntent)
         .build()

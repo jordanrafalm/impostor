@@ -26,7 +26,7 @@ The config files are ignored by Git. Do not paste their contents into logs, issu
 
 ## Remote prompt catalog
 
-The bundled `prompts.json` remains the baseline catalog and is always available offline. On app startup, the app uses the bundled catalog plus the last successfully cached Firestore prompt snapshot, then attempts a background refresh. A successful refresh adds active prompts to the local catalog and persists the snapshot for later offline launches. A Firebase or network failure leaves the bundled catalog and last valid cached snapshot in use without showing an error to players.
+The Polish and English bundled catalogs (`prompts-pl.json` and `prompts-en.json`) remain available offline and preserve identical category and prompt IDs. The English catalog contains translated prompt text and curated hints. An unavailable or invalid English bundle falls back to Polish. On app startup, the app uses the selected bundle plus the last successfully cached Firestore prompt snapshot, then attempts a background refresh. A successful refresh adds active locale-matched prompts and persists all supported locales for later offline launches. A Firebase or network failure leaves the bundle and last valid cached snapshot in use without showing an error to players.
 
 Create a Firestore collection named `prompts`. Add one document per prompt using a stable document ID and these fields:
 
@@ -35,9 +35,10 @@ categoryId: "animals"     # must match a bundled category ID
 text: "Wydra"
 hint: "Rzeka"
 active: true
+locale: "pl"              # optional; missing locale means Polish
 ```
 
-The app only adds active documents with valid non-empty text and hint for a category present in the bundled catalog. Use unique, stable document IDs. Publishing is read-only from the app: add or edit documents through Firebase Console or a trusted server/admin process. No Firebase write credential is included in the app.
+The app only adds active documents with valid non-empty text and hint for a category present in the bundled catalog and matching the current app locale. Supported values are `pl` and `en` (language tags with regions are accepted); unknown values are ignored. Untagged legacy documents are Polish and never appear in English mode. Use unique, stable Firestore document IDs; use distinct IDs for locale-specific variants. Publishing is read-only from the app: add or edit documents through Firebase Console or a trusted server/admin process. No Firebase write credential is included in the app.
 
 ## Promo code migration
 

@@ -4,6 +4,7 @@ afterGenerate:
     name: Build Compose Debug XCFramework
 options:
   bundleIdPrefix: com.impostor
+  developmentLanguage: en
   deploymentTarget:
     iOS: "17.2"
 packages:
@@ -20,6 +21,8 @@ targets:
       - path: Assets.xcassets
     resources:
       - path: GoogleService-Info.plist
+      - path: en.lproj
+      - path: pl.lproj
     settings:
       DEVELOPMENT_TEAM: 9B9STC79QK
       CODE_SIGN_STYLE: Automatic
@@ -54,10 +57,12 @@ targets:
       - name: Copy runtime configuration and bundled catalog
         inputFiles:
           - "${SRCROOT}/GoogleService-Info.plist"
-          - "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts.json"
+          - "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-pl.json"
+          - "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-en.json"
         outputFiles:
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
-          - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts.json"
+          - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-pl.json"
+          - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-en.json"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@2x.png"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@3x.png"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-76@2x-ipad.png"
@@ -65,7 +70,8 @@ targets:
         script: |
           mkdir -p "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
           cp "${SRCROOT}/GoogleService-Info.plist" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
-          cp "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts.json" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts.json"
+          cp "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-pl.json" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-pl.json"
+          cp "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-en.json" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-en.json"
           cp "${SRCROOT}/Assets.xcassets/AppIcon.appiconset/icon-60@2x.png" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@2x.png"
           cp "${SRCROOT}/Assets.xcassets/AppIcon.appiconset/icon-60@3x.png" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-60@3x.png"
           cp "${SRCROOT}/Assets.xcassets/AppIcon.appiconset/icon-76@2x-ipad.png" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/icon-76@2x-ipad.png"

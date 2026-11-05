@@ -94,3 +94,29 @@ private fun buildPromptHints(categories: List<SeedCategory>): Map<String, String
 private val seedJsonFormat = Json { ignoreUnknownKeys = true }
 
 expect fun bundledCatalogRepository(): CatalogRepository
+
+internal fun localizedCatalogRepository(
+    locale: AppLocale,
+    readCatalog: (String) -> String?,
+): CatalogRepository {
+    val localizedCatalog = readCatalog(locale.catalogFileName)
+        ?.let(::parseCatalog)
+    if (localizedCatalog != null) return localizedCatalog
+
+    if (locale == AppLocale.POLISH) {
+        error("Bundled Polish catalog is missing or invalid")
+    }
+
+    return readCatalog(AppLocale.POLISH.catalogFileName)
+        ?.let(::parseCatalog)
+        ?: error("Bundled Polish fallback catalog is missing or invalid")
+}
+
+private fun parseCatalog(json: String): CatalogRepository? = runCatching {
+    val repository = SeedCatalogRepository(json)
+    val categoryIds = repository.categories().mapTo(mutableSetOf()) { it.id }
+    val prompts = repository.prompts(categoryIds)
+    require(prompts.all { it.text.isNotBlank() && it.hint.isNotBlank() })
+    require(prompts.size == prompts.map { it.id }.toSet().size)
+    repository
+}.getOrNull()

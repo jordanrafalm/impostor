@@ -11,6 +11,7 @@ internal data class PromptDocument(
     val text: String? = null,
     val hint: String? = null,
     val active: Boolean = false,
+    val locale: String? = null,
 )
 
 internal class FirestorePromptSource(
@@ -21,7 +22,7 @@ internal class FirestorePromptSource(
             if (!document.exists) return@mapNotNull null
             // A malformed document is skipped without discarding the rest of the collection.
             val data = runCatching { document.data<PromptDocument>() }.getOrNull() ?: return@mapNotNull null
-            RemotePrompt(document.id, data.categoryId, data.text, data.hint, data.active)
+            RemotePrompt(document.id, data.categoryId, data.text, data.hint, data.active, data.locale)
         }
 }
 

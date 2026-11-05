@@ -5,7 +5,8 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="Impostor"
+        android:label="@string/app_name"
+        android:localeConfig="@xml/locale_config"
         android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.Impostor">
         <activity android:name="com.impostor.app.MainActivity" android:exported="true">

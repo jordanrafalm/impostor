@@ -123,8 +123,8 @@ import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import impostor.composeapp.generated.resources.Res
-import impostor.composeapp.generated.resources.sex_category_background
+import org.jetbrains.compose.resources.stringResource
+import impostor.composeapp.generated.resources.*
 
 private val Ink = Color(0xFF050914)
 private val Navy = Color(0xFF162846)
@@ -351,7 +351,7 @@ private fun Shell(
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("GRA IMPREZOWA", color = Frost.copy(alpha = .78f), fontSize = 11.sp, letterSpacing = 5.sp)
+        Text(stringResource(Res.string.home_tagline), color = Frost.copy(alpha = .78f), fontSize = 11.sp, letterSpacing = 5.sp)
         Spacer(Modifier.height(8.dp))
         LongPressLogo(
             onLongPress = onCometLongPress,
@@ -364,24 +364,35 @@ private fun Shell(
         )
         Spacer(Modifier.height(28.dp))
         HomeReveal(index = 0, height = 88.dp) {
-            FrostSettingButton("Gracze", players.size.toString(), onPlayers, autoPulse = true, pulseDelayMillis = 0L)
+            FrostSettingButton(stringResource(Res.string.home_players), players.size.toString(), onPlayers, autoPulse = true, pulseDelayMillis = 0L)
         }
         Spacer(Modifier.height(8.dp))
         HomeReveal(index = 1, height = 88.dp) {
-            FrostSettingButton("Kategorie", "→", onCategories, autoPulse = true, pulseDelayMillis = 600L)
+            FrostSettingButton(stringResource(Res.string.home_categories), "→", onCategories, autoPulse = true, pulseDelayMillis = 600L)
         }
         Spacer(Modifier.height(8.dp))
         HomeReveal(index = 2, height = 72.dp) {
-            FrostToggleSetting("Podpowiedź", hintsEnabled, onHintsChanged)
+            FrostToggleSetting(stringResource(Res.string.home_hint), hintsEnabled, onHintsChanged)
         }
         Spacer(Modifier.height(8.dp))
         HomeReveal(index = 3, height = 88.dp) {
             FrostImpostorSetting(impostorCount, onImpostorDecrease, onImpostorIncrease)
         }
-        if (error != null) {
+        val validationMessage = error?.let { reason ->
+            val reasonLabel = when (reason) {
+                SetupValidation.Reason.TOO_FEW_PLAYERS -> stringResource(Res.string.validation_too_few_players)
+                SetupValidation.Reason.NO_CATEGORY -> stringResource(Res.string.validation_no_category)
+                SetupValidation.Reason.INVALID_IMPOSTOR_COUNT -> stringResource(Res.string.validation_invalid_impostor_count)
+                SetupValidation.Reason.DUPLICATE_PLAYER_IDS -> stringResource(Res.string.validation_duplicate_player_ids)
+                SetupValidation.Reason.DUPLICATE_PLAYER_NAMES -> stringResource(Res.string.validation_duplicate_player_names)
+                SetupValidation.Reason.EMPTY_PLAYER_NAME -> stringResource(Res.string.validation_empty_player_name)
+            }
+            stringResource(Res.string.home_validation_error, reasonLabel)
+        }
+        if (validationMessage != null) {
             Spacer(Modifier.height(8.dp))
             Text(
-                "Ustawienia wymagają uwagi: ${error.name.lowercase().replace('_', ' ')}",
+                validationMessage,
                 color = Color(0xFFFFA5B3),
                 fontSize = 13.sp,
             )
@@ -389,7 +400,7 @@ private fun Shell(
     }
     Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
         FrostButton(
-            text = "G R A J",
+            text = stringResource(Res.string.play),
             onClick = onStart,
             style = FrostButtonStyle.Primary,
             modifier = Modifier.fillMaxWidth(),
@@ -398,7 +409,7 @@ private fun Shell(
         )
         Spacer(Modifier.height(18.dp))
         FrostButton(
-            text = "♧  ODBLOKUJ PEŁNĄ WERSJĘ",
+            text = stringResource(Res.string.unlock_full_version),
             onClick = onCodes,
             style = FrostButtonStyle.Subtle,
             modifier = Modifier.fillMaxWidth(),
@@ -449,7 +460,7 @@ private fun SexCategoryIntroDialog(onDismiss: () -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Text(
-                    "NOWA KATEGORIA",
+                    stringResource(Res.string.new_category),
                     color = Frost.copy(alpha = .84f),
                     fontSize = 11.sp,
                     letterSpacing = 3.sp,
@@ -462,8 +473,7 @@ private fun SexCategoryIntroDialog(onDismiss: () -> Unit) {
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    "Kategoria SEX zawiera bardziej bezpośrednie hasła dla dorosłych. " +
-                        "Możesz ją włączyć w ustawieniach kategorii.",
+                    stringResource(Res.string.sex_category_description),
                     color = Color.White,
                     fontSize = 16.sp,
                 )
@@ -483,7 +493,7 @@ private fun SexCategoryIntroDialog(onDismiss: () -> Unit) {
                     )
                     Box(Modifier.matchParentSize().background(Color(0x66000000)))
                     Text(
-                        "OK",
+                        stringResource(Res.string.ok),
                         color = Color.White,
                         fontSize = 18.sp,
                         letterSpacing = 3.sp,
@@ -518,13 +528,13 @@ private fun GameRulesOverlay(onDismiss: () -> Unit) {
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
-            Text("JAK GRAĆ", color = Color.White, fontSize = 24.sp, letterSpacing = 2.sp)
-            Text("1. Ustaw graczy i kategorię, a potem rozpocznij grę.", color = Frost, fontSize = 16.sp)
-            Text("2. Każda osoba przytrzymuje ekran, aby poznać swoją rolę i hasło.", color = Frost, fontSize = 16.sp)
-            Text("3. Cywile znają hasło. Impostor próbuje je odgadnąć, nie zdradzając się.", color = Frost, fontSize = 16.sp)
-            Text("4. Po rundzie rozmawiajcie i wskażcie osobę, która jest Impostorem.", color = Frost, fontSize = 16.sp)
+            Text(stringResource(Res.string.rules_title), color = Color.White, fontSize = 24.sp, letterSpacing = 2.sp)
+            Text(stringResource(Res.string.rules_step_1), color = Frost, fontSize = 16.sp)
+            Text(stringResource(Res.string.rules_step_2), color = Frost, fontSize = 16.sp)
+            Text(stringResource(Res.string.rules_step_3), color = Frost, fontSize = 16.sp)
+            Text(stringResource(Res.string.rules_step_4), color = Frost, fontSize = 16.sp)
             FrostButton(
-                text = "ZAMKNIJ",
+                text = stringResource(Res.string.close),
                 onClick = onDismiss,
                 modifier = Modifier.fillMaxWidth(),
                 style = FrostButtonStyle.Subtle,
@@ -625,7 +635,7 @@ private fun CometOverlay(onDismiss: () -> Unit) {
                 painter = rememberLottiePainter(composition = composition, progress = { progress }),
                 modifier = Modifier.fillMaxSize().graphicsLayer { rotationZ = 180f },
                 contentScale = ContentScale.FillBounds,
-                contentDescription = "Comet animation",
+                contentDescription = stringResource(Res.string.comet_animation),
             )
         }
     }
@@ -659,7 +669,7 @@ private fun WalkingLadyOverlay(onDismiss: () -> Unit) {
         if (composition != null) {
             Image(
                 painter = rememberLottiePainter(composition = composition, progress = { progress }),
-                contentDescription = "Animacja walking lady",
+                contentDescription = stringResource(Res.string.walking_lady_animation),
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(280.dp),
             )
@@ -937,7 +947,7 @@ private fun FrostImpostorSetting(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text("Impostorzy", color = Color(0xFFF2FAFF), fontSize = 21.sp)
+        Text(stringResource(Res.string.impostors), color = Color(0xFFF2FAFF), fontSize = 21.sp)
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
             FrostButton(text = "−", onClick = onDecrease, modifier = Modifier.width(54.dp))
             Box(
@@ -990,6 +1000,7 @@ private fun PlayersScreen(
 ) {
     var newPlayerName by remember { mutableStateOf("") }
     var clearedDefaultPlayerIds by remember { mutableStateOf(emptySet<String>()) }
+    val newPlayerFallbackName = stringResource(Res.string.default_player, players.size + 1)
 
     Column(
         Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 20.dp),
@@ -1002,7 +1013,7 @@ private fun PlayersScreen(
                 closeButton = true,
             )
             Text(
-                "Gracze",
+                stringResource(Res.string.players_title),
                 color = Color.White,
                 fontSize = 28.sp,
                 letterSpacing = 1.sp,
@@ -1038,8 +1049,15 @@ private fun PlayersScreen(
                     Text("${index + 1}", color = Frost, fontSize = 16.sp)
                 }
                 Spacer(Modifier.width(12.dp))
+                val defaultName = stringResource(Res.string.default_player, index + 1)
+                val legacyPolishName = stringResource(Res.string.legacy_polish_default_player, index + 1)
+                val englishDefaultName = stringResource(Res.string.english_default_player, index + 1)
+                val isDefaultName = player.displayName == defaultName ||
+                    player.displayName == legacyPolishName ||
+                    player.displayName == englishDefaultName ||
+                    player.displayName == defaultPlayerToken(index + 1)
                 BasicTextField(
-                    value = player.displayName,
+                    value = if (isDefaultName) defaultName else player.displayName,
                     onValueChange = { displayName ->
                         onPlayers(players.mapIndexed { playerIndex, current ->
                             if (playerIndex == index) {
@@ -1053,7 +1071,7 @@ private fun PlayersScreen(
                         if (
                             focusState.isFocused &&
                             player.id !in clearedDefaultPlayerIds &&
-                            player.displayName == "Gracz ${index + 1}"
+                            isDefaultName
                         ) {
                             clearedDefaultPlayerIds += player.id
                             onPlayers(players.mapIndexed { playerIndex, current ->
@@ -1092,7 +1110,7 @@ private fun PlayersScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
                 decorationBox = { field ->
                     if (newPlayerName.isEmpty()) {
-                        Text("Wpisz imię gracza...", color = Frost.copy(alpha = .58f), fontSize = 17.sp)
+                        Text(stringResource(Res.string.player_name_placeholder), color = Frost.copy(alpha = .58f), fontSize = 17.sp)
                     }
                     field()
                 },
@@ -1102,15 +1120,16 @@ private fun PlayersScreen(
         FrostButton(
             text = "+",
             onClick = {
-                val displayName = normalizePlayerName(newPlayerName).ifEmpty { "Gracz ${players.size + 1}" }
-                onPlayers(players + Player("p${players.size + 1}", displayName))
+                val displayName = normalizePlayerName(newPlayerName)
+                    .ifEmpty { newPlayerFallbackName }
+                onPlayers(players + Player(nextPlayerId(players), displayName))
                 newPlayerName = ""
             },
             modifier = Modifier.size(56.dp),
         )
     }
     Spacer(Modifier.height(16.dp))
-    FrostButton(text = "GOTOWE", onClick = onBack, modifier = Modifier.fillMaxWidth(), style = FrostButtonStyle.Subtle)
+    FrostButton(text = stringResource(Res.string.done), onClick = onBack, modifier = Modifier.fillMaxWidth(), style = FrostButtonStyle.Subtle)
     }
 }
 
@@ -1132,7 +1151,7 @@ private fun CategoriesScreen(
         Column(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 32.dp)) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
-            "KATEGORIE",
+            stringResource(Res.string.categories_title),
             color = Color.White,
             fontSize = 28.sp,
             letterSpacing = 1.sp,
@@ -1142,11 +1161,10 @@ private fun CategoriesScreen(
     }
     Spacer(Modifier.height(18.dp))
     Text(
-        if (premiumUnlocked) "Premium odblokowuje wszystkie kategorie."
+        if (premiumUnlocked) stringResource(Res.string.premium_unlocks_all_categories)
         else if (trialState.hasFreeCategories)
-            "Wszystkie kategorie odblokowane. Pozostało darmowych gier: ${trialState.remainingFreeGames}."
-        else "Wykorzystano 3 darmowe gry. Zwierzęta, Miejsca i Sport zostają darmowe na zawsze; " +
-            "Subskrypcja Premium odblokuje pozostałe kategorie.",
+            stringResource(Res.string.categories_remaining_games, trialState.remainingFreeGames)
+        else stringResource(Res.string.categories_free_limit),
         color = Frost,
         fontSize = 14.sp,
     )
@@ -1160,9 +1178,9 @@ private fun CategoriesScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("Ta kategoria wymaga Premium.", color = Color.White, fontSize = 16.sp)
+            Text(stringResource(Res.string.category_requires_premium), color = Color.White, fontSize = 16.sp)
             FrostButton(
-                text = "ODBLOKUJ PREMIUM",
+                text = stringResource(Res.string.unlock_premium),
                 onClick = onOpenPremium,
                 style = FrostButtonStyle.Primary,
                 modifier = Modifier.fillMaxWidth(),
@@ -1197,7 +1215,7 @@ private fun CategoriesScreen(
         }
     }
         Spacer(Modifier.height(16.dp))
-        FrostButton(text = "GOTOWE", onClick = onBack, modifier = Modifier.fillMaxWidth(), style = FrostButtonStyle.Subtle)
+        FrostButton(text = stringResource(Res.string.done), onClick = onBack, modifier = Modifier.fillMaxWidth(), style = FrostButtonStyle.Subtle)
         }
         if (showWalkingLady) {
             Box(Modifier.fillMaxSize().zIndex(1f)) {
@@ -1217,7 +1235,7 @@ private fun PremiumSubscriptionScreen(
         com.impostor.domain.Entitlement(state = it, source = com.impostor.domain.EntitlementSource.LOCAL_CACHE)
     })
     var product by remember { mutableStateOf<com.impostor.domain.SubscriptionProduct?>(null) }
-    var message by remember { mutableStateOf<String?>(null) }
+    var message by remember { mutableStateOf<SubscriptionError?>(null) }
     val scope = rememberCoroutineScope()
     val purchase = remember(repository) { PurchasePremiumUseCase(repository) }
     val restore = remember(repository) { RestorePurchasesUseCase(repository) }
@@ -1229,7 +1247,7 @@ private fun PremiumSubscriptionScreen(
                 product = it
                 analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
             }
-            .onFailure { message = subscriptionMessage(it) }
+            .onFailure { message = subscriptionError(it) }
         // Restore is store-account authenticated (AppStore.sync() on iOS) and must stay user-initiated only.
     }
     LaunchedEffect(entitlement.state, entitlement.source) {
@@ -1237,28 +1255,32 @@ private fun PremiumSubscriptionScreen(
     }
 
     Shell(
-        title = "PREMIUM",
+        title = stringResource(Res.string.premium_title),
         bottomContent = {
             FrostButton(
-                text = "ZAMKNIJ",
+                text = stringResource(Res.string.close),
                 onClick = onClose,
                 modifier = Modifier.fillMaxWidth(),
                 style = FrostButtonStyle.Subtle,
             )
         },
     ) {
-        Text(product?.title ?: "Impostor Premium", color = Color.White, fontSize = 22.sp)
-        Text(product?.let { "${it.formattedPrice} / ${it.periodLabel}" } ?: "Subskrypcja jest obecnie niedostępna", color = Frost)
-        Text(entitlement.state.name.lowercase().replace('_', ' '), color = if (entitlement.state == SubscriptionState.ACTIVE) Cyan else Frost)
-        if (message != null) Text(message!!, color = Color(0xFFFF8A8A))
+        Text(product?.title ?: stringResource(Res.string.premium_product_fallback), color = Color.White, fontSize = 22.sp)
+        Text(
+            product?.let { "${it.formattedPrice} / ${localizedPeriodLabel(it.periodLabel)}" }
+                ?: stringResource(Res.string.subscription_unavailable),
+            color = Frost,
+        )
+        Text(subscriptionStateLabel(entitlement.state), color = if (entitlement.state == SubscriptionState.ACTIVE) Cyan else Frost)
+        message?.let { Text(subscriptionErrorLabel(it), color = Color(0xFFFF8A8A)) }
         FrostButton(
-            text = "SUBSKRYBUJ",
+            text = stringResource(Res.string.subscribe),
             onClick = {
                 analytics.log(AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED)
                 message = null
                 scope.launch {
                     purchase.invoke()
-                        .onFailure { message = subscriptionMessage(it) }
+                        .onFailure { message = subscriptionError(it) }
                         .onSuccess { analytics.log(AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT, mapOf("result" to purchaseResult(it.state))) }
                 }
             },
@@ -1266,13 +1288,13 @@ private fun PremiumSubscriptionScreen(
             modifier = Modifier.fillMaxWidth(),
         )
         FrostButton(
-            text = "PRZYWRÓĆ ZAKUPY",
+            text = stringResource(Res.string.restore_purchases),
             onClick = {
                 message = null
                 scope.launch {
                     restore.invoke()
                         .onFailure {
-                            message = subscriptionMessage(it)
+                            message = subscriptionError(it)
                             analytics.log(AnalyticsEvent.SUBSCRIPTION_RESTORE_RESULT, mapOf("result" to "failed"))
                         }
                         .onSuccess { restored ->
@@ -1287,8 +1309,8 @@ private fun PremiumSubscriptionScreen(
             modifier = Modifier.fillMaxWidth(),
         )
         FrostButton(
-            text = "ZARZĄDZAJ SUBSKRYPCJĄ",
-            onClick = { scope.launch { repository.openManageSubscriptions().onFailure { message = subscriptionMessage(it) } } },
+            text = stringResource(Res.string.manage_subscription),
+            onClick = { scope.launch { repository.openManageSubscriptions().onFailure { message = subscriptionError(it) } } },
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -1300,14 +1322,68 @@ private fun purchaseResult(state: SubscriptionState): String = when (state) {
     else -> "failed"
 }
 
-private fun subscriptionMessage(error: Throwable): String = when ((error as? SubscriptionException)?.error) {
-    SubscriptionError.PURCHASE_PENDING -> "Zakup oczekuje na potwierdzenie."
-    SubscriptionError.PURCHASE_CANCELLED -> "Zakup został anulowany."
-    SubscriptionError.ALREADY_OWNED -> "Subskrypcja jest już aktywna. Przywróć zakupy."
-    SubscriptionError.NETWORK_UNAVAILABLE -> "Brak połączenia z internetem."
-    SubscriptionError.PRODUCT_UNAVAILABLE, SubscriptionError.STORE_UNAVAILABLE, SubscriptionError.NETWORK_UNAVAILABLE -> "Sklep jest obecnie niedostępny."
-    SubscriptionError.RESTORE_FAILED -> "Nie udało się przywrócić zakupów."
-    SubscriptionError.PURCHASE_FAILED, null -> "Zakup nie powiódł się."
+private fun subscriptionError(error: Throwable): SubscriptionError =
+    (error as? SubscriptionException)?.error ?: SubscriptionError.PURCHASE_FAILED
+
+@Composable
+private fun subscriptionErrorLabel(error: SubscriptionError): String = when (error) {
+    SubscriptionError.PURCHASE_PENDING -> stringResource(Res.string.purchase_pending_message)
+    SubscriptionError.PURCHASE_CANCELLED -> stringResource(Res.string.purchase_cancelled_message)
+    SubscriptionError.ALREADY_OWNED -> stringResource(Res.string.already_owned_message)
+    SubscriptionError.NETWORK_UNAVAILABLE -> stringResource(Res.string.network_unavailable_message)
+    SubscriptionError.PRODUCT_UNAVAILABLE, SubscriptionError.STORE_UNAVAILABLE ->
+        stringResource(Res.string.store_unavailable_message)
+    SubscriptionError.RESTORE_FAILED -> stringResource(Res.string.restore_failed_message)
+    SubscriptionError.PURCHASE_FAILED -> stringResource(Res.string.purchase_failed_message)
+}
+
+@Composable
+private fun subscriptionStateLabel(state: SubscriptionState): String = when (state) {
+    SubscriptionState.LOCKED -> stringResource(Res.string.subscription_locked)
+    SubscriptionState.PURCHASING -> stringResource(Res.string.subscription_purchasing)
+    SubscriptionState.ACTIVE -> stringResource(Res.string.subscription_active)
+    SubscriptionState.EXPIRED -> stringResource(Res.string.subscription_expired)
+    SubscriptionState.REVOKED -> stringResource(Res.string.subscription_revoked)
+    SubscriptionState.RESTORING -> stringResource(Res.string.subscription_restoring)
+    SubscriptionState.UNAVAILABLE -> stringResource(Res.string.subscription_unavailable_state)
+}
+
+@Composable
+private fun localizedPeriodLabel(period: String): String {
+    val normalized = period.trim().lowercase()
+    val quantity = normalized.substringBefore(' ').toIntOrNull()
+    val unit = if (quantity == null) normalized else normalized.substringAfter(' ')
+    return when (unit.trimEnd('s')) {
+        "day" -> when {
+            quantity == 1 -> stringResource(Res.string.period_day)
+            quantity != null && quantity in 2..4 -> stringResource(Res.string.period_days_2_4, quantity)
+            quantity != null -> stringResource(Res.string.period_days, quantity)
+            normalized.endsWith('s') -> stringResource(Res.string.period_days_unit)
+            else -> stringResource(Res.string.period_day)
+        }
+        "week" -> when {
+            quantity == 1 -> stringResource(Res.string.period_week)
+            quantity != null && quantity in 2..4 -> stringResource(Res.string.period_weeks_2_4, quantity)
+            quantity != null -> stringResource(Res.string.period_weeks, quantity)
+            normalized.endsWith('s') -> stringResource(Res.string.period_weeks_unit)
+            else -> stringResource(Res.string.period_week)
+        }
+        "month" -> when {
+            quantity == 1 -> stringResource(Res.string.period_month)
+            quantity != null && quantity in 2..4 -> stringResource(Res.string.period_months_2_4, quantity)
+            quantity != null -> stringResource(Res.string.period_months, quantity)
+            normalized.endsWith('s') -> stringResource(Res.string.period_months_unit)
+            else -> stringResource(Res.string.period_month)
+        }
+        "year" -> when {
+            quantity == 1 -> stringResource(Res.string.period_year)
+            quantity != null && quantity in 2..4 -> stringResource(Res.string.period_years_2_4, quantity)
+            quantity != null -> stringResource(Res.string.period_years, quantity)
+            normalized.endsWith('s') -> stringResource(Res.string.period_years_unit)
+            else -> stringResource(Res.string.period_year)
+        }
+        else -> stringResource(Res.string.period_other)
+    }
 }
 
 @Composable private fun RevealScreen(
@@ -1317,8 +1393,8 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
 ) {
     val assignment = session.assignments[session.revealIndex]
     val reveal = remember(session.revealIndex) { Animatable(0f) }
-    var hasStartedReveal by remember(session.revealIndex) { mutableStateOf(false) }
-    val canProceed = hasStartedReveal
+    var hasCompletedReveal by remember(session.revealIndex) { mutableStateOf(false) }
+    val canProceed = hasCompletedReveal
     val haptics = LocalHapticFeedback.current
     val thermalFeedback = remember { platformThermalFeedback() }
     val scope = rememberCoroutineScope()
@@ -1329,7 +1405,7 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                players.firstOrNull { it.id == assignment.playerId }?.displayName ?: assignment.playerId,
+                localizedPlayerName(players.firstOrNull { it.id == assignment.playerId }) ?: assignment.playerId,
                 color = Frost,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
@@ -1343,7 +1419,7 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
             total = session.assignments.size,
         )
         Text(
-            "PRZYTRZYMAJ EKRAN ABY ODSŁONIĆ HASŁO I PRZEKAŻ TELEFON KOLEJNEJ OSOBIE",
+            stringResource(Res.string.reveal_instructions),
             color = Frost.copy(alpha = .78f),
             fontSize = 12.sp,
             letterSpacing = 1.6.sp,
@@ -1357,10 +1433,10 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
                 .pointerInput(session.revealIndex) {
                     awaitEachGesture {
                         awaitFirstDown()
-                        hasStartedReveal = true
                         thermalFeedback.start()
                         val thaw = scope.launch {
                             reveal.animateTo(1f, tween(1_000, easing = LinearEasing))
+                            hasCompletedReveal = true
                         }
                         val pulseJob = scope.launch {
                             while (isActive) {
@@ -1394,7 +1470,11 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
                     fontSize = 34.sp,
                 )
                 Text(
-                    if (assignment.role == Role.AGENT) "CYWIL" else "IMPOSTOR",
+                    if (assignment.role == Role.AGENT) {
+                        stringResource(Res.string.role_agent)
+                    } else {
+                        stringResource(Res.string.role_impostor)
+                    },
                     color = if (assignment.role == Role.IMPOSTOR) Color(0xFFFF758F) else Cyan,
                     fontSize = 18.sp,
                     letterSpacing = 3.sp,
@@ -1405,7 +1485,13 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
             )
         }
         FrostButton(
-            text = if (session.revealIndex == session.assignments.lastIndex) "ROZPOCZNIJ RUNDĘ" else "NASTĘPNY GRACZ",
+            text = stringResource(
+                if (session.revealIndex == session.assignments.lastIndex) {
+                    Res.string.begin_round
+                } else {
+                    Res.string.next_player
+                },
+            ),
             onClick = {
                 val next = com.impostor.domain.RevealNextPlayerUseCase().invoke(session, canProceed)
                 if (canProceed && next == session) onRoute(Route.GameStart(session)) else onRoute(Route.Reveal(next))
@@ -1413,6 +1499,24 @@ private fun subscriptionMessage(error: Throwable): String = when ((error as? Sub
             enabled = canProceed,
             modifier = Modifier.fillMaxWidth(),
         )
+    }
+}
+
+@Composable
+private fun localizedPlayerName(player: Player?): String? {
+    player ?: return null
+    val index = player.id.removePrefix("p").toIntOrNull() ?: return player.displayName
+    val localizedDefault = stringResource(Res.string.default_player, index)
+    val legacyPolishDefault = stringResource(Res.string.legacy_polish_default_player, index)
+    val englishDefault = stringResource(Res.string.english_default_player, index)
+    return if (player.displayName == localizedDefault ||
+        player.displayName == legacyPolishDefault ||
+        player.displayName == englishDefault ||
+        player.displayName == defaultPlayerToken(index)
+    ) {
+        localizedDefault
+    } else {
+        player.displayName
     }
 }
 
@@ -1526,7 +1630,7 @@ private fun FrostGlass(
 ): Unit {
     var hasCompleted by remember(session.sessionId) { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val starterName = players.firstOrNull { it.id == session.starterPlayerId }?.displayName
+    val starterName = localizedPlayerName(players.firstOrNull { it.id == session.starterPlayerId })
         ?: session.starterPlayerId
     val impostorCount = session.assignments.count { it.role == Role.IMPOSTOR }
 
@@ -1534,9 +1638,9 @@ private fun FrostGlass(
         modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 36.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text("GRA ROZPOCZĘTA", color = Frost.copy(alpha = .78f), fontSize = 13.sp, letterSpacing = 6.sp)
+        Text(stringResource(Res.string.game_started), color = Frost.copy(alpha = .78f), fontSize = 13.sp, letterSpacing = 6.sp)
         Spacer(Modifier.height(56.dp))
-        Text("Grę zaczyna", color = Color(0xFF6DCBFF), fontSize = 27.sp)
+        Text(stringResource(Res.string.game_starter), color = Color(0xFF6DCBFF), fontSize = 27.sp)
         Spacer(Modifier.height(44.dp))
         val starterCardShape = RoundedCornerShape(34.dp)
         Column(
@@ -1553,18 +1657,22 @@ private fun FrostGlass(
         }
         Spacer(Modifier.height(48.dp))
         Text(
-            "Wśród graczy ukrywa się ",
+            "${stringResource(Res.string.game_start_hidden_impostor)} ",
             color = Color(0xFF64B9E8),
             fontSize = 18.sp,
         )
         Text(
-            if (impostorCount == 1) "1 impostor. Powodzenia!" else "$impostorCount impostorów. Powodzenia!",
+            stringResource(
+                if (impostorCount == 1) Res.string.game_start_impostor_singular
+                else Res.string.game_start_impostor_plural,
+                impostorCount,
+            ),
             color = Frost,
             fontSize = 18.sp,
         )
         Spacer(Modifier.weight(1f, fill = true).height(36.dp))
         FrostButton(
-            text = "K O N I E C   G R Y",
+            text = stringResource(Res.string.end_game),
             onClick = {
                 if (!hasCompleted) {
                     hasCompleted = true

@@ -32,6 +32,9 @@ kotlin {
             implementation(compose.components.resources)
             implementation("io.github.alexzhirkevich:compottie:2.0.0")
         }
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+        }
         androidMain.dependencies {
             implementation("androidx.activity:activity-compose:1.10.1")
             implementation("androidx.core:core-splashscreen:1.0.1")
@@ -59,8 +62,8 @@ android {
         applicationId = "com.rafal.impostorparty"
         minSdk = 26
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.1.6"
+        versionCode = 17
+        versionName = "1.1.7"
     }
     buildFeatures {
         compose = true

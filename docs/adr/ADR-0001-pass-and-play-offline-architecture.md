@@ -115,7 +115,7 @@ Required use cases:
 
 ## Local data and seed strategy
 
-The source of truth for shipped content is `shared/data/src/commonMain/resources/seed/prompts.json`, initially authored and validated at `docs/seed/prompts.json`. The file declares exactly 10 `activeCategoryIds`, each with 100 unique prompts. It may also contain explicitly non-active future categories; the importer must load only `activeCategoryIds` for MVP. The stable record shape is:
+The source of truth for shipped Polish content is `shared/data/src/commonMain/resources/seed/prompts-pl.json`; locale-specific bundles keep category and prompt IDs stable. `docs/seed/prompts.json` is a historical copy and is not authoritative. Each bundle may contain explicitly non-active future categories; the importer must load only `activeCategoryIds`. The stable record shape is:
 
 ```json
 {

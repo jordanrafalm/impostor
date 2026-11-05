@@ -61,6 +61,7 @@ sealed interface SetupValidation {
         TOO_FEW_PLAYERS,
         NO_CATEGORY,
         INVALID_IMPOSTOR_COUNT,
+        DUPLICATE_PLAYER_IDS,
         DUPLICATE_PLAYER_NAMES,
         EMPTY_PLAYER_NAME,
     }
@@ -79,6 +80,9 @@ class ValidateGameSetupUseCase {
         if (setup.selectedCategoryIds.isEmpty()) return SetupValidation.Invalid(SetupValidation.Reason.NO_CATEGORY)
         if (setup.impostorCount !in 1 until setup.players.size) {
             return SetupValidation.Invalid(SetupValidation.Reason.INVALID_IMPOSTOR_COUNT)
+        }
+        if (setup.players.map { it.id }.toSet().size != setup.players.size) {
+            return SetupValidation.Invalid(SetupValidation.Reason.DUPLICATE_PLAYER_IDS)
         }
         if (setup.players.any { it.displayName.trim().isEmpty() }) {
             return SetupValidation.Invalid(SetupValidation.Reason.EMPTY_PLAYER_NAME)

@@ -7,7 +7,16 @@ internal expect fun readSavedPlayerNames(): String?
 
 internal expect fun writeSavedPlayerNames(serializedPlayers: String)
 
-private val defaultPlayers = (1..3).map { Player("p$it", "Gracz $it") }
+internal fun defaultPlayerToken(playerNumber: Int): String = "__default_player_${playerNumber}__"
+
+internal fun nextPlayerId(players: List<Player>): String {
+    val existingIds = players.mapTo(mutableSetOf()) { it.id }
+    var candidate = players.size + 1
+    while ("p$candidate" in existingIds) candidate++
+    return "p$candidate"
+}
+
+private val defaultPlayers = (1..3).map { Player("p$it", defaultPlayerToken(it)) }
 
 internal fun loadPlayers(): List<Player> {
     val savedNames = readSavedPlayerNames()?.let(PlayerNamesCodec::decode)
