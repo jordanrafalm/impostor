@@ -3,9 +3,12 @@ package com.impostor.app
 import com.impostor.domain.Player
 import com.impostor.domain.PlayerNamesCodec
 
-internal expect fun readSavedPlayerNames(): String?
+internal fun readSavedPlayerNames(): String? =
+    platformPreferenceStore().getString(PreferenceKeys.SAVED_PLAYER_NAMES)
 
-internal expect fun writeSavedPlayerNames(serializedPlayers: String)
+internal fun writeSavedPlayerNames(serializedPlayers: String) {
+    platformPreferenceStore().putString(PreferenceKeys.SAVED_PLAYER_NAMES, serializedPlayers)
+}
 
 internal fun defaultPlayerToken(playerNumber: Int): String = "__default_player_${playerNumber}__"
 

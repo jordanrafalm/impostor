@@ -1,5 +1,8 @@
 package com.impostor.app
 
-internal expect fun readSelectedCategoryId(): String?
+internal fun readSelectedCategoryId(): String? =
+    platformPreferenceStore().getString(PreferenceKeys.SELECTED_CATEGORY)
 
-internal expect fun writeSelectedCategoryId(categoryId: String)
+internal fun writeSelectedCategoryId(categoryId: String) {
+    platformPreferenceStore().putString(PreferenceKeys.SELECTED_CATEGORY, categoryId)
+}

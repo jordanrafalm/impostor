@@ -13,6 +13,7 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         currentActivity = this
+        initializePreferenceStore(applicationContext)
         initializeBundledCatalog(applicationContext)
         initializePlatformStoreBilling(this)
         enableEdgeToEdge()

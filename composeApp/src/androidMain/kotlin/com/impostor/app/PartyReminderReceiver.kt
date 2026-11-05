@@ -101,27 +101,19 @@ private fun showPartyReminder(context: Context) {
     notificationManager.notify(PARTY_REMINDER_NOTIFICATION_ID, notification)
 }
 
-/**
- * The first weekend of each month at 22:00: Friday in odd-numbered months,
- * Saturday in even-numbered months.
- */
+/** Next reminder instant, computed from the shared schedule rule. */
 internal fun nextPartyReminderTime(now: Calendar): Calendar {
-    val candidate = partyReminderForMonth(now.get(Calendar.YEAR), now.get(Calendar.MONTH))
-    return if (candidate.after(now)) {
-        candidate
-    } else {
-        partyReminderForMonth(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1)
-    }
-}
-
-internal fun partyReminderForMonth(year: Int, zeroBasedMonth: Int): Calendar {
-    val monthStart = Calendar.getInstance().apply {
+    val date = upcomingPartyReminders(
+        year = now.get(Calendar.YEAR),
+        month = now.get(Calendar.MONTH) + 1,
+        day = now.get(Calendar.DAY_OF_MONTH),
+        hour = now.get(Calendar.HOUR_OF_DAY),
+        count = 1,
+    ).single()
+    return Calendar.getInstance().apply {
         clear()
-        set(year, zeroBasedMonth, 1, 22, 0, 0)
+        set(date.year, date.month - 1, date.day, PARTY_REMINDER_HOUR, 0, 0)
     }
-    val targetDay = if ((zeroBasedMonth + 1) % 2 == 1) Calendar.FRIDAY else Calendar.SATURDAY
-    val daysUntilTarget = (targetDay - monthStart.get(Calendar.DAY_OF_WEEK) + 7) % 7
-    return monthStart.apply { add(Calendar.DAY_OF_MONTH, daysUntilTarget) }
 }
 
 actual fun platformNotificationScheduler(): NotificationScheduler {
