@@ -147,6 +147,7 @@ private sealed interface Route {
 fun ImpostorApp() {
     var route by remember { mutableStateOf<Route>(Route.Splash) }
     var showComet by remember { mutableStateOf(false) }
+    var showFreeLimitDialog by remember { mutableStateOf(false) }
     var showSexCategoryIntro by remember {
         val savedEligibility = readSexCategoryIntroEligibility()
         val eligibility = resolveSexCategoryIntroEligibility(
@@ -231,7 +232,8 @@ fun ImpostorApp() {
                             val usesOnlyAlwaysFreeCategories = selectedCategories.isNotEmpty() &&
                                 selectedCategories.all { it in com.impostor.domain.AlwaysFreeCategoryIds }
                             if (!usesOnlyAlwaysFreeCategories && !trialRepository.state.value.canStartGame(entitlement)) {
-                                route = Route.Premium
+                                showFreeLimitDialog = true
+                                route = Route.Categories
                                 return@start
                             }
                             val setup = GameSetup(players, selectedCategories, impostorCount, hintsEnabled)
@@ -299,6 +301,9 @@ fun ImpostorApp() {
                 sexIntroIsUpgradeNotice = false
                 showSexCategoryIntro = false
             }
+        }
+        if (route == Route.Categories && showFreeLimitDialog) {
+            FreeLimitDialog { showFreeLimitDialog = false }
         }
         if (showComet) {
             CometOverlay(onDismiss = { showComet = false })
@@ -434,6 +439,29 @@ private fun Shell(
         )
         if (showRules) {
             GameRulesOverlay(onDismiss = { showRules = false })
+        }
+    }
+}
+
+@Composable
+private fun FreeLimitDialog(onDismiss: () -> Unit) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            Modifier.fillMaxWidth()
+                .widthIn(max = 420.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Color(0xFF16365A))
+                .border(1.dp, Cyan.copy(alpha = .72f), RoundedCornerShape(28.dp))
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp),
+        ) {
+            Text(stringResource(Res.string.free_limit_dialog_message), color = Color.White, fontSize = 17.sp)
+            FrostButton(
+                text = stringResource(Res.string.ok),
+                onClick = onDismiss,
+                style = FrostButtonStyle.Primary,
+                modifier = Modifier.fillMaxWidth(),
+            )
         }
     }
 }
@@ -721,6 +749,8 @@ internal fun FrostButton(
     onLongPress: (() -> Unit)? = null,
     autoPulse: Boolean = false,
     pulseDelayMillis: Long = 0L,
+    fontSize: TextUnit = TextUnit.Unspecified,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
 ) {
     FrostButtonSurface(
         onClick = onClick,
@@ -739,12 +769,12 @@ internal fun FrostButton(
             } else {
                 (if (style == FrostButtonStyle.Primary) Ink else Frost).copy(alpha = .4f)
             },
-            fontSize = when {
+            fontSize = if (fontSize != TextUnit.Unspecified) fontSize else when {
                 closeButton -> 26.sp
                 style == FrostButtonStyle.Primary -> 22.sp
                 else -> 15.sp
             },
-            letterSpacing = when {
+            letterSpacing = if (letterSpacing != TextUnit.Unspecified) letterSpacing else when {
                 closeButton -> 0.sp
                 style == FrostButtonStyle.Primary -> 6.sp
                 else -> 2.sp
@@ -1191,6 +1221,8 @@ private fun CategoriesScreen(
                 text = stringResource(Res.string.unlock_premium),
                 onClick = onOpenPremium,
                 style = FrostButtonStyle.Primary,
+                fontSize = 16.sp,
+                letterSpacing = 3.sp,
                 modifier = Modifier.fillMaxWidth(),
             )
         }
@@ -1453,8 +1485,11 @@ private fun localizedPeriodLabel(period: String): String {
                         awaitFirstDown()
                         thermalFeedback.start()
                         val thaw = scope.launch {
+                            launch {
+                                delay(333)
+                                hasCompletedReveal = true
+                            }
                             reveal.animateTo(1f, tween(1_000, easing = LinearEasing))
-                            hasCompletedReveal = true
                         }
                         val pulseJob = scope.launch {
                             while (isActive) {
@@ -1698,8 +1733,7 @@ private fun FrostGlass(
                 }
             },
             enabled = !hasCompleted,
-            style = FrostButtonStyle.Subtle,
-            modifier = Modifier.fillMaxWidth().height(76.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

@@ -87,4 +87,5 @@
     <string name="period_months_unit">miesięcy</string>
     <string name="period_years_unit">lat</string>
     <string name="period_other">okres</string>
+    <string name="free_limit_dialog_message">Zmień kategorię lub kup wersję premium.</string>
 </resources>
