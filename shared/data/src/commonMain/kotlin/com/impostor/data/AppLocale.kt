@@ -4,6 +4,7 @@ package com.impostor.data
 enum class AppLocale(val languageTag: String) {
     ENGLISH("en"),
     POLISH("pl"),
+    UKRAINIAN("uk"),
 }
 
 /**
@@ -15,6 +16,7 @@ fun resolveAppLocale(preferredTags: List<String>): AppLocale =
         when (tag.substringBefore('-').substringBefore('_').lowercase()) {
             "pl" -> AppLocale.POLISH
             "en" -> AppLocale.ENGLISH
+            "uk" -> AppLocale.UKRAINIAN
             else -> null
         }
     } ?: AppLocale.ENGLISH

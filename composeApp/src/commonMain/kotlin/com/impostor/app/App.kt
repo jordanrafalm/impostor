@@ -437,6 +437,12 @@ private fun Shell(
             modifier = Modifier.align(Alignment.TopStart).padding(20.dp).size(52.dp),
             closeButton = true,
         )
+        Text(
+            text = "v${appVersion()}",
+            color = Frost.copy(alpha = .78f),
+            fontSize = 12.sp,
+            modifier = Modifier.align(Alignment.TopEnd).padding(20.dp),
+        )
         if (showRules) {
             GameRulesOverlay(onDismiss = { showRules = false })
         }

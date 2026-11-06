@@ -73,6 +73,32 @@ internal class SeedCatalogParityTest {
         assertEquals("Departures", englishRepository.prompts(setOf("places")).first().hint)
     }
 
+    @Test
+    fun `Ukrainian seed preserves catalog structure and prompt IDs`() {
+        val polishJson = resource("/seed/prompts-pl.json")
+        val ukrainianJson = resource("/seed/prompts-uk.json")
+        val polish = Json.parseToJsonElement(polishJson).jsonObject
+        val ukrainian = Json.parseToJsonElement(ukrainianJson).jsonObject
+        val polishCategories = polish.getValue("categories").jsonArray.map(JsonElement::jsonObject)
+        val ukrainianCategories = ukrainian.getValue("categories").jsonArray.map(JsonElement::jsonObject)
+
+        assertEquals(polish.getValue("schemaVersion"), ukrainian.getValue("schemaVersion"))
+        assertEquals(polish.getValue("activeCategoryIds"), ukrainian.getValue("activeCategoryIds"))
+        assertEquals(polishCategories.map { it.text("id") }, ukrainianCategories.map { it.text("id") })
+        for ((polishCategory, ukrainianCategory) in polishCategories.zip(ukrainianCategories)) {
+            val categoryId = ukrainianCategory.text("id")
+            assertTrue(ukrainianCategory.text("name").isNotBlank(), "$categoryId has a blank name")
+            val prompts = ukrainianCategory.getValue("prompts").jsonArray
+            assertEquals(polishCategory.getValue("prompts").jsonArray.size, prompts.size, "$categoryId prompt count")
+            assertEnglishPromptsHaveTextAndHints(categoryId, prompts)
+        }
+        val activeIds = ukrainian.getValue("activeCategoryIds").jsonArray.map { it.jsonPrimitive.content }.toSet()
+        assertEquals(
+            SeedCatalogRepository(polishJson).prompts(activeIds).map { it.id },
+            SeedCatalogRepository(ukrainianJson).prompts(activeIds).map { it.id },
+        )
+    }
+
     private fun assertEnglishPromptsHaveTextAndHints(categoryId: String, prompts: JsonArray) {
         val texts = prompts.map { it.promptText() }
         prompts.forEachIndexed { index, prompt ->

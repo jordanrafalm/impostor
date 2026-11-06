@@ -64,7 +64,7 @@ flowchart LR
 
 ### Dane gry
 
-The app follows the first supported system language (`pl` or `en`); unsupported-only preferences use English. The bundled catalogs are `shared/data/src/commonMain/resources/seed/prompts-pl.json` and `prompts-en.json`, with stable category and prompt IDs across languages. The English catalog includes translated prompt text and curated hints; the loader safely falls back to Polish if it is missing or invalid. The app combines the selected bundle with locale-matched cached Firestore prompts and refreshes in the background. Remote prompt documents without `locale` remain Polish for compatibility. See [docs/firebase.md](docs/firebase.md).
+The app follows the first supported system language (`pl`, `en` or `uk`); unsupported-only preferences use English. The bundled catalogs are `shared/data/src/commonMain/resources/seed/prompts-pl.json` and `prompts-en.json`, with stable category and prompt IDs across languages. The English catalog includes translated prompt text and curated hints; the loader safely falls back to Polish if it is missing or invalid. The app combines the selected bundle with locale-matched cached Firestore prompts and refreshes in the background. Remote prompt documents without `locale` remain Polish for compatibility. See [docs/firebase.md](docs/firebase.md).
 
 ### Firebase i płatności (opcjonalne)
 

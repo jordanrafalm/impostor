@@ -38,7 +38,7 @@ active: true
 locale: "pl"              # optional; missing locale means Polish
 ```
 
-The app only adds active documents with valid non-empty text and hint for a category present in the bundled catalog and matching the current app locale. Supported values are `pl` and `en` (language tags with regions are accepted); unknown values are ignored. Untagged legacy documents are Polish and never appear in English mode. Use unique, stable Firestore document IDs; use distinct IDs for locale-specific variants. Publishing is read-only from the app: add or edit documents through Firebase Console or a trusted server/admin process. No Firebase write credential is included in the app.
+The app only adds active documents with valid non-empty text and hint for a category present in the bundled catalog and matching the current app locale. Supported values are `pl`, `en` and `uk` (language tags with regions are accepted); unknown values are ignored. Untagged legacy documents are Polish and never appear in English mode. Use unique, stable Firestore document IDs; use distinct IDs for locale-specific variants. Publishing is read-only from the app: add or edit documents through Firebase Console or a trusted server/admin process. No Firebase write credential is included in the app.
 
 ## Promo code migration
 

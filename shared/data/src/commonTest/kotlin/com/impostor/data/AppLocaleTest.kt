@@ -53,4 +53,16 @@ internal class AppLocaleTest {
         assertEquals(AppLocale.ENGLISH, unsupportedLocale)
         assertEquals(AppLocale.ENGLISH, emptyLocale)
     }
+
+    @Test
+    fun `should resolve Ukrainian before later supported languages`() {
+        // Given
+        val preferredTags = listOf("de-DE", "uk-UA", "en-US")
+
+        // When
+        val locale = resolveAppLocale(preferredTags)
+
+        // Then
+        assertEquals(AppLocale.UKRAINIAN, locale)
+    }
 }

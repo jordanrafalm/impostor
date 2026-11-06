@@ -158,7 +158,7 @@ private fun validateRemotePrompts(
 private fun normalizedRemoteLocale(locale: String?): String? {
     val language = locale?.trim()?.substringBefore('-')?.substringBefore('_')?.lowercase()
         ?: AppLocale.POLISH.languageTag
-    return language.takeIf { it == AppLocale.POLISH.languageTag || it == AppLocale.ENGLISH.languageTag }
+    return language.takeIf { code -> AppLocale.entries.any { it.languageTag == code } }
 }
 
 private fun validatePrompts(
