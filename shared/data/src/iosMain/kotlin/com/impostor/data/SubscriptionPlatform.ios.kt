@@ -107,12 +107,14 @@ private class UserDefaultsEntitlementStore : EntitlementStore {
 private class UserDefaultsTrialStore : TrialStore {
 	private val defaults = NSUserDefaults.standardUserDefaults
 
-	override fun read(): CachedTrialState = CachedTrialState(
-		startedGames = defaults.integerForKey(KEY_COMPLETED_GAMES).toInt(),
-		lastStartedSessionId = defaults.stringForKey(KEY_LAST_SESSION_ID),
-	)
+	override fun read(): CachedTrialState = defaults.stringForKey(KEY_STATE)?.let(::decodeTrialState)
+		?: CachedTrialState(
+			startedGames = defaults.integerForKey(KEY_COMPLETED_GAMES).toInt(),
+			lastStartedSessionId = defaults.stringForKey(KEY_LAST_SESSION_ID),
+		)
 
 	override fun write(state: CachedTrialState) {
+		defaults.setObject(encodeTrialState(state), forKey = KEY_STATE)
 		defaults.setInteger(state.startedGames.toLong(), forKey = KEY_COMPLETED_GAMES)
 		if (state.lastStartedSessionId == null) {
 			defaults.removeObjectForKey(KEY_LAST_SESSION_ID)
@@ -125,6 +127,7 @@ private class UserDefaultsTrialStore : TrialStore {
 		// Keep legacy keys so an app update preserves the used trial allowance.
 		const val KEY_COMPLETED_GAMES = "impostor_trial_completed_games"
 		const val KEY_LAST_SESSION_ID = "impostor_trial_last_completed_session_id"
+		const val KEY_STATE = "impostor_trial_state_v2"
 	}
 }
 

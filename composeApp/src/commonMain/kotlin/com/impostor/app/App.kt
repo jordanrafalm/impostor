@@ -52,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeMark
@@ -70,6 +71,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -90,6 +92,7 @@ import com.impostor.data.SubscriptionRepositoryImpl
 import com.impostor.data.TrialRepositoryImpl
 import com.impostor.domain.AnalyticsEvent
 import com.impostor.domain.canStartGame
+import com.impostor.domain.requiresTrialGame
 import com.impostor.domain.GameSession
 import com.impostor.domain.GameSetup
 import com.impostor.domain.Player
@@ -133,6 +136,9 @@ private val Frost = Color(0xFFBDEBFF)
 private val PanelBorder = Color(0xFF7FCBFF).copy(alpha = .44f)
 private val PanelTop = Color(0xFF5E9FE0).copy(alpha = .28f)
 private val PanelBottom = Color(0xFF0A1A43).copy(alpha = .72f)
+private val BlackFridayAccent = Color(0xFFD8FF3F)
+private val BlackFridaySurface = Color(0xFF111411)
+private val BlackFridayMuted = Color(0xFFA6ABA1)
 private sealed interface Route {
     data object Splash : Route
     data object Home : Route
@@ -176,6 +182,10 @@ fun ImpostorApp() {
         ),
     )
     val trialState by trialRepository.state.collectAsState()
+    var promotionDismissedThisLaunch by rememberSaveable { mutableStateOf(false) }
+    var promotionActionInProgress by remember { mutableStateOf(false) }
+    var reminderRequested by rememberSaveable { mutableStateOf(false) }
+    val showBlackFriday = !trialState.blackFridayClaimed && !promotionDismissedThisLaunch
     val categories = remember { repository.categories() }
     val allCategoryIds = remember(categories) { categories.map { it.id }.toSet() }
     val prompts = remember { repository.prompts(categories.map { it.id }.toSet()) }
@@ -198,7 +208,12 @@ fun ImpostorApp() {
 
     LaunchedEffect(Unit) {
         route = Route.Home
-        platformNotificationScheduler().requestPermissionAndSchedulePartyReminder()
+    }
+    LaunchedEffect(route, showBlackFriday, showSexCategoryIntro) {
+        if (route == Route.Home && !showBlackFriday && !showSexCategoryIntro && !reminderRequested) {
+            reminderRequested = true
+            platformNotificationScheduler().requestPermissionAndSchedulePartyReminder()
+        }
     }
     Box(Modifier.fillMaxSize()) {
         IceBackdrop()
@@ -248,7 +263,7 @@ fun ImpostorApp() {
                                     startingGame = true
                                     scope.launch {
                                         try {
-                                            if (!premiumUnlocked && !usesOnlyAlwaysFreeCategories) {
+                                            if (requiresTrialGame(setup.selectedCategoryIds, entitlement)) {
                                                 RecordStartedGameUseCase(trialRepository).invoke(session.sessionId)
                                             }
                                             route = Route.Reveal(session)
@@ -295,7 +310,31 @@ fun ImpostorApp() {
                 }
             }
         }
-        if (route == Route.Home && showSexCategoryIntro) {
+        if (route == Route.Home && showBlackFriday) {
+            BlackFridayDialog(
+                enabled = !promotionActionInProgress,
+                onAccept = {
+                    if (!promotionActionInProgress) {
+                        promotionActionInProgress = true
+                        scope.launch {
+                            try {
+                                trialRepository.claimBlackFriday()
+                                promotionDismissedThisLaunch = true
+                                analytics.log(AnalyticsEvent.BLACK_FRIDAY_ACCEPTED)
+                            } finally {
+                                promotionActionInProgress = false
+                            }
+                        }
+                    }
+                },
+                onCancel = {
+                    if (!promotionActionInProgress) {
+                        promotionDismissedThisLaunch = true
+                        analytics.log(AnalyticsEvent.BLACK_FRIDAY_CANCELLED)
+                    }
+                },
+            )
+        } else if (route == Route.Home && showSexCategoryIntro) {
             SexCategoryIntroDialog {
                 if (sexIntroIsUpgradeNotice) markSexCategoryIntroDismissed()
                 sexIntroIsUpgradeNotice = false
@@ -307,6 +346,66 @@ fun ImpostorApp() {
         }
         if (showComet) {
             CometOverlay(onDismiss = { showComet = false })
+        }
+    }
+}
+
+/** Black Friday promotion; design: https://www.figma.com/design/Lkd0bevCBZZH40R4HNjSNy/impostor?node-id=2-193 */
+@Composable
+private fun BlackFridayDialog(enabled: Boolean, onAccept: () -> Unit, onCancel: () -> Unit) {
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().widthIn(max = 420.dp)
+                .clip(RoundedCornerShape(24.dp))
+                .background(BlackFridaySurface)
+                .border(1.dp, BlackFridayMuted.copy(alpha = .3f), RoundedCornerShape(24.dp))
+                .verticalScroll(rememberScrollState()),
+        ) {
+            Box(
+                Modifier.fillMaxWidth().background(BlackFridayAccent).padding(16.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text("BLACK FRIDAY", color = Color.Black, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
+            }
+            Column(
+                Modifier.fillMaxWidth().padding(24.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Text(stringResource(Res.string.black_friday_eyebrow), color = BlackFridayMuted, fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    Text("5", color = BlackFridayAccent, fontSize = 120.sp, lineHeight = 120.sp, fontWeight = FontWeight.Black)
+                    Text(stringResource(Res.string.black_friday_games), color = Color.White, fontSize = 24.sp,
+                        lineHeight = 28.sp, fontWeight = FontWeight.Black)
+                }
+                Text(stringResource(Res.string.black_friday_title), color = Color.White, fontSize = 28.sp,
+                    lineHeight = 32.sp, fontWeight = FontWeight.Black)
+                Text(stringResource(Res.string.black_friday_description), color = BlackFridayMuted, fontSize = 16.sp)
+                Box(Modifier.fillMaxWidth().height(1.dp).background(BlackFridayMuted.copy(alpha = .3f)))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(Res.string.black_friday_price), color = BlackFridayAccent, fontSize = 28.sp,
+                        fontWeight = FontWeight.Black)
+                    Text(stringResource(Res.string.black_friday_gift), color = BlackFridayMuted, fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold)
+                }
+                Box(
+                    Modifier.fillMaxWidth().heightIn(min = 56.dp).clip(RoundedCornerShape(14.dp))
+                        .background(BlackFridayAccent).clickable(enabled = enabled, onClick = onAccept).padding(12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(stringResource(Res.string.black_friday_accept), color = Color.Black,
+                        fontSize = 18.sp, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
+                }
+                Box(Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(enabled = enabled, onClick = onCancel),
+                    contentAlignment = Alignment.Center) {
+                    Text(stringResource(Res.string.black_friday_cancel), color = BlackFridayMuted,
+                        fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                }
+            }
         }
     }
 }
@@ -1448,6 +1547,8 @@ private fun localizedPeriodLabel(period: String): String {
     onRoute: (Route) -> Unit,
 ) {
     val assignment = session.assignments[session.revealIndex]
+    val playerName = localizedPlayerName(players.firstOrNull { it.id == assignment.playerId }) ?: assignment.playerId
+    var identityVisible by rememberSaveable(session.sessionId, session.revealIndex) { mutableStateOf(true) }
     val reveal = remember(session.revealIndex) { Animatable(0f) }
     var hasCompletedReveal by remember(session.revealIndex) { mutableStateOf(false) }
     val canProceed = hasCompletedReveal
@@ -1456,12 +1557,19 @@ private fun localizedPeriodLabel(period: String): String {
     val scope = rememberCoroutineScope()
 
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 24.dp),
+        Modifier.fillMaxSize().pointerInput(session.sessionId, session.revealIndex) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    if (event.changes.any { it.pressed && !it.previousPressed }) identityVisible = false
+                }
+            }
+        }.padding(horizontal = 24.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
-                localizedPlayerName(players.firstOrNull { it.id == assignment.playerId }) ?: assignment.playerId,
+                playerName,
                 color = Frost,
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
@@ -1542,6 +1650,16 @@ private fun localizedPeriodLabel(period: String): String {
             FrostGlass(
                 reveal = reveal.value,
             )
+            if (identityVisible) {
+                Text(
+                    stringResource(Res.string.reveal_identity, playerName),
+                    color = Ink,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(24.dp),
+                )
+            }
         }
         FrostButton(
             text = stringResource(

@@ -7,6 +7,24 @@ import kotlin.test.assertTrue
 
 internal class SubscriptionTest {
     @Test
+    fun `should include promotion only after it has been claimed`() {
+        assertEquals(0, TrialState(5, blackFridayGamesUsed = 0).remainingFreeGames)
+        assertEquals(5, TrialState(5, blackFridayClaimed = true).remainingFreeGames)
+        assertEquals(3, TrialState(5, blackFridayClaimed = true, blackFridayGamesUsed = 2).remainingFreeGames)
+        assertFalse(TrialState(5, blackFridayClaimed = true, blackFridayGamesUsed = 5).hasFreeCategories)
+    }
+
+    @Test
+    fun `should charge only non premium starts containing a limited category`() {
+        val locked = Entitlement(state = SubscriptionState.LOCKED, source = EntitlementSource.LOCAL_CACHE)
+        val premium = Entitlement(state = SubscriptionState.ACTIVE, source = EntitlementSource.STORE)
+        assertFalse(requiresTrialGame(setOf("animals", "places"), locked))
+        assertTrue(requiresTrialGame(setOf("animals", "sex"), locked))
+        assertFalse(requiresTrialGame(setOf("sex"), premium))
+        assertFalse(requiresTrialGame(emptySet(), locked))
+    }
+
+    @Test
     fun `should allow exactly three trial starts without a subscription`() {
         val locked = Entitlement(state = SubscriptionState.LOCKED, source = EntitlementSource.LOCAL_CACHE)
         for (used in 0..2) assertTrue(TrialState(used).canStartGame(locked))

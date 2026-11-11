@@ -274,13 +274,15 @@ private class SharedPreferencesEntitlementStore(
 private class SharedPreferencesTrialStore(
 	private val preferences: SharedPreferences,
 ) : TrialStore {
-	override fun read(): CachedTrialState = CachedTrialState(
-		startedGames = preferences.getInt(KEY_COMPLETED_GAMES, 0),
-		lastStartedSessionId = preferences.getString(KEY_LAST_SESSION_ID, null),
-	)
+	override fun read(): CachedTrialState = preferences.getString(KEY_STATE, null)?.let(::decodeTrialState)
+		?: CachedTrialState(
+			startedGames = preferences.getInt(KEY_COMPLETED_GAMES, 0),
+			lastStartedSessionId = preferences.getString(KEY_LAST_SESSION_ID, null),
+		)
 
 	override fun write(state: CachedTrialState) {
 		preferences.edit()
+			.putString(KEY_STATE, encodeTrialState(state))
 			.putInt(KEY_COMPLETED_GAMES, state.startedGames)
 			.putString(KEY_LAST_SESSION_ID, state.lastStartedSessionId)
 			.apply()
@@ -290,6 +292,7 @@ private class SharedPreferencesTrialStore(
 		// Keep legacy keys so an app update preserves the used trial allowance.
 		const val KEY_COMPLETED_GAMES = "completed_games"
 		const val KEY_LAST_SESSION_ID = "last_completed_session_id"
+		const val KEY_STATE = "trial_state_v2"
 	}
 }
 

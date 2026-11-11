@@ -36,7 +36,7 @@
     <string name="categories_rest">Others</string>
     <string name="premium_unlocks_all_categories">Premium unlocks all categories.</string>
     <string name="categories_remaining_games">All categories are unlocked. Free games remaining: %1$d.</string>
-    <string name="categories_free_limit">All 3 free games have been used. Animals, Places, and Sports stay free forever; Premium unlocks the remaining categories.</string>
+    <string name="categories_free_limit">All free games have been used. Animals, Places, and Sports stay free forever; Premium unlocks the remaining categories.</string>
     <string name="category_requires_premium">This category requires Premium.</string>
     <string name="unlock_premium">UNLOCK PREMIUM</string>
     <string name="premium_title">PREMIUM</string>
@@ -60,6 +60,15 @@
     <string name="restore_failed_message">Purchases could not be restored.</string>
     <string name="purchase_failed_message">The purchase failed.</string>
     <string name="reveal_instructions">HOLD THE SCREEN TO REVEAL THE PROMPT, THEN PASS THE PHONE TO THE NEXT PLAYER</string>
+    <string name="reveal_identity">I’m %1$s</string>
+    <string name="black_friday_eyebrow">MORE PLAY. ZERO COST.</string>
+    <string name="black_friday_games">FREE GAMES</string>
+    <string name="black_friday_title">Your next level? For free.</string>
+    <string name="black_friday_description">Claim 5 free games and get into the action.</string>
+    <string name="black_friday_price">Free</string>
+    <string name="black_friday_gift">5 GAMES AS A GIFT</string>
+    <string name="black_friday_accept">Claim for free</string>
+    <string name="black_friday_cancel">Cancel</string>
     <string name="role_agent">AGENT</string>
     <string name="role_impostor">IMPOSTOR</string>
     <string name="begin_round">START THE ROUND</string>

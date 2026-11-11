@@ -36,7 +36,7 @@
     <string name="categories_rest">Інші</string>
     <string name="premium_unlocks_all_categories">Premium розблоковує всі категорії.</string>
     <string name="categories_remaining_games">Усі категорії розблоковано. Залишилось безкоштовних ігор: %1$d.</string>
-    <string name="categories_free_limit">Усі 3 безкоштовні ігри використано. Тварини, Місця та Спорт залишаються безкоштовними назавжди; Premium розблокує решту категорій.</string>
+    <string name="categories_free_limit">Усі безкоштовні ігри використано. Тварини, Місця та Спорт залишаються безкоштовними назавжди; Premium розблокує решту категорій.</string>
     <string name="category_requires_premium">Ця категорія потребує Premium.</string>
     <string name="unlock_premium">РОЗБЛОКУВАТИ PREMIUM</string>
     <string name="premium_title">PREMIUM</string>
@@ -88,4 +88,13 @@
     <string name="period_years_unit">років</string>
     <string name="period_other">період</string>
     <string name="free_limit_dialog_message">Змініть категорію або придбайте Premium.</string>
+    <string name="reveal_identity">%1$s — це я</string>
+    <string name="black_friday_eyebrow">БІЛЬШЕ ІГОР. БЕЗ ВИТРАТ.</string>
+    <string name="black_friday_games">БЕЗКОШТОВНИХ ІГОР</string>
+    <string name="black_friday_title">Твій наступний рівень? Безкоштовно.</string>
+    <string name="black_friday_description">Отримай 5 безкоштовних ігор і поринь у гру.</string>
+    <string name="black_friday_price">Безкоштовно</string>
+    <string name="black_friday_gift">5 ІГОР У ПОДАРУНОК</string>
+    <string name="black_friday_accept">Отримати безкоштовно</string>
+    <string name="black_friday_cancel">Скасувати</string>
 </resources>

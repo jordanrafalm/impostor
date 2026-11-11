@@ -36,7 +36,7 @@
     <string name="categories_rest">Pozostałe</string>
     <string name="premium_unlocks_all_categories">Premium odblokowuje wszystkie kategorie.</string>
     <string name="categories_remaining_games">Wszystkie kategorie odblokowane. Pozostało darmowych gier: %1$d.</string>
-    <string name="categories_free_limit">Wykorzystano 3 darmowe gry. Zwierzęta, Miejsca i Sport zostają darmowe na zawsze; Subskrypcja Premium odblokuje pozostałe kategorie.</string>
+    <string name="categories_free_limit">Wykorzystano darmowe gry. Zwierzęta, Miejsca i Sport zostają darmowe na zawsze; Subskrypcja Premium odblokuje pozostałe kategorie.</string>
     <string name="category_requires_premium">Ta kategoria wymaga Premium.</string>
     <string name="unlock_premium">ODBLOKUJ PREMIUM</string>
     <string name="premium_title">PREMIUM</string>
@@ -88,4 +88,13 @@
     <string name="period_years_unit">lat</string>
     <string name="period_other">okres</string>
     <string name="free_limit_dialog_message">Zmień kategorię lub kup wersję premium.</string>
+    <string name="reveal_identity">%1$s to ja</string>
+    <string name="black_friday_eyebrow">WIĘCEJ GRANIA. ZERO ZŁOTYCH.</string>
+    <string name="black_friday_games">DARMOWYCH GIER</string>
+    <string name="black_friday_title">Twój następny poziom? Za darmo.</string>
+    <string name="black_friday_description">Odbierz 5 darmowych gier i daj się wciągnąć rozgrywce.</string>
+    <string name="black_friday_price">0 zł</string>
+    <string name="black_friday_gift">5 GIER W PREZENCIE</string>
+    <string name="black_friday_accept">Skorzystaj za darmo</string>
+    <string name="black_friday_cancel">Anuluj</string>
 </resources>

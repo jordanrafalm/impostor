@@ -48,6 +48,8 @@ internal class FirebaseAnalyticsService : AnalyticsService {
                     Firebase.analytics.logEvent("code_validated", mapOf("result" to result))
                 }
                 AnalyticsEvent.PREMIUM_SCREEN_OPENED -> Firebase.analytics.logEvent("premium_screen_opened")
+                AnalyticsEvent.BLACK_FRIDAY_ACCEPTED -> Firebase.analytics.logEvent("black_friday_accepted")
+                AnalyticsEvent.BLACK_FRIDAY_CANCELLED -> Firebase.analytics.logEvent("black_friday_cancelled")
                 AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED -> Firebase.analytics.logEvent("subscription_product_loaded")
                 AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED -> Firebase.analytics.logEvent("subscription_purchase_started")
                 AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT -> {
