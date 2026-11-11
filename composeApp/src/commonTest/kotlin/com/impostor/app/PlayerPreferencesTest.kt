@@ -22,4 +22,28 @@ internal class PlayerPreferencesTest {
 
         assertEquals("p4", nextPlayerId(players))
     }
+
+    @Test
+    fun `should append normalized pending name with an unused ID when done`() {
+        // Given
+        val players = listOf(Player("p1", "Alice"), Player("p3", "Bob"))
+
+        // When
+        val updated = appendPendingPlayer(players, "  charlie  ")
+
+        // Then
+        assertEquals(players + Player("p4", "Charlie"), updated)
+    }
+
+    @Test
+    fun `should not append a player when pending name is blank`() {
+        // Given
+        val players = listOf(Player("p1", "Alice"))
+
+        // When
+        val updated = appendPendingPlayer(players, " \t ")
+
+        // Then
+        assertEquals(players, updated)
+    }
 }

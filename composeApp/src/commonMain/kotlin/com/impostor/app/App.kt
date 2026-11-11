@@ -8,7 +8,10 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutLinearInEasing
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,19 +26,26 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -47,6 +57,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -68,6 +79,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -75,6 +87,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
@@ -114,6 +127,7 @@ import com.impostor.domain.revealText
 import com.impostor.domain.normalizePlayerName
 import kotlin.random.Random
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -133,12 +147,15 @@ private val Ink = Color(0xFF050914)
 private val Navy = Color(0xFF162846)
 private val Cyan = Color(0xFF00F0FF)
 private val Frost = Color(0xFFBDEBFF)
-private val PanelBorder = Color(0xFF7FCBFF).copy(alpha = .44f)
-private val PanelTop = Color(0xFF5E9FE0).copy(alpha = .28f)
-private val PanelBottom = Color(0xFF0A1A43).copy(alpha = .72f)
+private fun glassOpacity(color: Color): Color = color.copy(alpha = color.alpha + (1f - color.alpha) * .3f)
+private val PanelBorder = glassOpacity(Color(0xFF7FCBFF).copy(alpha = .44f))
+private val PanelTop = glassOpacity(Color(0xFF5E9FE0).copy(alpha = .28f))
+private val PanelBottom = glassOpacity(Color(0xFF0A1A43).copy(alpha = .72f))
 private val BlackFridayAccent = Color(0xFFD8FF3F)
 private val BlackFridaySurface = Color(0xFF111411)
 private val BlackFridayMuted = Color(0xFFA6ABA1)
+private const val HOLIDAY_BUTTON_TRANSITION_MILLIS = 650L
+private const val HOLIDAY_REINDEER_FALLBACK_MILLIS = 5_500L
 private sealed interface Route {
     data object Splash : Route
     data object Home : Route
@@ -149,10 +166,13 @@ private sealed interface Route {
     data class GameStart(val session: GameSession) : Route
 }
 
+@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ImpostorApp() {
     var route by remember { mutableStateOf<Route>(Route.Splash) }
-    var showComet by remember { mutableStateOf(false) }
+    var launchSoundRequested by rememberSaveable { mutableStateOf(false) }
+    val launchSoundPlayer = remember { platformLaunchSoundPlayer() }
+    var holidaySequencePhase by remember { mutableStateOf(HomeHolidaySequencePhase.IDLE) }
     var showFreeLimitDialog by remember { mutableStateOf(false) }
     var showSexCategoryIntro by remember {
         val savedEligibility = readSexCategoryIntroEligibility()
@@ -209,17 +229,72 @@ fun ImpostorApp() {
     LaunchedEffect(Unit) {
         route = Route.Home
     }
+    DisposableEffect(launchSoundPlayer) {
+        onDispose { launchSoundPlayer.release() }
+    }
+    LaunchedEffect(Unit) {
+        if (!launchSoundRequested) {
+            launchSoundRequested = true
+            val bytes = try {
+                Res.readBytes("files/launch_sleigh_bells.mp3")
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                println("Cannot read launch audio: ${error.message}")
+                null
+            }
+            if (bytes != null) launchSoundPlayer.play(bytes)
+        }
+    }
     LaunchedEffect(route, showBlackFriday, showSexCategoryIntro) {
         if (route == Route.Home && !showBlackFriday && !showSexCategoryIntro && !reminderRequested) {
             reminderRequested = true
             platformNotificationScheduler().requestPermissionAndSchedulePartyReminder()
         }
     }
+    LaunchedEffect(route, holidaySequencePhase) {
+        if (route != Route.Home) {
+            if (holidaySequencePhase != HomeHolidaySequencePhase.IDLE) {
+                holidaySequencePhase = reduceHomeHolidaySequence(
+                    holidaySequencePhase,
+                    HomeHolidaySequenceEvent.INTERRUPTED,
+                )
+            }
+            return@LaunchedEffect
+        }
+
+        when (holidaySequencePhase) {
+            HomeHolidaySequencePhase.IDLE -> Unit
+            HomeHolidaySequencePhase.BUTTONS_EXITING -> {
+                delay(HOLIDAY_BUTTON_TRANSITION_MILLIS)
+                holidaySequencePhase = reduceHomeHolidaySequence(
+                    holidaySequencePhase,
+                    HomeHolidaySequenceEvent.BUTTONS_EXITED,
+                )
+            }
+            HomeHolidaySequencePhase.REINDEER -> {
+                delay(HOLIDAY_REINDEER_FALLBACK_MILLIS)
+                holidaySequencePhase = reduceHomeHolidaySequence(
+                    holidaySequencePhase,
+                    HomeHolidaySequenceEvent.REINDEER_FINISHED,
+                )
+            }
+            HomeHolidaySequencePhase.BUTTONS_ENTERING -> {
+                delay(HOLIDAY_BUTTON_TRANSITION_MILLIS + 250L)
+                holidaySequencePhase = reduceHomeHolidaySequence(
+                    holidaySequencePhase,
+                    HomeHolidaySequenceEvent.BUTTONS_RETURNED,
+                )
+            }
+        }
+    }
     Box(Modifier.fillMaxSize()) {
         IceBackdrop()
+        SnowfallBackdrop()
         Surface(
             color = Color.Transparent,
-            modifier = Modifier.fillMaxSize().safeDrawingPadding(),
+            modifier = Modifier.fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout)),
         ) {
             AnimatedContent(route) { current ->
                 when (current) {
@@ -237,7 +312,25 @@ fun ImpostorApp() {
                             error = null
                             hintsEnabled = it
                         },
-                        onCometLongPress = { showComet = true },
+                        holidaySequencePhase = holidaySequencePhase,
+                        onHolidayLongPress = {
+                            holidaySequencePhase = reduceHomeHolidaySequence(
+                                holidaySequencePhase,
+                                HomeHolidaySequenceEvent.START,
+                            )
+                        },
+                        onReindeerAnimationFinished = {
+                            holidaySequencePhase = reduceHomeHolidaySequence(
+                                holidaySequencePhase,
+                                HomeHolidaySequenceEvent.REINDEER_FINISHED,
+                            )
+                        },
+                        onButtonsReturned = {
+                            holidaySequencePhase = reduceHomeHolidaySequence(
+                                holidaySequencePhase,
+                                HomeHolidaySequenceEvent.BUTTONS_RETURNED,
+                            )
+                        },
                         onShowSexCategoryIntro = {
                             sexIntroIsUpgradeNotice = false
                             showSexCategoryIntro = true
@@ -344,9 +437,6 @@ fun ImpostorApp() {
         if (route == Route.Categories && showFreeLimitDialog) {
             FreeLimitDialog { showFreeLimitDialog = false }
         }
-        if (showComet) {
-            CometOverlay(onDismiss = { showComet = false })
-        }
     }
 }
 
@@ -435,105 +525,186 @@ private fun Shell(
 }
 
 @Composable private fun HomeScreen(
-    players: List<Player>, impostorCount: Int, hintsEnabled: Boolean, error: SetupValidation.Reason?,
+    players: List<Player>,
+    impostorCount: Int,
+    hintsEnabled: Boolean,
+    error: SetupValidation.Reason?,
+    holidaySequencePhase: HomeHolidaySequencePhase,
     onPlayers: () -> Unit,
     onCategories: () -> Unit,
     onCodes: () -> Unit,
     onImpostorDecrease: () -> Unit,
     onImpostorIncrease: () -> Unit,
     onHintsChanged: (Boolean) -> Unit,
-    onCometLongPress: () -> Unit,
+    onHolidayLongPress: () -> Unit,
+    onReindeerAnimationFinished: () -> Unit,
+    onButtonsReturned: () -> Unit,
     onShowSexCategoryIntro: () -> Unit,
     onStart: () -> Unit,
 ): Unit {
     var showRules by remember { mutableStateOf(false) }
+    val buttonOffset = remember { Animatable(0f) }
+    val currentOnButtonsReturned by rememberUpdatedState(onButtonsReturned)
+    val currentOnReindeerAnimationFinished by rememberUpdatedState(onReindeerAnimationFinished)
+    val density = LocalDensity.current
 
-    Box(Modifier.fillMaxSize()) {
+    LaunchedEffect(holidaySequencePhase) {
+        when (holidaySequencePhase) {
+            HomeHolidaySequencePhase.IDLE -> buttonOffset.snapTo(0f)
+            HomeHolidaySequencePhase.BUTTONS_EXITING -> {
+                buttonOffset.animateTo(
+                    1f,
+                    tween(HOLIDAY_BUTTON_TRANSITION_MILLIS.toInt(), easing = FastOutSlowInEasing),
+                )
+            }
+            HomeHolidaySequencePhase.REINDEER -> buttonOffset.snapTo(1f)
+            HomeHolidaySequencePhase.BUTTONS_ENTERING -> {
+                buttonOffset.snapTo(-1f)
+                buttonOffset.animateTo(
+                    0f,
+                    tween(HOLIDAY_BUTTON_TRANSITION_MILLIS.toInt(), easing = FastOutSlowInEasing),
+                )
+                currentOnButtonsReturned()
+            }
+        }
+    }
+
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val compactLayout = maxHeight < 740.dp
+        val verticalPadding = if (compactLayout) 8.dp else 20.dp
+        val snowmanLaneHeight = if (compactLayout) 40.dp else 52.dp
+        val screenWidthPx = with(density) { maxWidth.toPx() }
         Column(
-            modifier = Modifier.fillMaxSize().imePadding().padding(horizontal = 24.dp, vertical = 20.dp),
+            modifier = Modifier.fillMaxWidth()
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = maxHeight - verticalPadding * 2)
+                .padding(horizontal = 24.dp, vertical = verticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(stringResource(Res.string.home_tagline), color = Frost.copy(alpha = .78f), fontSize = 11.sp, letterSpacing = 5.sp)
-        Spacer(Modifier.height(8.dp))
-        LongPressLogo(
-            onLongPress = onCometLongPress,
-            onTripleTap = onShowSexCategoryIntro,
-        )
-        Spacer(Modifier.height(2.dp))
-        Box(
-            Modifier.width(120.dp).height(1.dp)
-                .background(Brush.horizontalGradient(listOf(Color.Transparent, Cyan.copy(alpha = .8f), Color.Transparent))),
-        )
-        Spacer(Modifier.height(10.dp))
-        val playingNow = remember { playersOnline(currentLocalMoment()) }
-        Text(
-            "${stringResource(Res.string.home_playing_now)}: $playingNow",
-            color = Cyan,
-            fontSize = 13.sp,
-            letterSpacing = 2.sp,
-        )
-        Spacer(Modifier.height(18.dp))
-        HomeReveal(index = 0, height = 88.dp) {
-            FrostSettingButton(stringResource(Res.string.home_players), players.size.toString(), onPlayers, autoPulse = true, pulseDelayMillis = 0L)
-        }
-        Spacer(Modifier.height(8.dp))
-        HomeReveal(index = 1, height = 88.dp) {
-            FrostSettingButton(stringResource(Res.string.home_categories), "→", onCategories, autoPulse = true, pulseDelayMillis = 600L)
-        }
-        Spacer(Modifier.height(8.dp))
-        HomeReveal(index = 2, height = 72.dp) {
-            FrostToggleSetting(stringResource(Res.string.home_hint), hintsEnabled, onHintsChanged)
-        }
-        Spacer(Modifier.height(8.dp))
-        HomeReveal(index = 3, height = 88.dp) {
-            FrostImpostorSetting(impostorCount, onImpostorDecrease, onImpostorIncrease)
-        }
-        val validationMessage = error?.let { reason ->
-            val reasonLabel = when (reason) {
-                SetupValidation.Reason.TOO_FEW_PLAYERS -> stringResource(Res.string.validation_too_few_players)
-                SetupValidation.Reason.NO_CATEGORY -> stringResource(Res.string.validation_no_category)
-                SetupValidation.Reason.INVALID_IMPOSTOR_COUNT -> stringResource(Res.string.validation_invalid_impostor_count)
-                SetupValidation.Reason.DUPLICATE_PLAYER_IDS -> stringResource(Res.string.validation_duplicate_player_ids)
-                SetupValidation.Reason.DUPLICATE_PLAYER_NAMES -> stringResource(Res.string.validation_duplicate_player_names)
-                SetupValidation.Reason.EMPTY_PLAYER_NAME -> stringResource(Res.string.validation_empty_player_name)
+                Text(stringResource(Res.string.home_tagline), color = Frost.copy(alpha = .78f), fontSize = 11.sp, letterSpacing = 5.sp)
+                Spacer(Modifier.height(8.dp))
+                LongPressLogo(
+                    onLongPress = onHolidayLongPress,
+                    onTripleTap = onShowSexCategoryIntro,
+                )
+                Spacer(Modifier.height(2.dp))
+                Box(
+                    Modifier.width(120.dp).height(1.dp)
+                        .background(
+                            Brush.horizontalGradient(
+                                listOf(Color.Transparent, Cyan.copy(alpha = .8f), Color.Transparent),
+                            ),
+                        ),
+                )
+                Spacer(Modifier.height(10.dp))
+                val playingNow = remember { playersOnline(currentLocalMoment()) }
+                Text(
+                    "${stringResource(Res.string.home_playing_now)}: $playingNow",
+                    color = Cyan,
+                    fontSize = 13.sp,
+                    letterSpacing = 2.sp,
+                )
+                Box(
+                    Modifier.layout { measurable, constraints ->
+                        val placeable = measurable.measure(constraints)
+                        // Let the bottom of the sleigh artwork draw behind the Players card.
+                        val height = (placeable.height - 24.dp.roundToPx())
+                            .coerceIn(constraints.minHeight, constraints.maxHeight)
+                        layout(placeable.width, height) { placeable.placeRelative(0, 0) }
+                    }.widthIn(max = 480.dp).fillMaxWidth().aspectRatio(1125f / 647f),
+                ) {
+                    HolidayLottie(
+                        assetName = "christmas_sleigh.json",
+                        modifier = Modifier.align(Alignment.BottomCenter).fillMaxSize(),
+                        iterations = Int.MAX_VALUE,
+                        contentScale = ContentScale.Fit,
+                    )
+                }
+                Column(
+                    Modifier.fillMaxWidth().graphicsLayer {
+                        translationX = buttonOffset.value * screenWidthPx
+                    },
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    HomeReveal(index = 0, height = 88.dp) {
+                        FrostSettingButton(
+                            stringResource(Res.string.home_players),
+                            players.size.toString(),
+                            onPlayers,
+                            autoPulse = true,
+                            pulseDelayMillis = 0L,
+                        )
+                    }
+                    HomeReveal(index = 1, height = 88.dp) {
+                        FrostSettingButton(
+                            stringResource(Res.string.home_categories),
+                            "→",
+                            onCategories,
+                            autoPulse = true,
+                            pulseDelayMillis = 600L,
+                        )
+                    }
+                    HomeReveal(index = 2, height = 72.dp) {
+                        FrostToggleSetting(stringResource(Res.string.home_hint), hintsEnabled, onHintsChanged)
+                    }
+                    HomeReveal(index = 3, height = 88.dp) {
+                        FrostImpostorSetting(impostorCount, onImpostorDecrease, onImpostorIncrease)
+                    }
+                    val validationMessage = error?.let { reason ->
+                        val reasonLabel = when (reason) {
+                            SetupValidation.Reason.TOO_FEW_PLAYERS -> stringResource(Res.string.validation_too_few_players)
+                            SetupValidation.Reason.NO_CATEGORY -> stringResource(Res.string.validation_no_category)
+                            SetupValidation.Reason.INVALID_IMPOSTOR_COUNT -> stringResource(Res.string.validation_invalid_impostor_count)
+                            SetupValidation.Reason.DUPLICATE_PLAYER_IDS -> stringResource(Res.string.validation_duplicate_player_ids)
+                            SetupValidation.Reason.DUPLICATE_PLAYER_NAMES -> stringResource(Res.string.validation_duplicate_player_names)
+                            SetupValidation.Reason.EMPTY_PLAYER_NAME -> stringResource(Res.string.validation_empty_player_name)
+                        }
+                        stringResource(Res.string.home_validation_error, reasonLabel)
+                    }
+                    if (validationMessage != null) {
+                        Text(
+                            validationMessage,
+                            color = Color(0xFFFFA5B3),
+                            fontSize = 13.sp,
+                        )
+                    }
+                }
             }
-            stringResource(Res.string.home_validation_error, reasonLabel)
-        }
-        if (validationMessage != null) {
-            Spacer(Modifier.height(8.dp))
-            Text(
-                validationMessage,
-                color = Color(0xFFFFA5B3),
-                fontSize = 13.sp,
-            )
-        }
-    }
-    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-        FrostButton(
-            text = stringResource(Res.string.play),
-            onClick = onStart,
-            style = FrostButtonStyle.Primary,
-            modifier = Modifier.fillMaxWidth(),
-            autoPulse = true,
-            pulseDelayMillis = 1200L,
-        )
-        Spacer(Modifier.height(18.dp))
-        FrostButton(
-            text = stringResource(Res.string.unlock_full_version),
-            onClick = onCodes,
-            style = FrostButtonStyle.Subtle,
-            modifier = Modifier.fillMaxWidth(),
-            autoPulse = true,
-            pulseDelayMillis = 1800L,
-        )
+            Column(
+                Modifier.fillMaxWidth().graphicsLayer {
+                    translationX = buttonOffset.value * screenWidthPx
+                },
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                SnowmanLane(height = snowmanLaneHeight)
+                FrostButton(
+                    text = stringResource(Res.string.play),
+                    onClick = onStart,
+                    style = FrostButtonStyle.Primary,
+                    modifier = Modifier.fillMaxWidth(),
+                    autoPulse = true,
+                    pulseDelayMillis = 1200L,
+                )
+                Spacer(Modifier.height(18.dp))
+                FrostButton(
+                    text = stringResource(Res.string.unlock_full_version),
+                    onClick = onCodes,
+                    style = FrostButtonStyle.Subtle,
+                    modifier = Modifier.fillMaxWidth(),
+                    autoPulse = true,
+                    pulseDelayMillis = 1800L,
+                )
             }
         }
         FrostButton(
             text = "?",
             onClick = { showRules = true },
-            modifier = Modifier.align(Alignment.TopStart).padding(20.dp).size(52.dp),
+            modifier = Modifier.align(Alignment.TopStart).padding(20.dp).size(52.dp).graphicsLayer {
+                translationX = buttonOffset.value * screenWidthPx
+            },
             closeButton = true,
         )
         Text(
@@ -544,6 +715,14 @@ private fun Shell(
         )
         if (showRules) {
             GameRulesOverlay(onDismiss = { showRules = false })
+        }
+        if (holidaySequencePhase == HomeHolidaySequencePhase.REINDEER) {
+            HolidayLottie(
+                assetName = "reindeer.json",
+                modifier = Modifier.align(Alignment.Center).size(if (compactLayout) 220.dp else 280.dp),
+                contentScale = ContentScale.Fit,
+                onFinished = currentOnReindeerAnimationFinished,
+            )
         }
     }
 }
@@ -665,7 +844,7 @@ private fun GameRulesOverlay(onDismiss: () -> Unit) {
                 .padding(24.dp)
                 .clip(RoundedCornerShape(24.dp))
                 .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
-                .border(1.dp, Cyan.copy(alpha = .6f), RoundedCornerShape(24.dp))
+                .border(1.dp, glassOpacity(Cyan.copy(alpha = .6f)), RoundedCornerShape(24.dp))
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -697,7 +876,7 @@ private fun LongPressLogo(
     val progress by animateFloatAsState(
         targetValue = if (isHolding) 1f else 0f,
         animationSpec = tween(if (isHolding) 2000 else 120),
-        label = "comet-long-press-progress",
+        label = "holiday-sequence-long-press-progress",
     )
 
     Column(
@@ -742,43 +921,65 @@ private fun LongPressLogo(
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-private fun CometOverlay(onDismiss: () -> Unit) {
+private fun HolidayLottie(
+    assetName: String,
+    modifier: Modifier,
+    iterations: Int = 1,
+    contentScale: ContentScale = ContentScale.Fit,
+    onFinished: (() -> Unit)? = null,
+) {
     val compositionResult = rememberLottieComposition {
-        LottieCompositionSpec.JsonString(Res.readBytes("files/comet.json").decodeToString())
+        LottieCompositionSpec.JsonString(Res.readBytes("files/$assetName").decodeToString())
     }
     val composition by compositionResult
-    val progress by animateLottieCompositionAsState(composition, iterations = 1)
+    val progress by animateLottieCompositionAsState(composition, iterations = iterations)
 
     LaunchedEffect(compositionResult.isFailure, composition, progress) {
-        if (compositionResult.isFailure) {
-            onDismiss()
-            return@LaunchedEffect
-        }
-        if (composition != null && progress >= 0.999f) {
-            onDismiss()
+        if (compositionResult.isFailure || (iterations == 1 && composition != null && progress >= .999f)) {
+            onFinished?.invoke()
         }
     }
 
-    Box(
-        Modifier.fillMaxSize()
-            .clipToBounds()
-            .pointerInput(Unit) {
-                awaitEachGesture {
-                    awaitFirstDown()
-                    waitForUpOrCancellation()
-                    onDismiss()
-                }
-            },
-        contentAlignment = Alignment.Center,
-    ) {
+    Box(modifier, contentAlignment = Alignment.Center) {
         if (composition != null) {
             Image(
                 painter = rememberLottiePainter(composition = composition, progress = { progress }),
-                modifier = Modifier.fillMaxSize().graphicsLayer { rotationZ = 180f },
-                contentScale = ContentScale.FillBounds,
-                contentDescription = stringResource(Res.string.comet_animation),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = contentScale,
+                contentDescription = null,
             )
         }
+    }
+}
+
+@Composable
+private fun SnowmanLane(height: androidx.compose.ui.unit.Dp) {
+    val transition = rememberInfiniteTransition(label = "snowman-crossing")
+    val progress by transition.animateFloat(
+        initialValue = 0f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 24_000, easing = LinearEasing),
+        ),
+        label = "snowman-position",
+    )
+    val animationSize = if (height < 44.dp) 36.dp else 46.dp
+    val alpha = when {
+        progress < .08f -> progress / .08f
+        progress > .92f -> (1f - progress) / .08f
+        else -> 1f
+    }
+
+    BoxWithConstraints(Modifier.fillMaxWidth().height(height).clipToBounds()) {
+        HolidayLottie(
+            assetName = "snowman_dance_and_sing.json",
+            modifier = Modifier
+                .offset(x = -animationSize + (maxWidth + animationSize) * progress)
+                .size(animationSize)
+                .graphicsLayer { this.alpha = alpha },
+            iterations = Int.MAX_VALUE,
+            contentScale = ContentScale.Fit,
+        )
     }
 }
 
@@ -947,7 +1148,9 @@ private fun FrostButtonSurface(
     val background = when (style) {
         FrostButtonStyle.Primary -> Brush.verticalGradient(listOf(Color(0xFF84D7FF), Color(0xFF3D9BDF)))
         FrostButtonStyle.Glass -> Brush.verticalGradient(listOf(PanelTop, PanelBottom))
-        FrostButtonStyle.Subtle -> Brush.horizontalGradient(listOf(PanelTop.copy(alpha = .55f), PanelBottom))
+        FrostButtonStyle.Subtle -> Brush.horizontalGradient(
+            listOf(glassOpacity(PanelTop.copy(alpha = .55f)), PanelBottom),
+        )
     }
     val textColor = if (style == FrostButtonStyle.Primary) Ink else Frost
 
@@ -1033,7 +1236,7 @@ internal fun FrostSettingButton(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(52.dp).clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFF65BFF5).copy(alpha = .18f))
+                    .background(glassOpacity(Color(0xFF65BFF5).copy(alpha = .18f)))
                     .border(1.dp, PanelBorder, RoundedCornerShape(22.dp)),
             ) {
                 Text(value, color = Frost, fontSize = if (value == "→") 28.sp else 22.sp)
@@ -1096,7 +1299,7 @@ private fun FrostImpostorSetting(
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(54.dp).clip(RoundedCornerShape(18.dp))
-                    .background(Color(0xFF65BFF5).copy(alpha = .18f))
+                    .background(glassOpacity(Color(0xFF65BFF5).copy(alpha = .18f)))
                     .border(1.dp, PanelBorder, RoundedCornerShape(18.dp)),
             ) {
                 Text(impostorCount.toString(), color = Frost, fontSize = 24.sp)
@@ -1146,7 +1349,7 @@ private fun PlayersScreen(
     val newPlayerFallbackName = stringResource(Res.string.default_player, players.size + 1)
 
     Column(
-        Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 20.dp),
+        Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp, vertical = 20.dp),
     ) {
         Box(Modifier.fillMaxWidth().height(56.dp)) {
             FrostButton(
@@ -1186,7 +1389,7 @@ private fun PlayersScreen(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.size(38.dp).clip(RoundedCornerShape(13.dp))
-                        .background(Color(0xFF65BFF5).copy(alpha = .18f))
+                        .background(glassOpacity(Color(0xFF65BFF5).copy(alpha = .18f)))
                         .border(1.dp, PanelBorder, RoundedCornerShape(13.dp)),
                 ) {
                     Text("${index + 1}", color = Frost, fontSize = 16.sp)
@@ -1272,7 +1475,16 @@ private fun PlayersScreen(
         )
     }
     Spacer(Modifier.height(16.dp))
-    FrostButton(text = stringResource(Res.string.done), onClick = onBack, modifier = Modifier.fillMaxWidth(), style = FrostButtonStyle.Subtle)
+    FrostButton(
+        text = stringResource(Res.string.done),
+        onClick = {
+            val updatedPlayers = appendPendingPlayer(players, newPlayerName)
+            if (updatedPlayers.size != players.size) onPlayers(updatedPlayers)
+            onBack()
+        },
+        modifier = Modifier.fillMaxWidth(),
+        style = FrostButtonStyle.Subtle,
+    )
     }
 }
 
@@ -1316,8 +1528,8 @@ private fun CategoriesScreen(
         Column(
             Modifier.fillMaxWidth()
                 .clip(RoundedCornerShape(22.dp))
-                .background(Color(0xFF16365A).copy(alpha = .86f))
-                .border(1.dp, Cyan.copy(alpha = .72f), RoundedCornerShape(22.dp))
+                .background(glassOpacity(Color(0xFF16365A).copy(alpha = .86f)))
+                .border(1.dp, glassOpacity(Cyan.copy(alpha = .72f)), RoundedCornerShape(22.dp))
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -1823,8 +2035,12 @@ private fun FrostGlass(
         Column(
             modifier = Modifier.fillMaxWidth().height(396.dp)
                 .clip(starterCardShape)
-                .background(Brush.verticalGradient(listOf(Color(0xFFE3F4FF).copy(alpha = .40f), PanelBottom)))
-                .border(1.dp, Color(0xFFD4F3FF).copy(alpha = .58f), starterCardShape),
+                .background(
+                    Brush.verticalGradient(
+                        listOf(glassOpacity(Color(0xFFB8CEE0).copy(alpha = .40f)), PanelBottom),
+                    ),
+                )
+                .border(1.dp, glassOpacity(Color(0xFFD4F3FF).copy(alpha = .58f)), starterCardShape),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
