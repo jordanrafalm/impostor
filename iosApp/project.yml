@@ -20,7 +20,6 @@ targets:
       - path: iosApp.swift
       - path: Assets.xcassets
     resources:
-      - path: GoogleService-Info.plist
       - path: en.lproj
       - path: pl.lproj
       - path: uk.lproj
@@ -59,12 +58,10 @@ targets:
     postBuildScripts:
       - name: Copy runtime configuration and bundled catalog
         inputFiles:
-          - "${SRCROOT}/GoogleService-Info.plist"
           - "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-pl.json"
           - "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-en.json"
           - "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-uk.json"
         outputFiles:
-          - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-pl.json"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-en.json"
           - "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-uk.json"
@@ -74,7 +71,9 @@ targets:
           - "${DWARF_DSYM_FOLDER_PATH}/ComposeApp.framework.dSYM/Contents/Resources/DWARF/ComposeApp"
         script: |
           mkdir -p "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}"
-          cp "${SRCROOT}/GoogleService-Info.plist" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
+          if [ -f "${SRCROOT}/GoogleService-Info.plist" ]; then
+            cp "${SRCROOT}/GoogleService-Info.plist" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/GoogleService-Info.plist"
+          fi
           cp "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-pl.json" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-pl.json"
           cp "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-en.json" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-en.json"
           cp "${SRCROOT}/../shared/data/src/commonMain/resources/seed/prompts-uk.json" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/prompts-uk.json"

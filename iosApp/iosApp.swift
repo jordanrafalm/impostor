@@ -1,13 +1,16 @@
 import SwiftUI
 import ComposeApp
 import FirebaseCore
+import Foundation
 import StoreKit
 import UIKit
 
 @main
 struct iosApp: App {
     init() {
-        FirebaseApp.configure()
+        if Bundle.main.path(forResource: "GoogleService-Info", ofType: "plist") != nil {
+            FirebaseApp.configure()
+        }
         StoreKitBridge.install()
     }
 
@@ -24,6 +27,7 @@ struct iosApp: App {
 private final class StoreKitBridge {
     private static let requestName = Notification.Name("com.impostor.storekit.request")
     private static let responseName = Notification.Name("com.impostor.storekit.response")
+    private static let entitlementUpdateName = Notification.Name("com.impostor.storekit.entitlementUpdate")
     private static let productId = "com.impostor.app.premium.monthly"
     private static var shared: StoreKitBridge?
 
@@ -104,14 +108,9 @@ private final class StoreKitBridge {
                 }
             case "restore":
                 try await AppStore.sync()
-                var active = false
-                for await result in StoreKit.Transaction.currentEntitlements {
-                    if case .verified(let transaction) = result, transaction.productID == Self.productId {
-                        active = true
-                        await transaction.finish()
-                    }
-                }
-                respond(requestId, ["status": active ? "active" : "locked"])
+                respond(requestId, await currentStoreEntitlement())
+            case "reconcile":
+                respond(requestId, await currentStoreEntitlement())
             case "manage":
                 guard let url = URL(string: "https://apps.apple.com/account/subscriptions") else {
                     respond(requestId, ["status": "error", "error": "unavailable"])
@@ -132,6 +131,11 @@ private final class StoreKitBridge {
         guard case .verified(let transaction) = transactionResult, transaction.productID == Self.productId else {
             return
         }
+        NotificationCenter.default.post(
+            name: Self.entitlementUpdateName,
+            object: nil,
+            userInfo: entitlementPayload(for: transaction),
+        )
         await transaction.finish()
     }
 
@@ -144,9 +148,37 @@ private final class StoreKitBridge {
             respond(requestId, ["status": "error", "error": "failed"])
             return
         }
-        let expiration = transaction.expirationDate?.timeIntervalSince1970 ?? 0
         await transaction.finish()
-        respond(requestId, ["status": "active", "expiresAtMillis": Int64(expiration * 1000)])
+        respond(requestId, entitlementPayload(for: transaction))
+    }
+
+    private func currentStoreEntitlement() async -> [String: Any] {
+        var fallbackStatus = "locked"
+        for await result in StoreKit.Transaction.currentEntitlements {
+            guard case .verified(let transaction) = result, transaction.productID == Self.productId else {
+                continue
+            }
+            let payload = entitlementPayload(for: transaction)
+            if payload["status"] as? String == "active" {
+                return payload
+            }
+            fallbackStatus = payload["status"] as? String ?? fallbackStatus
+        }
+        return ["status": fallbackStatus]
+    }
+
+    private func entitlementPayload(for transaction: StoreKit.Transaction) -> [String: Any] {
+        if transaction.revocationDate != nil {
+            return ["status": "revoked"]
+        }
+        if let expirationDate = transaction.expirationDate, expirationDate <= Date() {
+            return ["status": "expired"]
+        }
+        var payload: [String: Any] = ["status": "active"]
+        if let expirationDate = transaction.expirationDate {
+            payload["expiresAtMillis"] = Int64(expirationDate.timeIntervalSince1970 * 1000)
+        }
+        return payload
     }
 
     private func periodLabel(_ period: Product.SubscriptionPeriod?) -> String {

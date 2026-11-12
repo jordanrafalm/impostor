@@ -2,25 +2,42 @@
 
 ## Status
 
-Accepted.
+Accepted. Android Google Services plugin application and iOS Firebase initialization/config copying are conditional on local configuration being present. Configuration-free on-device startup and gameplay have not been tested.
 
 ## Context
 
-Impostor is a fully local pass-and-play game. The bundled catalog and an active round must work without a network connection, an account, or Firebase configuration. Firebase is useful only for privacy-safe product analytics and for distributing category unlock codes or other remote code data.
+Impostor is an offline-first pass-and-play game. The bundled catalog, local setup, and an active round must work without a network connection, an account, or Firebase configuration. Firebase is an optional adapter for remote content and privacy-safe telemetry; it must not be a prerequisite for composing the app or starting/revealing a game.
 
 ## Decision
 
-Keep gameplay and the catalog offline-first. Firebase is optional and fail-safe:
+Keep gameplay and the bundled catalog offline-first. Firebase is optional and fail-safe:
 
 - `shared:domain` owns `CodeRepository`, `AnalyticsService`, and the `ValidateCodeUseCase` contracts.
 - `shared:data` owns cache-first code validation and the `RemoteCodeSource` / analytics platform seams.
-- `composeApp` calls only the domain use case and analytics contract. Composables and ViewModels never import or call Firebase SDKs.
-- Remote codes are fetched when the cache is empty, retained locally for the session, and reused when a later fetch fails. An unavailable remote source never prevents starting a local game.
+- `composeApp` may compose domain contracts and data-layer adapters, but the Compose UI must never import or call Firebase SDKs directly.
+- Remote operations are outside the local game-start/reveal path. An unavailable or unconfigured Firebase source must be represented as unavailable and must never prevent starting or completing a local game.
 - Analytics may record event names and coarse non-sensitive values such as validation outcome. It must never include player names, prompt text, assignments, code values, or tokens.
-- Firebase Analytics is the intended analytics provider. Firebase Remote Config is the preferred provider for small code catalogs; Firestore is an alternative when codes need structured records or expiry metadata.
+- Firebase Analytics is an optional telemetry provider. Remote content is documented by ADR-0006; do not treat Firebase Remote Config as an adopted project dependency.
 
-The current implementation uses GitLive Firestore and Analytics adapters behind `shared:data`. Android is configured through `composeApp/google-services.json`; iOS requires adding the supplied plist to the Xcode target and initializing FirebaseCore in the host. The app fetches `promoCodes` read-only, caches the result for the current session, and maps `unlockAllCategories: true` to all active bundled categories. Firebase failures remain fail-safe.
+```mermaid
+flowchart LR
+    UI[Compose app] --> Game[Domain rules and active round]
+    Catalog[Bundled prompt catalog] --> Game
+    Game -->|independent of network| Offline[Offline gameplay]
+    Data[Optional shared:data adapters] -. remote prompts / telemetry .-> Firebase[Firebase]
+    Firebase -. unavailable or unconfigured .-> Offline
+```
+
+## Implementation status and verification
+
+`composeApp/build.gradle.kts` applies the Google Services plugin only when `composeApp/google-services.json` exists. `iosApp/project.yml` copies `GoogleService-Info.plist` into the app bundle only when the file exists, and `iosApp/iosApp.swift` calls `FirebaseApp.configure()` only when that bundled plist exists. The app keeps the bundled catalog and local play paths available independently of Firebase; synced prompt refresh is detailed in ADR-0006.
+
+This confirms conditional configuration wiring, not full runtime optionality. A no-configuration on-device Firebase startup/play test was not performed, nor was a separate full iOS host app build. Firebase adapter behavior when Firebase is unconfigured and when remote services are unavailable remains to be verified on device. The previously passing test/build command is recorded in `.serena/memories/testing_strategy.md`.
+
+The former promo-code contract is not an entitlement source: ADR-0003 makes verified store state the only authority for Premium. Any retained code-related adapter must remain disconnected from subscription/category entitlement.
+
+Before marking this decision fully verified, test Android and iOS startup/gameplay with Firebase configuration absent, Firebase unavailable, and network disabled. Confirm no Firebase initialization, analytics, or remote request can block the bundled catalog, local game start, or private reveal flow.
 
 ## Consequences
 
-The app is immediately buildable and fully playable offline. Remote code distribution and analytics are active when the Firebase platform configuration is present. A Firestore administrator must create the `IMPOSTOR-ALL-2026` document described in `docs/firebase.md`; no write credential is shipped in the app.
+Conditional setup avoids requiring local Firebase configuration to build/configure the hosts, while the architecture keeps the local game independent of Firebase and avoids shipping privileged write credentials. Configuration-free runtime startup/gameplay and Firebase failure behavior remain explicit device-verification gaps.

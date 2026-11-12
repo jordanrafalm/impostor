@@ -3,10 +3,13 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.apple.XCFramework
 
 plugins {
     id("com.android.application")
-    id("com.google.gms.google-services")
     kotlin("multiplatform")
     id("org.jetbrains.compose")
     id("org.jetbrains.kotlin.plugin.compose")
+}
+
+if (file("google-services.json").isFile) {
+    apply(plugin = "com.google.gms.google-services")
 }
 
 kotlin {
@@ -62,8 +65,8 @@ android {
         applicationId = "com.rafal.impostorparty"
         minSdk = 26
         targetSdk = 36
-        versionCode = 18
-        versionName = "1.1.8"
+        versionCode = 20
+        versionName = "1.1.9"
     }
     buildFeatures {
         compose = true

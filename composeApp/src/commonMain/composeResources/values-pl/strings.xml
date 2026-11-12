@@ -13,6 +13,10 @@
     <string name="play">G R A J</string>
     <string name="unlock_full_version">♧  ODBLOKUJ PEŁNĄ WERSJĘ</string>
     <string name="new_category">NOWA KATEGORIA</string>
+    <string name="review_prompt">Jeśli dobrze się bawisz, będzie nam miło, jeśli ocenisz aplikację w sklepie. 💛</string>
+    <string name="review_rate">Oceń aplikację</string>
+    <string name="review_not_now">Nie teraz</string>
+    <string name="review_open_failed">Nie udało się otworzyć sklepu. Spróbuj ponownie.</string>
     <string name="sex_category_description">Kategoria SEX zawiera bardziej bezpośrednie hasła dla dorosłych. Możesz ją włączyć w ustawieniach kategorii.</string>
     <string name="ok">OK</string>
     <string name="rules_title">JAK GRAĆ</string>

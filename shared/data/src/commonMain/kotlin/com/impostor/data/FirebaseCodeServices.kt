@@ -50,6 +50,9 @@ internal class FirebaseAnalyticsService : AnalyticsService {
                 AnalyticsEvent.PREMIUM_SCREEN_OPENED -> Firebase.analytics.logEvent("premium_screen_opened")
                 AnalyticsEvent.BLACK_FRIDAY_ACCEPTED -> Firebase.analytics.logEvent("black_friday_accepted")
                 AnalyticsEvent.BLACK_FRIDAY_CANCELLED -> Firebase.analytics.logEvent("black_friday_cancelled")
+                AnalyticsEvent.REVIEW_PROMPT_SHOWN -> Firebase.analytics.logEvent("review_prompt_shown")
+                AnalyticsEvent.REVIEW_PROMPT_RATE_CLICKED -> Firebase.analytics.logEvent("review_prompt_rate_clicked")
+                AnalyticsEvent.REVIEW_PROMPT_DISMISSED -> Firebase.analytics.logEvent("review_prompt_dismissed")
                 AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED -> Firebase.analytics.logEvent("subscription_product_loaded")
                 AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED -> Firebase.analytics.logEvent("subscription_purchase_started")
                 AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT -> {

@@ -5,47 +5,15 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class HomeScreenVisibilityTest {
+    // The current Home always exposes the premium action; the former conditional
+    // visibility policy was removed before the adaptive layout was introduced.
     @Test
-    fun `premium unlock appears when free games are exhausted`() {
-        assertTrue(
-            shouldShowPremiumUnlock(
-                remainingFreeGames = 0,
-                premiumUnlocked = false,
-                revealedByHold = false,
-            ),
-        )
+    fun `should use a single column when the home panes do not fit`() {
+        assertFalse(hasTwoPanes(631f, minPaneWidth = 280f, horizontalGaps = 72f))
     }
 
     @Test
-    fun `premium unlock appears after holding play even with free games remaining`() {
-        assertTrue(
-            shouldShowPremiumUnlock(
-                remainingFreeGames = 2,
-                premiumUnlocked = false,
-                revealedByHold = true,
-            ),
-        )
-    }
-
-    @Test
-    fun `premium unlock stays hidden while free games remain and play was not held`() {
-        assertFalse(
-            shouldShowPremiumUnlock(
-                remainingFreeGames = 1,
-                premiumUnlocked = false,
-                revealedByHold = false,
-            ),
-        )
-    }
-
-    @Test
-    fun `premium unlock stays hidden for premium users`() {
-        assertFalse(
-            shouldShowPremiumUnlock(
-                remainingFreeGames = 0,
-                premiumUnlocked = true,
-                revealedByHold = true,
-            ),
-        )
+    fun `should use two columns when both home panes fit`() {
+        assertTrue(hasTwoPanes(632f, minPaneWidth = 280f, horizontalGaps = 72f))
     }
 }

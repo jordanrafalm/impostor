@@ -13,6 +13,10 @@
     <string name="play">P L A Y</string>
     <string name="unlock_full_version">♧  UNLOCK PREMIUM</string>
     <string name="new_category">NEW CATEGORY</string>
+    <string name="review_prompt">If you’re having fun, we’d love it if you rated the app in the store. 💛</string>
+    <string name="review_rate">Rate the app</string>
+    <string name="review_not_now">Not now</string>
+    <string name="review_open_failed">Couldn’t open the store. Please try again.</string>
     <string name="sex_category_description">The SEX category contains more explicit adult prompts. You can enable it in category settings.</string>
     <string name="ok">OK</string>
     <string name="rules_title">HOW TO PLAY</string>

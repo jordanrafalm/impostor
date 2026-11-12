@@ -50,6 +50,16 @@ internal class SyncedCatalogRepositoryTest {
     }
 
     @Test
+    fun `should keep bundled gameplay available when Firebase is not configured`() = runTest {
+        val source = FirestorePromptSource { error("Firebase is not configured") }
+        val repository = SyncedCatalogRepository(bundled, source, FakeStore())
+
+        assertEquals(listOf("animals-001"), ids(repository))
+        assertTrue(repository.refresh().isFailure)
+        assertEquals(listOf("animals-001"), ids(repository))
+    }
+
+    @Test
     fun `should not duplicate ids across repeated syncs or with bundled prompts`() = runTest {
         val source = FakeSource { listOf(remote("animals-001", text = "Inny"), remote("r1"), remote("r1")) }
         val repository = SyncedCatalogRepository(bundled, source, FakeStore())
@@ -59,6 +69,22 @@ internal class SyncedCatalogRepositoryTest {
 
         assertEquals(listOf("animals-001", "r1"), ids(repository))
         assertEquals("Kot", repository.prompts(setOf("animals")).first().text)
+    }
+
+    @Test
+    fun `should replace cached same-locale remote prompt with the latest valid record`() = runTest {
+        val store = FakeStore()
+        var records = listOf(remote("r1", text = "Stary tekst", hint = "Stara podpowiedź"))
+        val source = FakeSource { records }
+        val repository = SyncedCatalogRepository(bundled, source, store)
+        repository.refresh()
+
+        records = listOf(remote("r1", text = "Nowszy tekst", hint = "Nowa podpowiedź"))
+        assertTrue(repository.refresh().isSuccess)
+
+        assertEquals("Nowszy tekst", repository.prompts(setOf("animals")).last().text)
+        val restarted = SyncedCatalogRepository(bundled, FakeSource { error("offline") }, store)
+        assertEquals("Nowszy tekst", restarted.prompts(setOf("animals")).last().text)
     }
 
     @Test
@@ -93,13 +119,13 @@ internal class SyncedCatalogRepositoryTest {
         val store = FakeStore()
         val source = FakeSource { listOf(remote("r1")) }
         val repository = SyncedCatalogRepository(bundled, source, store)
-        repository.refresh()
+        assertTrue(repository.refresh().isSuccess)
         val saved = store.value
 
         source.result = { error("offline") }
-        repository.refresh()
+        assertTrue(repository.refresh().isFailure)
         source.result = { listOf(remote("bad", text = "")) }
-        repository.refresh()
+        assertTrue(repository.refresh().isSuccess)
 
         assertEquals(listOf("animals-001", "r1"), ids(repository))
         assertEquals(saved, store.value)
@@ -126,7 +152,7 @@ internal class SyncedCatalogRepositoryTest {
         assertEquals(listOf("animals-001"), ids(corrupt))
 
         val failing = SyncedCatalogRepository(bundled, FakeSource { listOf(remote("r1")) }, FakeStore(failWrite = true))
-        failing.refresh()
+        assertTrue(failing.refresh().isFailure)
         assertEquals(listOf("animals-001"), ids(failing))
     }
 

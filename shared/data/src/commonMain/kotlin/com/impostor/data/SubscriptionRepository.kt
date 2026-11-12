@@ -8,15 +8,24 @@ import com.impostor.domain.SubscriptionException
 import com.impostor.domain.SubscriptionProduct
 import com.impostor.domain.SubscriptionRepository
 import com.impostor.domain.SubscriptionState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
 
 interface StoreBillingClient {
+    val entitlementUpdates: Flow<Entitlement>?
+        get() = null
+
     suspend fun loadProduct(): Result<SubscriptionProduct>
+    suspend fun queryCurrentEntitlement(): Result<Entitlement> = restorePurchases()
     suspend fun purchase(): Result<Entitlement>
     suspend fun restorePurchases(): Result<Entitlement>
     suspend fun openManageSubscriptions(): Result<Unit>
@@ -55,6 +64,7 @@ class SubscriptionRepositoryImpl(
     private val billingClient: StoreBillingClient = platformStoreBillingClient(),
     private val entitlementStore: EntitlementStore = platformEntitlementStore(),
     private val nowMillis: () -> Long = { kotlin.time.Clock.System.now().toEpochMilliseconds() },
+    updateScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : SubscriptionRepository {
     private val transitionMutex = Mutex()
     private val initial = entitlementStore.read()?.toEntitlement(nowMillis()) ?:
@@ -63,7 +73,31 @@ class SubscriptionRepositoryImpl(
 
     override val entitlement: Flow<Entitlement> = _entitlement.asStateFlow()
 
+    init {
+        billingClient.entitlementUpdates?.let { updates ->
+            updateScope.launch {
+                updates.collect { update ->
+                    transitionMutex.withLock { storeVerified(update) }
+                }
+            }
+        }
+    }
+
     override suspend fun loadProduct(): Result<SubscriptionProduct> = billingClient.loadProduct()
+
+    override suspend fun reconcileEntitlement(): Result<Entitlement> = transitionMutex.withLock {
+        val result = try {
+            billingClient.queryCurrentEntitlement()
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (exception: Throwable) {
+            Result.failure(exception)
+        }
+        result.onSuccess(::storeVerified).onFailure {
+            _entitlement.value = _entitlement.value.copy(state = SubscriptionState.UNAVAILABLE)
+        }
+        result
+    }
 
     override suspend fun purchase(): Result<Entitlement> = transition(SubscriptionState.PURCHASING) {
         billingClient.purchase()

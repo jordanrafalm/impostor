@@ -40,4 +40,20 @@ class AppStateSaveableTest {
 
         assertNull(restoreGameSession(saved))
     }
+
+    @Test
+    fun `should restore active routes with the same game session`() {
+        val session = GameSession(
+            sessionId = "session-2",
+            prompt = Prompt("prompt-2", "animals", "Otter", "River"),
+            assignments = listOf(Assignment("p1", Role.AGENT), Assignment("p2", Role.IMPOSTOR)),
+            starterPlayerId = "p2",
+            revealIndex = 1,
+            hintsEnabled = true,
+        )
+        val routes = listOf(Route.Reveal(session), Route.GameStart(session))
+
+        routes.forEach { assertEquals(it, restoreRoute(saveRoute(it))) }
+        assertNull(restoreRoute(listOf("reveal", "invalid")))
+    }
 }

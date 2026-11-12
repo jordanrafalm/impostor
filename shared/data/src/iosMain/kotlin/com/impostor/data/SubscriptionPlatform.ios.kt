@@ -7,6 +7,8 @@ import com.impostor.domain.SubscriptionError
 import com.impostor.domain.SubscriptionException
 import com.impostor.domain.SubscriptionProduct
 import com.impostor.domain.SubscriptionState
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
@@ -16,6 +18,7 @@ import kotlin.coroutines.resume
 
 private const val REQUEST_NOTIFICATION = "com.impostor.storekit.request"
 private const val RESPONSE_NOTIFICATION = "com.impostor.storekit.response"
+private const val ENTITLEMENT_UPDATE_NOTIFICATION = "com.impostor.storekit.entitlementUpdate"
 
 actual fun platformStoreBillingClient(): StoreBillingClient = IosStoreKitBillingClient()
 
@@ -26,6 +29,20 @@ actual fun platformTrialStore(): TrialStore = UserDefaultsTrialStore()
 actual fun initializePlatformStoreBilling(context: Any) = Unit
 
 private class IosStoreKitBillingClient : StoreBillingClient {
+	override val entitlementUpdates: Flow<Entitlement>
+		get() = updates
+	private val updates = MutableSharedFlow<Entitlement>(extraBufferCapacity = 1)
+	private val updateObserver = NSNotificationCenter.defaultCenter.addObserverForName(
+		ENTITLEMENT_UPDATE_NOTIFICATION,
+		null,
+		null,
+	) { notification ->
+		val values: Map<Any?, *> = notification?.userInfo ?: return@addObserverForName
+		values.toEntitlementResult(SubscriptionError.STORE_UNAVAILABLE)
+			.getOrNull()
+			?.let(updates::tryEmit)
+	}
+
 	override suspend fun loadProduct(): Result<SubscriptionProduct> = request("load") { response ->
 		if (response["status"] == "success") {
 			Result.success(
@@ -47,6 +64,10 @@ private class IosStoreKitBillingClient : StoreBillingClient {
 
 	override suspend fun restorePurchases(): Result<Entitlement> = request("restore") { response ->
 		response.toEntitlementResult(SubscriptionError.RESTORE_FAILED)
+	}
+
+	override suspend fun queryCurrentEntitlement(): Result<Entitlement> = request("reconcile") { response ->
+		response.toEntitlementResult(SubscriptionError.STORE_UNAVAILABLE)
 	}
 
 	override suspend fun openManageSubscriptions(): Result<Unit> = request("manage") { response ->
@@ -141,6 +162,8 @@ private fun Map<Any?, Any?>.toEntitlementResult(fallback: SubscriptionError): Re
 			),
 		)
 		"locked" -> Result.success(Entitlement(state = SubscriptionState.LOCKED, source = EntitlementSource.STORE))
+		"expired" -> Result.success(Entitlement(state = SubscriptionState.EXPIRED, source = EntitlementSource.STORE))
+		"revoked" -> Result.success(Entitlement(state = SubscriptionState.REVOKED, source = EntitlementSource.STORE))
 		else -> Result.failure(error(fallback))
 	}
 

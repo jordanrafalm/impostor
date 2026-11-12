@@ -50,6 +50,7 @@ class SubscriptionException(val error: SubscriptionError) : IllegalStateExceptio
 interface SubscriptionRepository {
     val entitlement: Flow<Entitlement>
     suspend fun loadProduct(): Result<SubscriptionProduct>
+    suspend fun reconcileEntitlement(): Result<Entitlement>
     suspend fun purchase(): Result<Entitlement>
     suspend fun restorePurchases(): Result<Entitlement>
     suspend fun openManageSubscriptions(): Result<Unit>

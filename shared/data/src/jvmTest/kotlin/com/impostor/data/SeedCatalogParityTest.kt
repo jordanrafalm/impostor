@@ -13,6 +13,30 @@ import kotlin.test.assertTrue
 
 internal class SeedCatalogParityTest {
     @Test
+    fun `Christmas category contains fifty distinct prompts with explicit hints in every locale`() {
+        val catalogs = listOf("pl", "en", "uk").map { locale ->
+            val json = resource("/seed/prompts-$locale.json")
+            val document = Json.parseToJsonElement(json).jsonObject
+            assertTrue(document.getValue("activeCategoryIds").jsonArray.any { it.jsonPrimitive.content == "christmas" })
+            val category = document.getValue("categories").jsonArray
+                .map(JsonElement::jsonObject).single { it.text("id") == "christmas" }
+            val entries = category.getValue("prompts").jsonArray
+            assertEquals(50, entries.size, locale)
+            assertEquals(50, entries.map { it.jsonObject.text("text").lowercase() }.toSet().size, locale)
+            entries.forEach {
+                val entry = it.jsonObject
+                assertTrue(entry.text("text").isNotBlank(), locale)
+                assertTrue(entry.text("hint").isNotBlank(), locale)
+                assertTrue(!entry.text("text").equals(entry.text("hint"), ignoreCase = true), locale)
+            }
+            SeedCatalogRepository(json).prompts(setOf("christmas"))
+        }
+        assertTrue(catalogs.all { it.size == 50 })
+        assertEquals(catalogs[0].map { it.id }, catalogs[1].map { it.id })
+        assertEquals(catalogs[0].map { it.id }, catalogs[2].map { it.id })
+    }
+
+    @Test
     fun `English seed preserves catalog structure and has complete translated content`() {
         val polishJson = resource("/seed/prompts-pl.json")
         val englishJson = resource("/seed/prompts-en.json")

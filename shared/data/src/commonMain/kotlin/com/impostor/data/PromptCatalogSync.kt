@@ -61,7 +61,7 @@ class SyncedCatalogRepository(
     private val categories = bundled.categories()
     private val categoryIds = categories.map { it.id }.toSet()
     private val bundledPrompts = bundled.prompts(categoryIds)
-    private val bundledIds = bundledPrompts.mapTo(mutableSetOf()) { it.id }
+    private val bundledPromptKeys = bundledPrompts.mapTo(mutableSetOf()) { locale.languageTag to it.id }
 
     @Volatile
     private var cachedRemotePrompts: List<RemotePrompt> = loadCachedPrompts()
@@ -74,35 +74,33 @@ class SyncedCatalogRepository(
     override fun prompts(categoryIds: Set<String>): List<Prompt> =
         mergePrompts(bundledPrompts, remotePrompts).filter { it.categoryId in categoryIds }
 
-    /** Refreshes from the remote source; failures keep the previous valid data and are silent. */
-    suspend fun refresh() {
+    /** Refreshes asynchronously for callers; failures retain the previous valid snapshot. */
+    suspend fun refresh(): Result<Unit> {
         val records = try {
             source.fetchPrompts()
         } catch (cancellation: CancellationException) {
             throw cancellation
-        } catch (_: Exception) {
-            return
+        } catch (exception: Exception) {
+            return Result.failure(exception)
         }
         val valid = validateRemotePrompts(records, categoryIds)
-        if (valid.isEmpty()) return
+        if (valid.isEmpty()) return Result.success(Unit)
         val merged = mergeRemotePrompts(cachedRemotePrompts, valid)
-            .filter { it.id !in bundledIds }
-        if (merged == cachedRemotePrompts) return
-        val persisted = try {
+            .filter { (normalizedRemoteLocale(it.locale) to it.id) !in bundledPromptKeys }
+        if (merged == cachedRemotePrompts) return Result.success(Unit)
+        try {
             store.write(snapshotJson.encodeToString(PromptSnapshot(prompts = merged.map {
                 SnapshotPrompt(it.id, it.categoryId.orEmpty(), it.text.orEmpty(), it.hint.orEmpty(), it.locale ?: "pl")
             })))
-            true
         } catch (cancellation: CancellationException) {
             throw cancellation
-        } catch (_: Exception) {
-            false
+        } catch (exception: Exception) {
+            return Result.failure(exception)
         }
         // Keep the in-memory view consistent with what a restart would load only when persisted.
-        if (persisted) {
-            cachedRemotePrompts = merged
-            remotePrompts = validatePrompts(cachedRemotePrompts, categoryIds, locale)
-        }
+        cachedRemotePrompts = merged
+        remotePrompts = validatePrompts(cachedRemotePrompts, categoryIds, locale)
+        return Result.success(Unit)
     }
 
     private fun loadCachedPrompts(): List<RemotePrompt> = try {
@@ -151,7 +149,9 @@ private fun validateRemotePrompts(
                 )
             }
         }
-        .distinctBy { it.locale to it.id }
+        .toList()
+        .associateBy { it.locale to it.id }
+        .values
         .sortedWith(compareBy<RemotePrompt> { it.locale }.thenBy { it.id })
         .toList()
 
@@ -177,7 +177,7 @@ private fun mergeRemotePrompts(
     (previous + incoming).forEach { record ->
         val locale = normalizedRemoteLocale(record.locale) ?: return@forEach
         val key = locale to record.id
-        if (key !in merged) merged[key] = record
+        merged[key] = record
     }
     return merged.values.toList()
 }

@@ -7,7 +7,7 @@ Strona wsparcia i polityka prywatności: [jordanrafalm.github.io/impostor](https
 ## Rozgrywka
 
 1. Dodaj co najmniej trzech graczy.
-2. Wybierz jedną lub więcej kategorii oraz liczbę impostorów.
+2. Wybierz kategorię oraz liczbę impostorów. Obsługa jednoczesnego wyboru wielu kategorii jest wymaganiem do wdrożenia opisanym w ADR-0006, ale obecny ekran wybiera jedną kategorię.
 3. Każda osoba przytrzymuje ekran, aby odsłonić swoją rolę, a następnie oddaje telefon kolejnej osobie.
 4. Agenci widzą wspólne hasło. Impostor otrzymuje tylko oznaczenie roli lub opcjonalną wskazówkę.
 5. Po ujawnieniu wszystkich ról aplikacja wskazuje osobę rozpoczynającą dyskusję.
@@ -64,11 +64,11 @@ flowchart LR
 
 ### Dane gry
 
-The app follows the first supported system language (`pl`, `en` or `uk`); unsupported-only preferences use English. The bundled catalogs are `shared/data/src/commonMain/resources/seed/prompts-pl.json` and `prompts-en.json`, with stable category and prompt IDs across languages. The English catalog includes translated prompt text and curated hints; the loader safely falls back to Polish if it is missing or invalid. The app combines the selected bundle with locale-matched cached Firestore prompts and refreshes in the background. Remote prompt documents without `locale` remain Polish for compatibility. See [docs/firebase.md](docs/firebase.md).
+The app follows the first supported system language (`pl`, `en` or `uk`); unsupported-only preferences use English. The bundled catalogs are `shared/data/src/commonMain/resources/seed/prompts-pl.json` and `prompts-en.json`, with stable category and prompt IDs across languages. The English catalog includes translated prompt text and curated hints; the loader safely falls back to Polish if it is missing or invalid. The data module contains a locale-aware Firestore snapshot repository, but the current `ImpostorApp` is wired to `bundledCatalogRepository()` and does not yet load the cached remote snapshot or launch a background refresh. Treat cached-first refresh and same-ID remote-content replacement as pending integration requirements in [ADR-0006](docs/adr/ADR-0006-firebase-prompt-catalog-sync.md), not current runtime behavior. Remote prompt documents without `locale` are intended to remain Polish for compatibility. See [docs/firebase.md](docs/firebase.md).
 
 ### Firebase i płatności (opcjonalne)
 
-Firebase (Firestore + Analytics) obsługuje wyłącznie zdalne kody promocyjne i telemetrię — nigdy logikę uprawnień. Jedynym źródłem prawdy dla subskrypcji premium jest zweryfikowana transakcja sklepu (Google Play Billing / StoreKit 2); lokalny cache jest tylko optymalizacją dostępności i nie odblokowuje niczego samodzielnie.
+Firebase jest przeznaczony wyłącznie do opcjonalnej dystrybucji treści i telemetrii — nigdy do rozgrywki offline ani logiki uprawnień. Repozytorium zdalnego katalogu istnieje, ale nie jest podłączone do uruchamiania aplikacji; zob. [ADR-0006](docs/adr/ADR-0006-firebase-prompt-catalog-sync.md). Jedynym źródłem prawdy dla subskrypcji premium jest zweryfikowana transakcja sklepu (Google Play Billing / StoreKit 2); lokalny cache sam nie odblokowuje kategorii. Reconciliation przy starcie/wznowieniu i aktualizacje StoreKit pozostają do wdrożenia zgodnie z [ADR-0003](docs/adr/ADR-0003-store-subscription-entitlements.md).
 
 Więcej szczegółów architektonicznych, w tym decyzje projektowe, znajduje się w [docs/adr](docs/adr) oraz [docs/architecture.md](docs/architecture.md).
 
@@ -86,7 +86,7 @@ Więcej szczegółów architektonicznych, w tym decyzje projektowe, znajduje si�
 ./gradlew :composeApp:assembleDebug
 ```
 
-Pakiet jest gotowy do kompilacji bez `google-services.json`. Plik ten jest potrzebny wyłącznie do włączenia opcjonalnych usług Firebase.
+Kompilacja Androida i lokalna rozgrywka mają działać bez `google-services.json`. Opcjonalność Firebase na iOS nie została jeszcze zweryfikowana: `iosApp/iosApp.swift` wywołuje obecnie `FirebaseApp.configure()` bezwarunkowo. Wymóg uruchamiania bez konfiguracji i luka w weryfikacji są opisane w [ADR-0002](docs/adr/ADR-0002-optional-firebase-integration.md).
 
 ## Szybki start: iOS
 

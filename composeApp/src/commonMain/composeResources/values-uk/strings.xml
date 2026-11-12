@@ -13,6 +13,10 @@
     <string name="play">Г Р А Т И</string>
     <string name="unlock_full_version">♧  РОЗБЛОКУВАТИ PREMIUM</string>
     <string name="new_category">НОВА КАТЕГОРІЯ</string>
+    <string name="review_prompt">Якщо вам подобається гра, будемо раді, якщо ви оціните застосунок у магазині. 💛</string>
+    <string name="review_rate">Оцінити застосунок</string>
+    <string name="review_not_now">Не зараз</string>
+    <string name="review_open_failed">Не вдалося відкрити магазин. Спробуйте ще раз.</string>
     <string name="sex_category_description">Категорія SEX містить відвертіші слова для дорослих. Її можна ввімкнути в налаштуваннях категорій.</string>
     <string name="ok">OK</string>
     <string name="rules_title">ЯК ГРАТИ</string>

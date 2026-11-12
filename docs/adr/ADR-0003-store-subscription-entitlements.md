@@ -2,13 +2,13 @@
 
 ## Status
 
-Accepted. Shared domain/data and Compose runtime migration implemented; store SDK adapters remain a platform integration gate.
+Accepted. Shared entitlement reconciliation on app start/resume, verified-only premium access, and propagation of verified iOS StoreKit updates into shared entitlement state are implemented. Store purchase behavior has not been tested against App Store Sandbox or Google Play.
 
 ## Context
 
-The current `KODY` flow validates promo codes from Firestore and unlocks categories locally. The requested product change is to replace that flow with an official subscription purchase from the Apple App Store and Google Play. After a successful purchase, all premium categories must unlock. Users must be able to restore an existing subscription after reinstalling the app or changing devices where the store account is available.
+The earlier `KODY` flow validated promo codes from Firestore and unlocked categories locally. The product decision is to replace that flow with an official subscription purchase from the Apple App Store and Google Play. After a successful purchase, all premium categories must unlock. Users must be able to restore an existing subscription after reinstalling the app or changing devices where the store account is available.
 
-The application remains offline-first for gameplay. Firebase must remain only an analytics provider. Firestore promo codes are no longer part of the premium entitlement path and should be removed from the user-facing navigation after the migration.
+The application remains offline-first for gameplay. Firebase is optional and must not determine entitlement. Firestore promo codes are not a Premium entitlement path. A cached entitlement is an availability hint, never a grant: premium access requires a current verified store entitlement.
 
 The repository is KMP + Compose Multiplatform with shared domain/data boundaries and platform-specific Android/iOS source sets. The current Android application ID and iOS bundle ID are both `com.impostor.app`.
 
@@ -167,6 +167,19 @@ The entitlement is active only when the platform billing SDK reports an active, 
 
 The shared state holder must react to renewal/revocation updates while the app is running.
 
+### Entitlement reconciliation invariant
+
+- On application start and each foreground/resume transition, query the platform store's current entitlement and reconcile shared state and the local cache with that result.
+- On iOS, continuously observe `StoreKit.Transaction.updates`; forward verified active, expired, or revoked changes into the shared subscription repository/state, rather than only finishing the transaction.
+- A local cache may support display continuity, but it does not unlock premium categories until the store confirms an active entitlement. Store unavailability must not block free/offline gameplay.
+- Restore remains a user-initiated store action; it supplements rather than replaces start/resume reconciliation.
+
+### Current implementation status
+
+`ImpostorApp` calls `reconcileEntitlement()` on startup and again on each `ON_RESUME`. `Entitlement.unlocksAllCategories()` requires both `ACTIVE` and `STORE`; a cached active entitlement can support display continuity but does not grant premium access. The iOS bridge filters for verified transactions, posts their active/expired/revoked entitlement data, and the shared iOS billing client emits updates to `SubscriptionRepositoryImpl`, which updates shared state and the cache.
+
+The shared tests cover cache-versus-store access, reconciliation, and entitlement update propagation. The documented Gradle command passed in this session; a separate full iOS host app build and sandbox StoreKit/Play purchase tests were not performed. No manual runtime testing is claimed; see `.serena/memories/testing_strategy.md`.
+
 ## Local entitlement cache
 
 Persist only the minimum non-sensitive state:
@@ -276,6 +289,8 @@ Never log product receipt, transaction ID, purchase token, email, player name, p
 - Gameplay remains usable offline and free gameplay never depends on Firebase or store availability.
 - Firebase receives only the documented analytics events and no purchase-sensitive data.
 - Android package and iOS bundle remain `com.impostor.app`.
+- On both platforms, current store state is reconciled at app start and resume; verified StoreKit updates change shared entitlement state while the app is running.
+- Cached entitlement alone never grants premium category access; store unavailability never prevents free offline gameplay.
 
 ## Implementation notes (2026-09-13)
 
@@ -283,5 +298,5 @@ Never log product receipt, transaction ID, purchase token, email, player name, p
 - `shared:data` owns repository orchestration and a minimal entitlement cache. It stores only entitlement boolean, expiration, and last verified timestamp. Cached ACTIVE is displayed as `LOCAL_CACHE` and never unlocks categories until a store result verifies it.
 - The promo-code repository is no longer constructed by the app and the user-facing route is now `PREMIUM`. Existing `promoCodes` documents are not read by this runtime.
 - Analytics includes only the documented premium/subscription events and allowlisted result/state values. Receipts, transactions, tokens, users, and raw errors are not logged.
-- Platform source sets expose compile-safe billing seams with an unavailable fallback. Google Play Billing and StoreKit 2 must be wired at these seams before release; the fallback never fabricates a purchase or entitlement.
+- Android Google Play Billing and iOS StoreKit 2 adapters are present, with an unavailable fallback when the platform billing client cannot be initialized. Their purchase/restore flows still require sandbox testing; the fallback never fabricates a purchase or entitlement.
 - Revoked, expired, pending, cancelled, unavailable, unverified, and restore-with-no-entitlement states keep premium categories locked.

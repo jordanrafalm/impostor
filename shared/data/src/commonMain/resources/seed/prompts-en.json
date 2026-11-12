@@ -16,7 +16,8 @@
     "sex",
     "polish_influencers",
     "polish_actors",
-    "international_stars"
+    "international_stars",
+    "christmas"
   ],
   "categories": [
     {
@@ -5420,6 +5421,63 @@
           "text": "Novak Djokovic",
           "hint": "Serbia"
         }
+      ]
+    },
+    {
+      "id": "christmas",
+      "name": "Christmas",
+      "iconKey": "tree",
+      "prompts": [
+        {"text": "Christmas tree", "hint": "Living room"},
+        {"text": "Bauble", "hint": "Fragile"},
+        {"text": "Garland", "hint": "Length"},
+        {"text": "Fairy lights", "hint": "Electricity"},
+        {"text": "Poinsettia", "hint": "Windowsill"},
+        {"text": "Tree topper", "hint": "Height"},
+        {"text": "Present", "hint": "Anticipation"},
+        {"text": "Ribbon", "hint": "Decoration"},
+        {"text": "Wrapping paper", "hint": "Scissors"},
+        {"text": "Santa Claus", "hint": "Night"},
+        {"text": "Reindeer", "hint": "Cold"},
+        {"text": "Sleigh", "hint": "Journey"},
+        {"text": "Elf", "hint": "Workshop"},
+        {"text": "Chimney", "hint": "Soot"},
+        {"text": "Christmas stocking", "hint": "Empty"},
+        {"text": "Gingerbread", "hint": "Baking"},
+        {"text": "Gingerbread house", "hint": "Building"},
+        {"text": "Candy cane", "hint": "Sweetness"},
+        {"text": "Mandarin", "hint": "Scent"},
+        {"text": "Hot chocolate", "hint": "Warmth"},
+        {"text": "Beetroot soup", "hint": "Red"},
+        {"text": "Little dumplings", "hint": "Small"},
+        {"text": "Pierogi", "hint": "Shaping"},
+        {"text": "Carp", "hint": "Water"},
+        {"text": "Poppy seed roll", "hint": "Dessert"},
+        {"text": "Dried fruit compote", "hint": "Pitcher"},
+        {"text": "Christmas wafer", "hint": "Sharing"},
+        {"text": "Christmas Eve", "hint": "Gathering"},
+        {"text": "First star", "hint": "Watching"},
+        {"text": "Empty place setting", "hint": "Table"},
+        {"text": "Christmas carol", "hint": "Tradition"},
+        {"text": "Pastoral carol", "hint": "Joy"},
+        {"text": "Nativity play", "hint": "School"},
+        {"text": "Nativity scene", "hint": "Figurines"},
+        {"text": "Angel", "hint": "Protection"},
+        {"text": "Advent wreath", "hint": "Anticipation"},
+        {"text": "Advent calendar", "hint": "December"},
+        {"text": "Snowman", "hint": "Yard"},
+        {"text": "Snowball", "hint": "Play"},
+        {"text": "Snowflake", "hint": "Delicacy"},
+        {"text": "Icicle", "hint": "Dripping"},
+        {"text": "Gloves", "hint": "Pair"},
+        {"text": "Scarf", "hint": "Wrapping up"},
+        {"text": "Bell", "hint": "Metal"},
+        {"text": "Mistletoe", "hint": "Custom"},
+        {"text": "Movie night", "hint": "Relaxation"},
+        {"text": "Christmas sweater", "hint": "Knitwear"},
+        {"text": "Christmas card", "hint": "Paper"},
+        {"text": "Wishes", "hint": "Warmth"},
+        {"text": "Sleigh ride", "hint": "Outing"}
       ]
     }
   ]

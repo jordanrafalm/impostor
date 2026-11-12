@@ -39,6 +39,24 @@ class GameDomainTest {
     }
 
     @Test
+    fun `should choose a prompt from any selected category`() {
+        val setup = GameSetup(
+            players = (1..3).map { Player("p$it", "Player $it") },
+            selectedCategoryIds = setOf("animals", "places"),
+            impostorCount = 1,
+        )
+        val prompts = listOf(
+            Prompt("places-1", "places", "Museum"),
+            Prompt("animals-1", "animals", "Otter"),
+            Prompt("sports-1", "sports", "Tennis"),
+        )
+
+        val session = StartGameUseCase(RandomSource { until -> if (until == 2) 1 else 0 }).invoke(setup, prompts)
+
+        assertEquals("animals", session.prompt.categoryId)
+    }
+
+    @Test
     fun `should carry hints setting from setup to session`() {
         // Given
         val setup = GameSetup(

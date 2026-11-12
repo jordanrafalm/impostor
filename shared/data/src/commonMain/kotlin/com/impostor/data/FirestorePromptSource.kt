@@ -15,15 +15,17 @@ internal data class PromptDocument(
 )
 
 internal class FirestorePromptSource(
-    private val firestore: FirebaseFirestore = Firebase.firestore,
+    private val firestoreProvider: () -> FirebaseFirestore = { Firebase.firestore },
 ) : RemotePromptSource {
-    override suspend fun fetchPrompts(): List<RemotePrompt> =
-        firestore.collection("prompts").get().documents.mapNotNull { document ->
+    override suspend fun fetchPrompts(): List<RemotePrompt> {
+        val firestore = firestoreProvider()
+        return firestore.collection("prompts").get().documents.mapNotNull { document ->
             if (!document.exists) return@mapNotNull null
             // A malformed document is skipped without discarding the rest of the collection.
             val data = runCatching { document.data<PromptDocument>() }.getOrNull() ?: return@mapNotNull null
             RemotePrompt(document.id, data.categoryId, data.text, data.hint, data.active, data.locale)
         }
+    }
 }
 
 expect fun platformPromptSnapshotStore(): PromptSnapshotStore

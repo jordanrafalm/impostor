@@ -16,7 +16,8 @@
     "sex",
     "polish_influencers",
     "polish_actors",
-    "international_stars"
+    "international_stars",
+    "christmas"
   ],
   "categories": [
     {
@@ -2120,6 +2121,63 @@
           "text": "Novak Djokovic",
           "hint": "Serbia"
         }
+      ]
+    },
+    {
+      "id": "christmas",
+      "name": "Święta",
+      "iconKey": "tree",
+      "prompts": [
+        {"text": "Choinka", "hint": "Salon"},
+        {"text": "Bombka", "hint": "Kruchość"},
+        {"text": "Łańcuch", "hint": "Długość"},
+        {"text": "Lampki", "hint": "Prąd"},
+        {"text": "Gwiazda betlejemska", "hint": "Parapet"},
+        {"text": "Czubek choinki", "hint": "Wysokość"},
+        {"text": "Prezent", "hint": "Oczekiwanie"},
+        {"text": "Wstążka", "hint": "Dekoracja"},
+        {"text": "Papier do pakowania", "hint": "Nożyczki"},
+        {"text": "Święty Mikołaj", "hint": "Noc"},
+        {"text": "Renifer", "hint": "Chłód"},
+        {"text": "Sanie", "hint": "Podróż"},
+        {"text": "Elf", "hint": "Warsztat"},
+        {"text": "Komin", "hint": "Sadza"},
+        {"text": "Skarpeta na prezenty", "hint": "Pusta"},
+        {"text": "Piernik", "hint": "Pieczenie"},
+        {"text": "Domek z piernika", "hint": "Budowanie"},
+        {"text": "Laska cukrowa", "hint": "Słodycz"},
+        {"text": "Mandarynka", "hint": "Zapach"},
+        {"text": "Gorąca czekolada", "hint": "Rozgrzanie"},
+        {"text": "Barszcz", "hint": "Czerwień"},
+        {"text": "Uszka", "hint": "Małe"},
+        {"text": "Pierogi", "hint": "Lepienie"},
+        {"text": "Karp", "hint": "Woda"},
+        {"text": "Makowiec", "hint": "Deser"},
+        {"text": "Kompot z suszu", "hint": "Dzbanek"},
+        {"text": "Opłatek", "hint": "Dzielenie"},
+        {"text": "Wigilia", "hint": "Spotkanie"},
+        {"text": "Pierwsza gwiazdka", "hint": "Wypatrywanie"},
+        {"text": "Puste nakrycie", "hint": "Stół"},
+        {"text": "Kolęda", "hint": "Tradycja"},
+        {"text": "Pastorałka", "hint": "Radość"},
+        {"text": "Jasełka", "hint": "Szkoła"},
+        {"text": "Szopka", "hint": "Figurki"},
+        {"text": "Anioł", "hint": "Opieka"},
+        {"text": "Wieniec adwentowy", "hint": "Oczekiwanie"},
+        {"text": "Kalendarz adwentowy", "hint": "Grudzień"},
+        {"text": "Bałwan", "hint": "Podwórko"},
+        {"text": "Śnieżka", "hint": "Zabawa"},
+        {"text": "Płatek śniegu", "hint": "Delikatność"},
+        {"text": "Sopel", "hint": "Kapanie"},
+        {"text": "Rękawiczki", "hint": "Para"},
+        {"text": "Szalik", "hint": "Otulenie"},
+        {"text": "Dzwoneczek", "hint": "Metal"},
+        {"text": "Jemioła", "hint": "Zwyczaj"},
+        {"text": "Wieczór filmowy", "hint": "Relaks"},
+        {"text": "Sweter świąteczny", "hint": "Dzianina"},
+        {"text": "Kartka świąteczna", "hint": "Papier"},
+        {"text": "Życzenia", "hint": "Serdeczność"},
+        {"text": "Kulig", "hint": "Wycieczka"}
       ]
     }
   ]

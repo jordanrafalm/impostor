@@ -64,6 +64,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.setValue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.TimeMark
@@ -74,12 +75,15 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.paint
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layout
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -88,9 +92,11 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -99,7 +105,7 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.impostor.data.bundledCatalogRepository
+import com.impostor.data.syncedCatalogRepository
 import com.impostor.data.analyticsService
 import com.impostor.data.SubscriptionRepositoryImpl
 import com.impostor.data.TrialRepositoryImpl
@@ -141,6 +147,9 @@ import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import impostor.composeapp.generated.resources.*
 
 private val Ink = Color(0xFF050914)
@@ -156,7 +165,8 @@ private val BlackFridaySurface = Color(0xFF111411)
 private val BlackFridayMuted = Color(0xFFA6ABA1)
 private const val HOLIDAY_BUTTON_TRANSITION_MILLIS = 650L
 private const val HOLIDAY_REINDEER_FALLBACK_MILLIS = 5_500L
-private sealed interface Route {
+private val reviewProcessId = Random.nextLong().toString()
+internal sealed interface Route {
     data object Splash : Route
     data object Home : Route
     data object Players : Route
@@ -166,10 +176,38 @@ private sealed interface Route {
     data class GameStart(val session: GameSession) : Route
 }
 
+internal fun saveRoute(route: Route): List<String> =
+        when (route) {
+            Route.Splash -> listOf("splash")
+            Route.Home -> listOf("home")
+            Route.Players -> listOf("players")
+            Route.Categories -> listOf("categories")
+            Route.Premium -> listOf("premium")
+            is Route.Reveal -> listOf("reveal") + saveGameSession(route.session)
+            is Route.GameStart -> listOf("gameStart") + saveGameSession(route.session)
+        }
+
+internal fun restoreRoute(saved: List<String>): Route? =
+        when (saved.firstOrNull()) {
+            "splash" -> Route.Splash
+            "home" -> Route.Home
+            "players" -> Route.Players
+            "categories" -> Route.Categories
+            "premium" -> Route.Premium
+            "reveal" -> restoreGameSession(saved.drop(1))?.let(Route::Reveal)
+            "gameStart" -> restoreGameSession(saved.drop(1))?.let(Route::GameStart)
+            else -> null
+        }
+
+internal val routeSaver = listSaver<Route, String>(
+    save = { saveRoute(it) },
+    restore = ::restoreRoute,
+)
+
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ImpostorApp() {
-    var route by remember { mutableStateOf<Route>(Route.Splash) }
+    var route by rememberSaveable(stateSaver = routeSaver) { mutableStateOf<Route>(Route.Splash) }
     var launchSoundRequested by rememberSaveable { mutableStateOf(false) }
     val launchSoundPlayer = remember { platformLaunchSoundPlayer() }
     var holidaySequencePhase by remember { mutableStateOf(HomeHolidaySequencePhase.IDLE) }
@@ -184,17 +222,51 @@ fun ImpostorApp() {
         mutableStateOf(shouldShowSexCategoryIntro(eligibility, hasDismissedSexCategoryIntro()))
     }
     var sexIntroIsUpgradeNotice by remember { mutableStateOf(showSexCategoryIntro) }
-    var players by remember { mutableStateOf(loadPlayers()) }
-    var selectedCategories by remember { mutableStateOf(setOf(readSelectedCategoryId() ?: "animals")) }
-    var impostorCount by remember { mutableStateOf(1) }
-    var hintsEnabled by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<SetupValidation.Reason?>(null) }
-    val repository = remember { bundledCatalogRepository() }
+    val reviewPreferences = remember { ReviewPromptPreferences(platformPreferenceStore()) }
+    var showReviewPrompt by rememberSaveable { mutableStateOf(false) }
+    var reviewCheckedProcessId by rememberSaveable { mutableStateOf("") }
+    val reviewLaunchChecked = reviewCheckedProcessId == reviewProcessId
+    var skipBlackFridayForReview by rememberSaveable { mutableStateOf(false) }
+    var reviewOpenFailed by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
+    LaunchedEffect(showReviewPrompt) {
+        if (showReviewPrompt && reviewPreferences.hasOpenedStore()) showReviewPrompt = false
+    }
+    var players by rememberSaveable(stateSaver = playerListSaver) { mutableStateOf(loadPlayers()) }
+    var selectedCategories by rememberSaveable(stateSaver = stringSetSaver) {
+        mutableStateOf(readSelectedCategoryIds() ?: setOf("animals"))
+    }
+    var impostorCount by rememberSaveable { mutableStateOf(1) }
+    var hintsEnabled by rememberSaveable { mutableStateOf(false) }
+    var error by rememberSaveable(stateSaver = setupValidationReasonSaver) {
+        mutableStateOf<SetupValidation.Reason?>(null)
+    }
+    val repository = remember { syncedCatalogRepository() }
+    var catalogRevision by remember { mutableStateOf(0) }
+    LaunchedEffect(repository) {
+        repository.refresh().onFailure {
+            println("Prompt catalog refresh failed: ${it.message ?: "unknown error"}")
+        }
+        catalogRevision += 1
+    }
     val subscriptionRepository = remember { SubscriptionRepositoryImpl() }
     val trialRepository = remember { TrialRepositoryImpl() }
     val scope = rememberCoroutineScope()
     var startingGame by remember { mutableStateOf(false) }
     val analytics = remember { analyticsService() }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(subscriptionRepository) {
+        subscriptionRepository.reconcileEntitlement()
+    }
+    DisposableEffect(lifecycle, subscriptionRepository) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                scope.launch { subscriptionRepository.reconcileEntitlement() }
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
     val entitlement by subscriptionRepository.entitlement.collectAsState(
         com.impostor.domain.Entitlement(
             state = SubscriptionState.LOCKED,
@@ -208,7 +280,9 @@ fun ImpostorApp() {
     val showBlackFriday = !trialState.blackFridayClaimed && !promotionDismissedThisLaunch
     val categories = remember { repository.categories() }
     val allCategoryIds = remember(categories) { categories.map { it.id }.toSet() }
-    val prompts = remember { repository.prompts(categories.map { it.id }.toSet()) }
+    val prompts = remember(repository, catalogRevision) {
+        repository.prompts(categories.map { it.id }.toSet())
+    }
     val premiumUnlocked = entitlement.unlocksAllCategories()
     val unlockedCategories = if (trialState.canStartGame(entitlement)) {
         allCategoryIds
@@ -217,17 +291,34 @@ fun ImpostorApp() {
     }
 
     LaunchedEffect(allCategoryIds) {
-        if (selectedCategories.any { it !in allCategoryIds }) {
-            selectedCategories = setOf("animals")
+        val validSelection = selectedCategories.intersect(allCategoryIds)
+        if (validSelection != selectedCategories) {
+            selectedCategories = if (validSelection.isNotEmpty() || selectedCategories.isEmpty()) {
+                validSelection
+            } else {
+                setOf("animals").intersect(allCategoryIds)
+            }
         }
     }
 
-    LaunchedEffect(selectedCategories, unlockedCategories) {
-        selectedCategories.singleOrNull()?.takeIf { it in unlockedCategories }?.let(::writeSelectedCategoryId)
+    LaunchedEffect(selectedCategories, allCategoryIds) {
+        writeSelectedCategoryIds(selectedCategories.intersect(allCategoryIds))
     }
 
     LaunchedEffect(Unit) {
-        route = Route.Home
+        if (route == Route.Splash) route = Route.Home
+    }
+    LaunchedEffect(route) {
+        if (route != Route.Splash && !reviewLaunchChecked) {
+            showReviewPrompt = route == Route.Home && reviewPreferences.shouldShowAtLaunch(
+                nowMillis = currentReviewTimeMillis(),
+                hasOtherStartupDialog = showSexCategoryIntro,
+                blackFridayVisible = showBlackFriday,
+            )
+            skipBlackFridayForReview = showReviewPrompt && showBlackFriday
+            if (showReviewPrompt) analytics.log(AnalyticsEvent.REVIEW_PROMPT_SHOWN)
+            reviewCheckedProcessId = reviewProcessId
+        }
     }
     DisposableEffect(launchSoundPlayer) {
         onDispose { launchSoundPlayer.release() }
@@ -246,8 +337,10 @@ fun ImpostorApp() {
             if (bytes != null) launchSoundPlayer.play(bytes)
         }
     }
-    LaunchedEffect(route, showBlackFriday, showSexCategoryIntro) {
-        if (route == Route.Home && !showBlackFriday && !showSexCategoryIntro && !reminderRequested) {
+    LaunchedEffect(route, showBlackFriday, showSexCategoryIntro, showReviewPrompt, reviewLaunchChecked) {
+        if (route == Route.Home && !showBlackFriday && !showSexCategoryIntro &&
+            reviewLaunchChecked && !showReviewPrompt && !reminderRequested
+        ) {
             reminderRequested = true
             platformNotificationScheduler().requestPermissionAndSchedulePartyReminder()
         }
@@ -339,7 +432,9 @@ fun ImpostorApp() {
                             if (startingGame || route != Route.Home) return@start
                             val usesOnlyAlwaysFreeCategories = selectedCategories.isNotEmpty() &&
                                 selectedCategories.all { it in com.impostor.domain.AlwaysFreeCategoryIds }
-                            if (!usesOnlyAlwaysFreeCategories && !trialRepository.state.value.canStartGame(entitlement)) {
+                            if (selectedCategories.isNotEmpty() && !usesOnlyAlwaysFreeCategories &&
+                                !trialRepository.state.value.canStartGame(entitlement)
+                            ) {
                                 showFreeLimitDialog = true
                                 route = Route.Categories
                                 return@start
@@ -397,13 +492,14 @@ fun ImpostorApp() {
                         session = current.session,
                         players = players,
                         onCompleted = {
+                            reviewPreferences.recordCompletedGame()
                             route = Route.Home
                         },
                     )
                 }
             }
         }
-        if (route == Route.Home && showBlackFriday) {
+        if (route == Route.Home && reviewLaunchChecked && showBlackFriday && !skipBlackFridayForReview) {
             BlackFridayDialog(
                 enabled = !promotionActionInProgress,
                 onAccept = {
@@ -422,20 +518,89 @@ fun ImpostorApp() {
                 },
                 onCancel = {
                     if (!promotionActionInProgress) {
+                        reviewPreferences.markPromotionDismissed()
                         promotionDismissedThisLaunch = true
                         analytics.log(AnalyticsEvent.BLACK_FRIDAY_CANCELLED)
                     }
                 },
             )
-        } else if (route == Route.Home && showSexCategoryIntro) {
+        } else if (route == Route.Home && reviewLaunchChecked && showSexCategoryIntro) {
             SexCategoryIntroDialog {
                 if (sexIntroIsUpgradeNotice) markSexCategoryIntroDismissed()
                 sexIntroIsUpgradeNotice = false
                 showSexCategoryIntro = false
             }
+        } else if (route == Route.Home && reviewLaunchChecked && showReviewPrompt &&
+            !reviewPreferences.hasOpenedStore()
+        ) {
+            ReviewPromptDialog(
+                openFailed = reviewOpenFailed,
+                onRate = {
+                    val opened = try {
+                        uriHandler.openUri(reviewStoreUrl())
+                        true
+                    } catch (error: Exception) {
+                        println("Cannot open review store: ${error.message}")
+                        reviewOpenFailed = true
+                        false
+                    }
+                    if (opened) {
+                        analytics.log(AnalyticsEvent.REVIEW_PROMPT_RATE_CLICKED)
+                        reviewPreferences.markStoreOpened()
+                        showReviewPrompt = false
+                        reviewOpenFailed = false
+                    }
+                },
+                onNotNow = {
+                    analytics.log(AnalyticsEvent.REVIEW_PROMPT_DISMISSED)
+                    reviewPreferences.postpone(currentReviewTimeMillis())
+                    showReviewPrompt = false
+                    reviewOpenFailed = false
+                },
+            )
         }
         if (route == Route.Categories && showFreeLimitDialog) {
             FreeLimitDialog { showFreeLimitDialog = false }
+        }
+    }
+}
+
+/** Design: https://www.figma.com/design/Lkd0bevCBZZH40R4HNjSNy/impostor?node-id=83-73 */
+@Composable
+private fun ReviewPromptDialog(openFailed: Boolean, onRate: () -> Unit, onNotNow: () -> Unit) {
+    Dialog(onDismissRequest = onNotNow) {
+        val shape = RoundedCornerShape(20.dp)
+        Column(
+            Modifier.fillMaxWidth().widthIn(max = 354.dp)
+                .clip(shape)
+                .background(Color(0xFF112033))
+                .border(1.dp, Color(0xFF315D70), shape)
+                .verticalScroll(rememberScrollState())
+                .padding(18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(stringResource(Res.string.review_prompt), color = Color(0xFFE5F1FA),
+                fontSize = 16.sp, lineHeight = 22.sp)
+            if (openFailed) {
+                Text(stringResource(Res.string.review_open_failed), color = Color(0xFFFFA5B3), fontSize = 14.sp)
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    Modifier.weight(1.15f).heightIn(min = 48.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Brush.horizontalGradient(listOf(Color(0xFF00DCEB), Color(0xFF0654D6))))
+                        .clickable(onClick = onRate).padding(8.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(stringResource(Res.string.review_rate), color = Color.White, fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                }
+                Box(Modifier.weight(1f).heightIn(min = 48.dp).clickable(onClick = onNotNow).padding(8.dp),
+                    contentAlignment = Alignment.Center) {
+                    Text(stringResource(Res.string.review_not_now), color = Color(0xFFB4CFDF), fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold, textAlign = TextAlign.Center)
+                }
+            }
         }
     }
 }
@@ -574,7 +739,72 @@ private fun Shell(
         val verticalPadding = if (compactLayout) 8.dp else 20.dp
         val snowmanLaneHeight = if (compactLayout) 40.dp else 52.dp
         val screenWidthPx = with(density) { maxWidth.toPx() }
-        Column(
+        if (hasTwoPanes(maxWidth.value, minPaneWidth = 280f, horizontalGaps = 72f)) {
+            Row(
+                Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 56.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Text(stringResource(Res.string.home_tagline), color = Frost.copy(alpha = .78f),
+                        fontSize = 11.sp, letterSpacing = 5.sp, textAlign = TextAlign.Center)
+                    Spacer(Modifier.height(8.dp))
+                    LongPressLogo(onLongPress = onHolidayLongPress, onTripleTap = onShowSexCategoryIntro)
+                    Spacer(Modifier.height(10.dp))
+                    val playingNow = remember { playersOnline(currentLocalMoment()) }
+                    Text("${stringResource(Res.string.home_playing_now)}: $playingNow",
+                        color = Cyan, fontSize = 13.sp, letterSpacing = 2.sp)
+                    Box(Modifier.widthIn(max = 480.dp).fillMaxWidth().aspectRatio(1125f / 647f)) {
+                        HolidayLottie(
+                            assetName = "christmas_sleigh.json",
+                            modifier = Modifier.fillMaxSize(),
+                            iterations = Int.MAX_VALUE,
+                            contentScale = ContentScale.Fit,
+                        )
+                    }
+                }
+                Column(
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 56.dp)
+                        .graphicsLayer { translationX = buttonOffset.value * screenWidthPx },
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    HomeReveal(index = 0, height = 88.dp) {
+                        FrostSettingButton(stringResource(Res.string.home_players), players.size.toString(),
+                            onPlayers, autoPulse = true, pulseDelayMillis = 0L)
+                    }
+                    HomeReveal(index = 1, height = 88.dp) {
+                        FrostSettingButton(stringResource(Res.string.home_categories), "→", onCategories,
+                            autoPulse = true, pulseDelayMillis = 600L)
+                    }
+                    HomeReveal(index = 2, height = 72.dp) {
+                        FrostToggleSetting(stringResource(Res.string.home_hint), hintsEnabled, onHintsChanged)
+                    }
+                    HomeReveal(index = 3, height = 88.dp) {
+                        FrostImpostorSetting(impostorCount, onImpostorDecrease, onImpostorIncrease)
+                    }
+                    error?.let { reason ->
+                        val reasonLabel = when (reason) {
+                            SetupValidation.Reason.TOO_FEW_PLAYERS -> stringResource(Res.string.validation_too_few_players)
+                            SetupValidation.Reason.NO_CATEGORY -> stringResource(Res.string.validation_no_category)
+                            SetupValidation.Reason.INVALID_IMPOSTOR_COUNT -> stringResource(Res.string.validation_invalid_impostor_count)
+                            SetupValidation.Reason.DUPLICATE_PLAYER_IDS -> stringResource(Res.string.validation_duplicate_player_ids)
+                            SetupValidation.Reason.DUPLICATE_PLAYER_NAMES -> stringResource(Res.string.validation_duplicate_player_names)
+                            SetupValidation.Reason.EMPTY_PLAYER_NAME -> stringResource(Res.string.validation_empty_player_name)
+                        }
+                        Text(stringResource(Res.string.home_validation_error, reasonLabel),
+                            color = Color(0xFFFFA5B3), fontSize = 13.sp)
+                    }
+                    SnowmanLane(height = snowmanLaneHeight)
+                    FrostButton(stringResource(Res.string.play), onStart, Modifier.fillMaxWidth(),
+                        style = FrostButtonStyle.Primary, autoPulse = true, pulseDelayMillis = 1200L)
+                    Spacer(Modifier.height(10.dp))
+                    FrostButton(stringResource(Res.string.unlock_full_version), onCodes, Modifier.fillMaxWidth(),
+                        style = FrostButtonStyle.Subtle, autoPulse = true, pulseDelayMillis = 1800L)
+                }
+            }
+        } else Column(
             modifier = Modifier.fillMaxWidth()
                 .imePadding()
                 .verticalScroll(rememberScrollState())
@@ -736,6 +966,7 @@ private fun FreeLimitDialog(onDismiss: () -> Unit) {
                 .clip(RoundedCornerShape(28.dp))
                 .background(Color(0xFF16365A))
                 .border(1.dp, Cyan.copy(alpha = .72f), RoundedCornerShape(28.dp))
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
@@ -776,7 +1007,7 @@ private fun SexCategoryIntroDialog(onDismiss: () -> Unit) {
                     .background(Color(0xB20A1530)),
             )
             Column(
-                Modifier.fillMaxWidth().padding(24.dp),
+                Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(24.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp),
             ) {
                 Text(
@@ -845,6 +1076,7 @@ private fun GameRulesOverlay(onDismiss: () -> Unit) {
                 .clip(RoundedCornerShape(24.dp))
                 .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
                 .border(1.dp, glassOpacity(Cyan.copy(alpha = .6f)), RoundedCornerShape(24.dp))
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
@@ -1021,7 +1253,7 @@ private fun WalkingLadyOverlay(onDismiss: () -> Unit) {
 
 @Composable
 private fun HomeReveal(index: Int, height: androidx.compose.ui.unit.Dp, content: @Composable () -> Unit) {
-    Box(Modifier.fillMaxWidth().height(height)) {
+    Box(Modifier.fillMaxWidth().heightIn(min = height)) {
         AnimatedVisibility(
             visible = true,
             enter = slideInVertically(
@@ -1057,6 +1289,7 @@ internal fun FrostButton(
     pulseDelayMillis: Long = 0L,
     fontSize: TextUnit = TextUnit.Unspecified,
     letterSpacing: TextUnit = TextUnit.Unspecified,
+    backgroundImage: Painter? = null,
 ) {
     FrostButtonSurface(
         onClick = onClick,
@@ -1067,6 +1300,7 @@ internal fun FrostButton(
         onLongPress = onLongPress,
         autoPulse = autoPulse,
         pulseDelayMillis = pulseDelayMillis,
+        backgroundImage = backgroundImage,
     ) {
         Text(
             text = text,
@@ -1112,6 +1346,7 @@ private fun FrostButtonSurface(
     onLongPress: (() -> Unit)? = null,
     autoPulse: Boolean = false,
     pulseDelayMillis: Long = 0L,
+    backgroundImage: Painter? = null,
     content: @Composable () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -1161,6 +1396,13 @@ private fun FrostButtonSurface(
             .heightIn(min = 56.dp)
             .clip(shape)
             .background(background)
+            .then(
+                if (backgroundImage != null) {
+                    Modifier.paint(backgroundImage, sizeToIntrinsics = false, contentScale = ContentScale.Crop)
+                } else {
+                    Modifier
+                },
+            )
             .border(1.dp, if (style == FrostButtonStyle.Primary) Color(0xFFD5F5FF) else PanelBorder, shape)
             .hoverable(interactionSource, enabled)
             .then(if (longPressAction == null) {
@@ -1222,7 +1464,7 @@ internal fun FrostSettingButton(
 ) {
     FrostButtonSurface(
         onClick = onClick,
-        modifier = Modifier.fillMaxWidth().height(88.dp),
+        modifier = Modifier.fillMaxWidth().heightIn(min = 88.dp),
         style = FrostButtonStyle.Glass,
         autoPulse = autoPulse,
         pulseDelayMillis = pulseDelayMillis,
@@ -1253,7 +1495,7 @@ private fun FrostToggleSetting(
 ) {
     val shape = RoundedCornerShape(26.dp)
     Row(
-        modifier = Modifier.fillMaxWidth().height(72.dp)
+        modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp)
             .clip(shape)
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
             .border(1.dp, PanelBorder, shape)
@@ -1285,7 +1527,7 @@ private fun FrostImpostorSetting(
 ) {
     val shape = RoundedCornerShape(26.dp)
     Row(
-        modifier = Modifier.fillMaxWidth().height(88.dp)
+        modifier = Modifier.fillMaxWidth().heightIn(min = 88.dp)
             .clip(shape)
             .background(Brush.verticalGradient(listOf(PanelTop, PanelBottom)))
             .border(1.dp, PanelBorder, shape)
@@ -1344,37 +1586,15 @@ private fun PlayersScreen(
     onBack: () -> Unit,
     onPlayers: (List<Player>) -> Unit,
 ) {
-    var newPlayerName by remember { mutableStateOf("") }
-    var clearedDefaultPlayerIds by remember { mutableStateOf(emptySet<String>()) }
+    var newPlayerName by rememberSaveable { mutableStateOf("") }
+    var clearedDefaultPlayerIds by rememberSaveable(stateSaver = stringSetSaver) {
+        mutableStateOf(emptySet<String>())
+    }
     val newPlayerFallbackName = stringResource(Res.string.default_player, players.size + 1)
 
+    val playerList: @Composable (Modifier) -> Unit = { modifier ->
     Column(
-        Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp, vertical = 20.dp),
-    ) {
-        Box(Modifier.fillMaxWidth().height(56.dp)) {
-            FrostButton(
-                text = "‹",
-                onClick = onBack,
-                modifier = Modifier.align(Alignment.CenterStart).size(52.dp),
-                closeButton = true,
-            )
-            Text(
-                stringResource(Res.string.players_title),
-                color = Color.White,
-                fontSize = 28.sp,
-                letterSpacing = 1.sp,
-                modifier = Modifier.align(Alignment.Center),
-            )
-            Text(
-                players.size.toString(),
-                color = Frost,
-                fontSize = 18.sp,
-                modifier = Modifier.align(Alignment.CenterEnd),
-            )
-        }
-        Spacer(Modifier.height(18.dp))
-    Column(
-        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         players.forEachIndexed { index, player ->
@@ -1438,7 +1658,9 @@ private fun PlayersScreen(
             }
         }
     }
-    Spacer(Modifier.height(18.dp))
+    }
+    val playerControls: @Composable (Modifier) -> Unit = { modifier ->
+    Column(modifier) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Box(
             modifier = Modifier.weight(1f).heightIn(min = 56.dp)
@@ -1486,6 +1708,30 @@ private fun PlayersScreen(
         style = FrostButtonStyle.Subtle,
     )
     }
+    }
+    BoxWithConstraints(Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp, vertical = 20.dp)) {
+        val wide = hasTwoPanes(maxWidth.value, minPaneWidth = 284f, horizontalGaps = 24f)
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            Box(Modifier.fillMaxWidth().height(56.dp)) {
+                FrostButton("‹", onBack, Modifier.align(Alignment.CenterStart).size(52.dp), closeButton = true)
+                Text(stringResource(Res.string.players_title), color = Color.White, fontSize = 28.sp,
+                    letterSpacing = 1.sp, modifier = Modifier.align(Alignment.Center))
+                Text(players.size.toString(), color = Frost, fontSize = 18.sp,
+                    modifier = Modifier.align(Alignment.CenterEnd))
+            }
+            Spacer(Modifier.height(18.dp))
+            if (wide) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    playerControls(Modifier.weight(1f))
+                    playerList(Modifier.weight(1f))
+                }
+            } else {
+                playerList(Modifier.fillMaxWidth())
+                Spacer(Modifier.height(18.dp))
+                playerControls(Modifier.fillMaxWidth())
+            }
+        }
+    }
 }
 
 @Composable
@@ -1503,7 +1749,9 @@ private fun CategoriesScreen(
     var showWalkingLady by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 32.dp)) {
+        BoxWithConstraints(Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 16.dp)) {
+        val columns = categoryColumnCount(maxWidth.value)
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(
             stringResource(Res.string.categories_title),
@@ -1546,16 +1794,21 @@ private fun CategoriesScreen(
         Spacer(Modifier.height(14.dp))
     }
     Column(
-        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
+        modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         val categoryButton: @Composable (Pair<String, String>, Modifier) -> Unit = { (name, id), modifier ->
             val isUnlocked = id in unlocked
             FrostButton(
-                text = if (!isUnlocked) "🔒  $name" else if (id in selected) "✓  $name" else name,
+                text = when {
+                    !isUnlocked && id in selected -> "🔒  ✓  $name"
+                    !isUnlocked -> "🔒  $name"
+                    id in selected -> "✓  $name"
+                    else -> name
+                },
                 onClick = {
-                    if (isUnlocked) {
-                        onSelected(setOf(id))
+                    if (isUnlocked || id in selected) {
+                        onSelected(toggleCategorySelection(selected, id))
                     } else {
                         showPremiumPrompt = true
                     }
@@ -1563,26 +1816,38 @@ private fun CategoriesScreen(
                 onLongPress = if (id == "adult") ({ showWalkingLady = true }) else null,
                 enabled = true,
                 modifier = modifier,
+                backgroundImage = if (id == "christmas") painterResource(Res.drawable.christmas_category_background) else null,
             )
+        }
+        val christmas = options.firstOrNull { it.second == "christmas" }
+        val otherOptions = options.filterNot { it.second == "christmas" }
+        if (christmas != null) {
+            categoryButton(christmas, Modifier.fillMaxWidth().heightIn(min = 104.dp))
         }
         Text(
             stringResource(Res.string.categories_most_popular, remember { currentLocalMoment().dateLabel }),
             color = Cyan,
             fontSize = 14.sp,
         )
-        options.take(3).forEach { categoryButton(it, Modifier.fillMaxWidth()) }
-        if (options.size > 3) {
-            Text(stringResource(Res.string.categories_rest), color = Cyan, fontSize = 14.sp)
-        }
-        options.drop(3).chunked(2).forEach { categoryRow ->
+        otherOptions.take(3).chunked(columns).forEach { categoryRow ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 categoryRow.forEach { categoryButton(it, Modifier.weight(1f)) }
-                if (categoryRow.size == 1) Spacer(Modifier.weight(1f))
+                repeat(columns - categoryRow.size) { Spacer(Modifier.weight(1f)) }
+            }
+        }
+        if (otherOptions.size > 3) {
+            Text(stringResource(Res.string.categories_rest), color = Cyan, fontSize = 14.sp)
+        }
+        otherOptions.drop(3).chunked(columns).forEach { categoryRow ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                categoryRow.forEach { categoryButton(it, Modifier.weight(1f)) }
+                repeat(columns - categoryRow.size) { Spacer(Modifier.weight(1f)) }
             }
         }
     }
         Spacer(Modifier.height(16.dp))
         FrostButton(text = stringResource(Res.string.done), onClick = onBack, modifier = Modifier.fillMaxWidth(), style = FrostButtonStyle.Subtle)
+        }
         }
         if (showWalkingLady) {
             Box(Modifier.fillMaxSize().zIndex(1f)) {
@@ -1760,55 +2025,43 @@ private fun localizedPeriodLabel(period: String): String {
 ) {
     val assignment = session.assignments[session.revealIndex]
     val playerName = localizedPlayerName(players.firstOrNull { it.id == assignment.playerId }) ?: assignment.playerId
-    var identityVisible by rememberSaveable(session.sessionId, session.revealIndex) { mutableStateOf(true) }
-    val reveal = remember(session.revealIndex) { Animatable(0f) }
-    var hasCompletedReveal by remember(session.revealIndex) { mutableStateOf(false) }
+    var identityVisible by remember(session.sessionId, session.revealIndex) { mutableStateOf(true) }
+    val reveal = remember(session.sessionId, session.revealIndex) { Animatable(0f) }
+    var hasCompletedReveal by remember(session.sessionId, session.revealIndex) { mutableStateOf(false) }
+    var holding by remember(session.sessionId, session.revealIndex) { mutableStateOf(false) }
+    var viewportSize by remember { mutableStateOf(IntSize.Zero) }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var active by remember(lifecycle) {
+        mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
+    }
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, _ ->
+            active = lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+            if (!active) {
+                holding = false
+                identityVisible = true
+            }
+        }
+        lifecycle.addObserver(observer)
+        onDispose {
+            holding = false
+            lifecycle.removeObserver(observer)
+        }
+    }
     val canProceed = hasCompletedReveal
-    val haptics = LocalHapticFeedback.current
     val thermalFeedback = remember { platformThermalFeedback() }
     val scope = rememberCoroutineScope()
 
-    Column(
-        Modifier.fillMaxSize().pointerInput(session.sessionId, session.revealIndex) {
-            awaitPointerEventScope {
-                while (true) {
-                    val event = awaitPointerEvent(PointerEventPass.Initial)
-                    if (event.changes.any { it.pressed && !it.previousPressed }) identityVisible = false
-                }
-            }
-        }.padding(horizontal = 24.dp, vertical = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                playerName,
-                color = Frost,
-                fontSize = 26.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                modifier = Modifier.weight(1f),
-            )
-            FrostCloseButton(onClick = { onRoute(Route.Home) })
-        }
-        RevealProgress(
-            current = session.revealIndex + 1,
-            total = session.assignments.size,
-        )
-        Text(
-            stringResource(Res.string.reveal_instructions),
-            color = Frost.copy(alpha = .78f),
-            fontSize = 12.sp,
-            letterSpacing = 1.6.sp,
-        )
+    val card: @Composable (Modifier) -> Unit = { modifier ->
         Box(
-            Modifier
-                .fillMaxWidth()
-                .weight(1f)
+            modifier
                 .clip(RoundedCornerShape(28.dp))
                 .background(Color.White.copy(alpha = .08f))
-                .pointerInput(session.revealIndex) {
+                .pointerInput(session.sessionId, session.revealIndex, viewportSize, active) {
+                    if (!active) return@pointerInput
                     awaitEachGesture {
                         awaitFirstDown()
+                        holding = true
                         thermalFeedback.start()
                         val thaw = scope.launch {
                             launch {
@@ -1826,6 +2079,7 @@ private fun localizedPeriodLabel(period: String): String {
                         try {
                             waitForUpOrCancellation()
                         } finally {
+                            holding = false
                             pulseJob.cancel()
                             thaw.cancel()
                             thermalFeedback.complete()
@@ -1837,7 +2091,7 @@ private fun localizedPeriodLabel(period: String): String {
                 },
             Alignment.Center,
         ) {
-            Column(
+            if (canShowRevealSecret(holding, active, identityVisible)) Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .padding(28.dp)
@@ -1860,7 +2114,7 @@ private fun localizedPeriodLabel(period: String): String {
                 )
             }
             FrostGlass(
-                reveal = reveal.value,
+                reveal = if (canShowRevealSecret(holding, active, identityVisible)) reveal.value else 0f,
             )
             if (identityVisible) {
                 Text(
@@ -1873,6 +2127,15 @@ private fun localizedPeriodLabel(period: String): String {
                 )
             }
         }
+    }
+    val instructionsAndAction: @Composable (Modifier) -> Unit = { modifier ->
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Text(
+            stringResource(Res.string.reveal_instructions),
+            color = Frost.copy(alpha = .78f),
+            fontSize = 12.sp,
+            letterSpacing = 1.6.sp,
+        )
         FrostButton(
             text = stringResource(
                 if (session.revealIndex == session.assignments.lastIndex) {
@@ -1882,12 +2145,59 @@ private fun localizedPeriodLabel(period: String): String {
                 },
             ),
             onClick = {
+                holding = false
+                identityVisible = true
                 val next = com.impostor.domain.RevealNextPlayerUseCase().invoke(session, canProceed)
                 if (canProceed && next == session) onRoute(Route.GameStart(session)) else onRoute(Route.Reveal(next))
             },
             enabled = canProceed,
             modifier = Modifier.fillMaxWidth(),
         )
+        }
+    }
+    BoxWithConstraints(
+        Modifier.fillMaxSize().onSizeChanged {
+            if (viewportSize != it) {
+                holding = false
+                identityVisible = true
+                viewportSize = it
+            }
+        }.pointerInput(session.sessionId, session.revealIndex) {
+            awaitPointerEventScope {
+                while (true) {
+                    val event = awaitPointerEvent(PointerEventPass.Initial)
+                    if (event.changes.any { it.pressed && !it.previousPressed }) identityVisible = false
+                }
+            }
+        }.padding(horizontal = 24.dp, vertical = 24.dp),
+    ) {
+        val wide = hasTwoPanes(maxWidth.value, minPaneWidth = 280f, horizontalGaps = 24f)
+        val cardHeight = (maxHeight - 160.dp).coerceIn(180.dp, 420.dp)
+        Column(
+            Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(playerName, color = Frost, fontSize = 26.sp, fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp, modifier = Modifier.weight(1f))
+                FrostCloseButton(onClick = {
+                    holding = false
+                    identityVisible = true
+                    onRoute(Route.Home)
+                })
+            }
+            RevealProgress(current = session.revealIndex + 1, total = session.assignments.size)
+            if (wide) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    card(Modifier.weight(1f).height(cardHeight))
+                    instructionsAndAction(Modifier.weight(1f))
+                }
+            } else {
+                card(Modifier.fillMaxWidth().height(cardHeight))
+                instructionsAndAction(Modifier.fillMaxWidth())
+            }
+        }
     }
 }
 
@@ -2024,31 +2334,33 @@ private fun FrostGlass(
     val impostorCount = session.assignments.count { it.role == Role.IMPOSTOR }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 36.dp),
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(stringResource(Res.string.game_started), color = Frost.copy(alpha = .78f), fontSize = 13.sp, letterSpacing = 6.sp)
-        Spacer(Modifier.height(56.dp))
+        Spacer(Modifier.height(24.dp))
         Text(stringResource(Res.string.game_starter), color = Color(0xFF6DCBFF), fontSize = 27.sp)
-        Spacer(Modifier.height(44.dp))
+        Spacer(Modifier.height(24.dp))
         val starterCardShape = RoundedCornerShape(34.dp)
         Column(
-            modifier = Modifier.fillMaxWidth().height(396.dp)
+            modifier = Modifier.fillMaxWidth().heightIn(min = 200.dp)
                 .clip(starterCardShape)
                 .background(
                     Brush.verticalGradient(
                         listOf(glassOpacity(Color(0xFFB8CEE0).copy(alpha = .40f)), PanelBottom),
                     ),
                 )
-                .border(1.dp, glassOpacity(Color(0xFFD4F3FF).copy(alpha = .58f)), starterCardShape),
+                .border(1.dp, glassOpacity(Color(0xFFD4F3FF).copy(alpha = .58f)), starterCardShape)
+                .padding(vertical = 32.dp, horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             Text("❄", color = Frost, fontSize = 72.sp)
             Spacer(Modifier.height(28.dp))
-            Text(starterName, color = Color(0xFFF4FAFF), fontSize = 50.sp)
+            Text(starterName, color = Color(0xFFF4FAFF), fontSize = 40.sp, textAlign = TextAlign.Center)
         }
-        Spacer(Modifier.height(48.dp))
+        Spacer(Modifier.height(24.dp))
         Text(
             "${stringResource(Res.string.game_start_hidden_impostor)} ",
             color = Color(0xFF64B9E8),
@@ -2063,7 +2375,7 @@ private fun FrostGlass(
             color = Frost,
             fontSize = 18.sp,
         )
-        Spacer(Modifier.weight(1f, fill = true).height(36.dp))
+        Spacer(Modifier.height(36.dp))
         FrostButton(
             text = stringResource(Res.string.end_game),
             onClick = {
