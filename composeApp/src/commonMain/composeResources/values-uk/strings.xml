@@ -45,7 +45,11 @@
     <string name="unlock_premium">РОЗБЛОКУВАТИ PREMIUM</string>
     <string name="premium_title">PREMIUM</string>
     <string name="premium_product_fallback">Impostor Premium</string>
+    <string name="premium_benefit_description">Premium відкриває всі категорії та скасовує ліміт безкоштовних ігор.</string>
     <string name="subscription_unavailable">Підписка наразі недоступна</string>
+    <string name="subscription_auto_renewal">Період оплати: %1$s. Підписка поновлюється автоматично, якщо її не скасувати щонайменше за 24 години до завершення поточного періоду. Керувати підпискою можна в налаштуваннях облікового запису магазину.</string>
+    <string name="privacy_policy">Політика конфіденційності</string>
+    <string name="terms_of_use">Умови використання (EULA)</string>
     <string name="subscribe">ОФОРМИТИ ПІДПИСКУ</string>
     <string name="restore_purchases">ВІДНОВИТИ ПОКУПКИ</string>
     <string name="manage_subscription">КЕРУВАТИ ПІДПИСКОЮ</string>

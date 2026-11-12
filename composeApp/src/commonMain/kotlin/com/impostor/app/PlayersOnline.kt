@@ -22,3 +22,9 @@ private val categoryPopularity = listOf(
 
 fun <T> sortByPopularity(items: List<T>, id: (T) -> String): List<T> =
     items.sortedBy { categoryPopularity.indexOf(id(it)).let { i -> if (i < 0) Int.MAX_VALUE else i } }
+
+internal fun <T> categorySections(items: List<T>, id: (T) -> String): Pair<List<T>, List<T>> {
+    val christmas = items.filter { id(it) == "christmas" }
+    val otherCategories = items.filterNot { id(it) == "christmas" }
+    return otherCategories.take(3) to (christmas + otherCategories.drop(3))
+}

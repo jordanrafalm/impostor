@@ -45,7 +45,11 @@
     <string name="unlock_premium">UNLOCK PREMIUM</string>
     <string name="premium_title">PREMIUM</string>
     <string name="premium_product_fallback">Impostor Premium</string>
+    <string name="premium_benefit_description">Premium unlocks every category and removes the free game limit.</string>
     <string name="subscription_unavailable">The subscription is currently unavailable</string>
+    <string name="subscription_auto_renewal">Billing period: %1$s. The subscription renews automatically unless cancelled at least 24 hours before the current period ends. Manage it in your store account settings.</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="terms_of_use">Terms of Use (EULA)</string>
     <string name="subscribe">SUBSCRIBE</string>
     <string name="restore_purchases">RESTORE PURCHASES</string>
     <string name="manage_subscription">MANAGE SUBSCRIPTION</string>

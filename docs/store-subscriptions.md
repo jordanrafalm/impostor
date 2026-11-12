@@ -12,6 +12,8 @@ com.impostor.app.premium.monthly
 2. Add the product ID with localized title, description, price, tax category, and availability.
 3. Create a Sandbox tester and test purchase, renewal, cancellation, refund/revocation, and restore after reinstall.
 4. Submit the product with an app version when App Store Connect requires review.
+5. In every localization, make the product description state that Premium unlocks every category and removes the free-game limit. Keep the localized product title, billing period, and price aligned with what the in-app purchase screen displays.
+6. Set the Privacy Policy URL to `https://jordanrafalm.github.io/impostor/privacy.html`. Add Apple's Standard EULA URL (`https://www.apple.com/legal/internet-services/itunes/dev/stdeula/`) to the app description or the EULA field, and verify both links are available from the in-app purchase screen.
 
 ## Google Play Console
 

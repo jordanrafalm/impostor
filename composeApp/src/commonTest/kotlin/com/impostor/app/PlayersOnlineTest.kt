@@ -19,4 +19,17 @@ class PlayersOnlineTest {
         val ids = listOf("x", "places", "adult", "animals", "y")
         assertEquals(listOf("adult", "animals", "places", "x", "y"), sortByPopularity(ids) { it })
     }
+
+    @Test fun christmasStartsOtherCategoriesWithoutChangingPopularCategories() {
+        val ids = listOf("adult", "animals", "flirt", "places", "christmas", "food")
+        val (popular, others) = categorySections(ids) { it }
+        assertEquals(listOf("adult", "animals", "flirt"), popular)
+        assertEquals(listOf("christmas", "places", "food"), others)
+    }
+
+    @Test fun categorySectionsWorkWithoutChristmas() {
+        val (popular, others) = categorySections(listOf("adult", "animals", "places", "food")) { it }
+        assertEquals(listOf("adult", "animals", "places"), popular)
+        assertEquals(listOf("food"), others)
+    }
 }

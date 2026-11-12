@@ -45,7 +45,11 @@
     <string name="unlock_premium">ODBLOKUJ PREMIUM</string>
     <string name="premium_title">PREMIUM</string>
     <string name="premium_product_fallback">Impostor Premium</string>
+    <string name="premium_benefit_description">Premium odblokowuje wszystkie kategorie i usuwa limit darmowych gier.</string>
     <string name="subscription_unavailable">Subskrypcja jest obecnie niedostępna</string>
+    <string name="subscription_auto_renewal">Okres rozliczeniowy: %1$s. Subskrypcja odnawia się automatycznie, chyba że anulujesz ją co najmniej 24 godziny przed końcem bieżącego okresu. Możesz nią zarządzać w ustawieniach konta sklepu.</string>
+    <string name="privacy_policy">Polityka prywatności</string>
+    <string name="terms_of_use">Warunki użytkowania (EULA)</string>
     <string name="subscribe">SUBSKRYBUJ</string>
     <string name="restore_purchases">PRZYWRÓĆ ZAKUPY</string>
     <string name="manage_subscription">ZARZĄDZAJ SUBSKRYPCJĄ</string>

@@ -72,6 +72,7 @@ import kotlin.time.TimeSource
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
@@ -88,11 +89,16 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.isOutOfBounds
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.TextUnit
@@ -100,6 +106,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.input.KeyboardType
@@ -134,6 +141,7 @@ import com.impostor.domain.normalizePlayerName
 import kotlin.random.Random
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -166,6 +174,8 @@ private val BlackFridayMuted = Color(0xFFA6ABA1)
 private const val HOLIDAY_BUTTON_TRANSITION_MILLIS = 650L
 private const val HOLIDAY_REINDEER_FALLBACK_MILLIS = 5_500L
 private val reviewProcessId = Random.nextLong().toString()
+private const val PrivacyPolicyUrl = "https://jordanrafalm.github.io/impostor/privacy.html"
+private const val TermsOfUseUrl = "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/"
 internal sealed interface Route {
     data object Splash : Route
     data object Home : Route
@@ -738,6 +748,7 @@ private fun Shell(
         val compactLayout = maxHeight < 740.dp
         val verticalPadding = if (compactLayout) 8.dp else 20.dp
         val snowmanLaneHeight = if (compactLayout) 40.dp else 52.dp
+        val settingsDownshift = 88.dp / 3
         val screenWidthPx = with(density) { maxWidth.toPx() }
         if (hasTwoPanes(maxWidth.value, minPaneWidth = 280f, horizontalGaps = 72f)) {
             Row(
@@ -766,7 +777,7 @@ private fun Shell(
                     }
                 }
                 Column(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 56.dp)
+                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 56.dp + settingsDownshift)
                         .graphicsLayer { translationX = buttonOffset.value * screenWidthPx },
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -805,15 +816,15 @@ private fun Shell(
                 }
             }
         } else Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxSize()
                 .imePadding()
-                .verticalScroll(rememberScrollState())
-                .heightIn(min = maxHeight - verticalPadding * 2)
                 .padding(horizontal = 24.dp, vertical = verticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween,
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
                 Text(stringResource(Res.string.home_tagline), color = Frost.copy(alpha = .78f), fontSize = 11.sp, letterSpacing = 5.sp)
                 Spacer(Modifier.height(8.dp))
                 LongPressLogo(
@@ -840,19 +851,20 @@ private fun Shell(
                 Box(
                     Modifier.layout { measurable, constraints ->
                         val placeable = measurable.measure(constraints)
-                        // Let the bottom of the sleigh artwork draw behind the Players card.
-                        val height = (placeable.height - 24.dp.roundToPx())
+                        // The sleigh artwork only fills the top of its canvas; drop the empty lower part.
+                        val height = (placeable.height * 3 / 10)
                             .coerceIn(constraints.minHeight, constraints.maxHeight)
                         layout(placeable.width, height) { placeable.placeRelative(0, 0) }
                     }.widthIn(max = 480.dp).fillMaxWidth().aspectRatio(1125f / 647f),
                 ) {
                     HolidayLottie(
                         assetName = "christmas_sleigh.json",
-                        modifier = Modifier.align(Alignment.BottomCenter).fillMaxSize(),
+                        modifier = Modifier.align(Alignment.TopCenter).fillMaxSize(),
                         iterations = Int.MAX_VALUE,
                         contentScale = ContentScale.Fit,
                     )
                 }
+                Spacer(Modifier.height(settingsDownshift))
                 Column(
                     Modifier.fillMaxWidth().graphicsLayer {
                         translationX = buttonOffset.value * screenWidthPx
@@ -1290,6 +1302,7 @@ internal fun FrostButton(
     fontSize: TextUnit = TextUnit.Unspecified,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     backgroundImage: Painter? = null,
+    selected: Boolean = false,
 ) {
     FrostButtonSurface(
         onClick = onClick,
@@ -1301,6 +1314,7 @@ internal fun FrostButton(
         autoPulse = autoPulse,
         pulseDelayMillis = pulseDelayMillis,
         backgroundImage = backgroundImage,
+        selected = selected,
     ) {
         Text(
             text = text,
@@ -1347,6 +1361,7 @@ private fun FrostButtonSurface(
     autoPulse: Boolean = false,
     pulseDelayMillis: Long = 0L,
     backgroundImage: Painter? = null,
+    selected: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -1356,7 +1371,8 @@ private fun FrostButtonSurface(
     val sweep = remember { Animatable(-.45f) }
     val scope = rememberCoroutineScope()
     var hoverWasObserved by remember { mutableStateOf(false) }
-    val longPressAction = onLongPress
+    val currentOnClick by rememberUpdatedState(onClick)
+    val currentOnLongPress by rememberUpdatedState(onLongPress)
 
     fun runSweep() {
         scope.launch {
@@ -1398,14 +1414,18 @@ private fun FrostButtonSurface(
             .background(background)
             .then(
                 if (backgroundImage != null) {
-                    Modifier.paint(backgroundImage, sizeToIntrinsics = false, contentScale = ContentScale.Crop)
+                    Modifier.paint(backgroundImage, sizeToIntrinsics = false, contentScale = ContentScale.FillBounds)
                 } else {
                     Modifier
                 },
             )
-            .border(1.dp, if (style == FrostButtonStyle.Primary) Color(0xFFD5F5FF) else PanelBorder, shape)
+            .border(
+                if (selected) 3.dp else 1.dp,
+                if (selected) Color(0xFF071A3A) else if (style == FrostButtonStyle.Primary) Color(0xFFD5F5FF) else PanelBorder,
+                shape,
+            )
             .hoverable(interactionSource, enabled)
-            .then(if (longPressAction == null) {
+            .then(if (onLongPress == null) {
                 Modifier.clickable(
                     interactionSource = interactionSource,
                     indication = null,
@@ -1415,21 +1435,33 @@ private fun FrostButtonSurface(
                     onClick()
                 }
             } else {
-                Modifier.pointerInput(longPressAction, enabled) {
+                Modifier.semantics {
+                    role = androidx.compose.ui.semantics.Role.Button
+                    onClick {
+                        if (enabled) {
+                            runSweep()
+                            currentOnClick()
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                }.pointerInput(enabled) {
                     awaitEachGesture {
                         awaitFirstDown(requireUnconsumed = false)
                         val completedBeforeLongPress = withTimeoutOrNull(2_000) {
-                            waitForUpOrCancellation()
-                            true
-                        } == true
-                        if (completedBeforeLongPress) {
-                            if (enabled) {
+                            waitForUpOrCancellation() != null
+                        }
+                        when (completedBeforeLongPress) {
+                            true -> if (enabled) {
                                 runSweep()
-                                onClick()
+                                currentOnClick()
                             }
-                        } else {
-                            longPressAction()
-                            waitForUpOrCancellation()
+                            null -> {
+                                if (enabled) currentOnLongPress?.invoke()
+                                waitForUpOrCancellation()
+                            }
+                            false -> Unit
                         }
                     }
                 }
@@ -1797,6 +1829,7 @@ private fun CategoriesScreen(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        val categoryButtonHeight = 72.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)
         val categoryButton: @Composable (Pair<String, String>, Modifier) -> Unit = { (name, id), modifier ->
             val isUnlocked = id in unlocked
             FrostButton(
@@ -1815,30 +1848,27 @@ private fun CategoriesScreen(
                 },
                 onLongPress = if (id == "adult") ({ showWalkingLady = true }) else null,
                 enabled = true,
-                modifier = modifier,
+                modifier = modifier.height(categoryButtonHeight),
                 backgroundImage = if (id == "christmas") painterResource(Res.drawable.christmas_category_background) else null,
+                selected = id in selected,
             )
         }
-        val christmas = options.firstOrNull { it.second == "christmas" }
-        val otherOptions = options.filterNot { it.second == "christmas" }
-        if (christmas != null) {
-            categoryButton(christmas, Modifier.fillMaxWidth().heightIn(min = 104.dp))
-        }
+        val (popularOptions, otherOptions) = categorySections(options) { it.second }
         Text(
             stringResource(Res.string.categories_most_popular, remember { currentLocalMoment().dateLabel }),
             color = Cyan,
             fontSize = 14.sp,
         )
-        otherOptions.take(3).chunked(columns).forEach { categoryRow ->
+        popularOptions.chunked(columns).forEach { categoryRow ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 categoryRow.forEach { categoryButton(it, Modifier.weight(1f)) }
                 repeat(columns - categoryRow.size) { Spacer(Modifier.weight(1f)) }
             }
         }
-        if (otherOptions.size > 3) {
+        if (otherOptions.isNotEmpty()) {
             Text(stringResource(Res.string.categories_rest), color = Cyan, fontSize = 14.sp)
         }
-        otherOptions.drop(3).chunked(columns).forEach { categoryRow ->
+        otherOptions.chunked(columns).forEach { categoryRow ->
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 categoryRow.forEach { categoryButton(it, Modifier.weight(1f)) }
                 repeat(columns - categoryRow.size) { Spacer(Modifier.weight(1f)) }
@@ -1869,6 +1899,7 @@ private fun PremiumSubscriptionScreen(
     var product by remember { mutableStateOf<com.impostor.domain.SubscriptionProduct?>(null) }
     var message by remember { mutableStateOf<SubscriptionError?>(null) }
     val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
     val purchase = remember(repository) { PurchasePremiumUseCase(repository) }
     val restore = remember(repository) { RestorePurchasesUseCase(repository) }
 
@@ -1898,11 +1929,19 @@ private fun PremiumSubscriptionScreen(
         },
     ) {
         Text(product?.title ?: stringResource(Res.string.premium_product_fallback), color = Color.White, fontSize = 22.sp)
+        Text(stringResource(Res.string.premium_benefit_description), color = Frost)
         Text(
             product?.let { "${it.formattedPrice} / ${localizedPeriodLabel(it.periodLabel)}" }
                 ?: stringResource(Res.string.subscription_unavailable),
             color = Frost,
         )
+        product?.let {
+            Text(
+                stringResource(Res.string.subscription_auto_renewal, localizedPeriodLabel(it.periodLabel)),
+                color = Frost,
+                fontSize = 13.sp,
+            )
+        }
         Text(subscriptionStateLabel(entitlement.state), color = if (entitlement.state == SubscriptionState.ACTIVE) Cyan else Frost)
         message?.let { Text(subscriptionErrorLabel(it), color = Color(0xFFFF8A8A)) }
         FrostButton(
@@ -1945,6 +1984,27 @@ private fun PremiumSubscriptionScreen(
             onClick = { scope.launch { repository.openManageSubscriptions().onFailure { message = subscriptionError(it) } } },
             modifier = Modifier.fillMaxWidth(),
         )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(Res.string.privacy_policy),
+                color = Cyan,
+                fontSize = 13.sp,
+                style = TextStyle(textDecoration = TextDecoration.Underline),
+                modifier = Modifier.clickable { uriHandler.openUri(PrivacyPolicyUrl) },
+            )
+            Text("·", color = Frost, fontSize = 13.sp)
+            Text(
+                text = stringResource(Res.string.terms_of_use),
+                color = Cyan,
+                fontSize = 13.sp,
+                style = TextStyle(textDecoration = TextDecoration.Underline),
+                modifier = Modifier.clickable { uriHandler.openUri(TermsOfUseUrl) },
+            )
+        }
     }
 }
 
@@ -2059,8 +2119,11 @@ private fun localizedPeriodLabel(period: String): String {
                 .background(Color.White.copy(alpha = .08f))
                 .pointerInput(session.sessionId, session.revealIndex, viewportSize, active) {
                     if (!active) return@pointerInput
+                    var freezeJob: Job? = null
                     awaitEachGesture {
-                        awaitFirstDown()
+                        val down = awaitFirstDown()
+                        down.consume()
+                        freezeJob?.cancel()
                         holding = true
                         thermalFeedback.start()
                         val thaw = scope.launch {
@@ -2077,13 +2140,19 @@ private fun localizedPeriodLabel(period: String): String {
                             }
                         }
                         try {
-                            waitForUpOrCancellation()
+                            while (true) {
+                                val change = awaitPointerEvent().changes.firstOrNull { it.id == down.id } ?: break
+                                if (change.isConsumed || change.isOutOfBounds(size, extendedTouchPadding)) break
+                                // Keep small finger movements from starting the parent scroll.
+                                change.consume()
+                                if (!change.pressed) break
+                            }
                         } finally {
                             holding = false
                             pulseJob.cancel()
                             thaw.cancel()
                             thermalFeedback.complete()
-                            scope.launch {
+                            freezeJob = scope.launch(start = CoroutineStart.UNDISPATCHED) {
                                 reveal.animateTo(0f, tween(380, easing = FastOutLinearInEasing))
                             }
                         }
@@ -2169,12 +2238,16 @@ private fun localizedPeriodLabel(period: String): String {
                     if (event.changes.any { it.pressed && !it.previousPressed }) identityVisible = false
                 }
             }
-        }.padding(horizontal = 24.dp, vertical = 24.dp),
+        }.padding(horizontal = 24.dp),
     ) {
         val wide = hasTwoPanes(maxWidth.value, minPaneWidth = 280f, horizontalGaps = 24f)
-        val cardHeight = (maxHeight - 160.dp).coerceIn(180.dp, 420.dp)
+        val cardHeight = (maxHeight - 48.dp - 160.dp).coerceIn(180.dp, 420.dp)
+        val homeVerticalPadding = if (maxHeight < 740.dp) 8.dp else 20.dp
         Column(
-            Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+            Modifier.fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = maxHeight)
+                .padding(top = 24.dp, bottom = if (wide) 24.dp else homeVerticalPadding),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -2195,7 +2268,18 @@ private fun localizedPeriodLabel(period: String): String {
                 }
             } else {
                 card(Modifier.fillMaxWidth().height(cardHeight))
+                Spacer(Modifier.weight(1f))
                 instructionsAndAction(Modifier.fillMaxWidth())
+                // Reserve the home footer's measured height, including localized text.
+                Box(Modifier.padding(top = 2.dp).alpha(0f).clearAndSetSemantics {}) {
+                    FrostButton(
+                        text = stringResource(Res.string.unlock_full_version),
+                        onClick = {},
+                        modifier = Modifier.fillMaxWidth(),
+                        style = FrostButtonStyle.Subtle,
+                        enabled = false,
+                    )
+                }
             }
         }
     }
