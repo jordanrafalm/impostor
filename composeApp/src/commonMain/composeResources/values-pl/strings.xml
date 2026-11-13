@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_language_code">pl</string>
     <string name="home_tagline">GRA IMPREZOWA</string>
     <string name="home_players">Gracze</string>
     <string name="home_categories">Kategorie</string>

@@ -45,6 +45,7 @@ enum class AnalyticsEvent {
 
 interface AnalyticsService {
     fun log(event: AnalyticsEvent, parameters: Map<String, String> = emptyMap())
+    fun logAppLanguage(language: String): Boolean
 }
 
 class ValidateCodeUseCase(private val repository: CodeRepository) {

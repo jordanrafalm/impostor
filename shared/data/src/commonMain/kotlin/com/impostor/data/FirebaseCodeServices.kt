@@ -39,6 +39,14 @@ internal class FirestoreRemoteCodeSource(
 }
 
 internal class FirebaseAnalyticsService : AnalyticsService {
+    override fun logAppLanguage(language: String): Boolean = try {
+        Firebase.analytics.logEvent("app_language_selected", mapOf("app_language" to language))
+        true
+    } catch (error: Exception) {
+        println("Cannot log app language: ${error.message}")
+        false
+    }
+
     override fun log(event: AnalyticsEvent, parameters: Map<String, String>) {
         runCatching {
             when (event) {

@@ -264,13 +264,19 @@ fun ImpostorApp() {
     val scope = rememberCoroutineScope()
     var startingGame by remember { mutableStateOf(false) }
     val analytics = remember { analyticsService() }
+    val appLanguageStore = remember { platformPreferenceStore() }
+    val appLanguage = stringResource(Res.string.app_language_code)
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(appLanguage) {
+        reportAppLanguage(appLanguage, appLanguageStore, analytics)
+    }
     LaunchedEffect(subscriptionRepository) {
         subscriptionRepository.reconcileEntitlement()
     }
-    DisposableEffect(lifecycle, subscriptionRepository) {
+    DisposableEffect(lifecycle, subscriptionRepository, appLanguage) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
+                reportAppLanguage(appLanguage, appLanguageStore, analytics)
                 scope.launch { subscriptionRepository.reconcileEntitlement() }
             }
         }

@@ -103,6 +103,12 @@ Manage codes only through the Firebase Console or a trusted server/admin process
 
 ## Analytics
 
+The `app_language_selected` event contains the `app_language` parameter (`en`, `pl`, or `uk`),
+derived from the currently displayed UI resources. It is sent once per installation and
+again when the UI language changes; a failed SDK call is retried on a later resume.
+Register `app_language` as an event-scoped custom dimension in Analytics to use it in
+reports. Event counts record language selections, not the current distribution of users.
+
 The legacy adapter may still contain mappings for historical events, but the production navigation no longer emits them. The subscription release emits:
 
 - `premium_screen_opened`

@@ -1,4 +1,5 @@
 <resources>
+    <string name="app_language_code">en</string>
     <string name="home_tagline">PARTY GAME</string>
     <string name="home_players">Players</string>
     <string name="home_categories">Categories</string>
