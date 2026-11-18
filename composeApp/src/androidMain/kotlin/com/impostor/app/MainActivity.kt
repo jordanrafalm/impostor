@@ -17,7 +17,7 @@ class MainActivity : ComponentActivity() {
         initializeBundledCatalog(applicationContext)
         initializePlatformStoreBilling(this)
         enableEdgeToEdge()
-        setContent { ImpostorApp() }
+        setContent { ImpostorApp(debugUnlockCategories = com.rafal.impostorparty.BuildConfig.DEBUG) }
     }
 
     override fun onDestroy() {

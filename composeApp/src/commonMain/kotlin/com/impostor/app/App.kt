@@ -37,6 +37,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -117,8 +118,6 @@ import com.impostor.data.analyticsService
 import com.impostor.data.SubscriptionRepositoryImpl
 import com.impostor.data.TrialRepositoryImpl
 import com.impostor.domain.AnalyticsEvent
-import com.impostor.domain.canStartGame
-import com.impostor.domain.requiresTrialGame
 import com.impostor.domain.GameSession
 import com.impostor.domain.GameSetup
 import com.impostor.domain.Player
@@ -216,7 +215,7 @@ internal val routeSaver = listSaver<Route, String>(
 
 @OptIn(ExperimentalResourceApi::class)
 @Composable
-fun ImpostorApp() {
+fun ImpostorApp(debugUnlockCategories: Boolean = false) {
     var route by rememberSaveable(stateSaver = routeSaver) { mutableStateOf<Route>(Route.Splash) }
     var launchSoundRequested by rememberSaveable { mutableStateOf(false) }
     val launchSoundPlayer = remember { platformLaunchSoundPlayer() }
@@ -300,7 +299,7 @@ fun ImpostorApp() {
         repository.prompts(categories.map { it.id }.toSet())
     }
     val premiumUnlocked = entitlement.unlocksAllCategories()
-    val unlockedCategories = if (trialState.canStartGame(entitlement)) {
+    val unlockedCategories = if (allCategoriesAvailable(debugUnlockCategories, trialState, entitlement)) {
         allCategoryIds
     } else {
         allCategoryIds.intersect(com.impostor.domain.AlwaysFreeCategoryIds)
@@ -449,7 +448,11 @@ fun ImpostorApp() {
                             val usesOnlyAlwaysFreeCategories = selectedCategories.isNotEmpty() &&
                                 selectedCategories.all { it in com.impostor.domain.AlwaysFreeCategoryIds }
                             if (selectedCategories.isNotEmpty() && !usesOnlyAlwaysFreeCategories &&
-                                !trialRepository.state.value.canStartGame(entitlement)
+                                !allCategoriesAvailable(
+                                    debugUnlockCategories,
+                                    trialRepository.state.value,
+                                    entitlement,
+                                )
                             ) {
                                 showFreeLimitDialog = true
                                 route = Route.Categories
@@ -467,7 +470,12 @@ fun ImpostorApp() {
                                     startingGame = true
                                     scope.launch {
                                         try {
-                                            if (requiresTrialGame(setup.selectedCategoryIds, entitlement)) {
+                                            if (shouldRecordCategoryTrial(
+                                                    debugUnlockCategories,
+                                                    setup.selectedCategoryIds,
+                                                    entitlement,
+                                                )
+                                            ) {
                                                 RecordStartedGameUseCase(trialRepository).invoke(session.sessionId)
                                             }
                                             route = Route.Reveal(session)
@@ -490,7 +498,7 @@ fun ImpostorApp() {
                         selected = selectedCategories,
                         unlocked = unlockedCategories,
                         trialState = trialState,
-                        premiumUnlocked = premiumUnlocked,
+                        premiumUnlocked = premiumUnlocked || debugUnlockCategories,
                         onBack = { route = Route.Home },
                         onOpenPremium = { route = Route.Premium },
                         onSelected = {
@@ -1427,7 +1435,7 @@ private fun FrostButtonSurface(
             )
             .border(
                 if (selected) 3.dp else 1.dp,
-                if (selected) Color(0xFF071A3A) else if (style == FrostButtonStyle.Primary) Color(0xFFD5F5FF) else PanelBorder,
+                if (selected) Color(0xFF80D8FF) else if (style == FrostButtonStyle.Primary) Color(0xFFD5F5FF) else PanelBorder,
                 shape,
             )
             .hoverable(interactionSource, enabled)
@@ -1734,39 +1742,59 @@ private fun PlayersScreen(
             modifier = Modifier.size(56.dp),
         )
     }
-    Spacer(Modifier.height(16.dp))
-    FrostButton(
-        text = stringResource(Res.string.done),
-        onClick = {
-            val updatedPlayers = appendPendingPlayer(players, newPlayerName)
-            if (updatedPlayers.size != players.size) onPlayers(updatedPlayers)
-            onBack()
-        },
-        modifier = Modifier.fillMaxWidth(),
-        style = FrostButtonStyle.Subtle,
-    )
     }
     }
-    BoxWithConstraints(Modifier.fillMaxSize().imePadding().padding(horizontal = 20.dp, vertical = 20.dp)) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val imeVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+        val compactLayout = maxHeight < 740.dp
+        val verticalPadding = if (imeVisible) 0.dp else if (compactLayout) 8.dp else 20.dp
+        val snowmanLaneHeight = if (imeVisible) 0.dp else if (compactLayout) 40.dp else 52.dp
         val wide = hasTwoPanes(maxWidth.value, minPaneWidth = 284f, horizontalGaps = 24f)
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
-            Box(Modifier.fillMaxWidth().height(56.dp)) {
-                FrostButton("‹", onBack, Modifier.align(Alignment.CenterStart).size(52.dp), closeButton = true)
-                Text(stringResource(Res.string.players_title), color = Color.White, fontSize = 28.sp,
-                    letterSpacing = 1.sp, modifier = Modifier.align(Alignment.Center))
-                Text(players.size.toString(), color = Frost, fontSize = 18.sp,
-                    modifier = Modifier.align(Alignment.CenterEnd))
-            }
-            Spacer(Modifier.height(18.dp))
-            if (wide) {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                    playerControls(Modifier.weight(1f))
-                    playerList(Modifier.weight(1f))
+        Column(
+            Modifier.fillMaxSize().imePadding().padding(horizontal = 24.dp, vertical = verticalPadding),
+        ) {
+            Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState())) {
+                Box(Modifier.fillMaxWidth().height(56.dp)) {
+                    FrostButton("‹", onBack, Modifier.align(Alignment.CenterStart).size(52.dp), closeButton = true)
+                    Text(stringResource(Res.string.players_title), color = Color.White, fontSize = 28.sp,
+                        letterSpacing = 1.sp, modifier = Modifier.align(Alignment.Center))
+                    Text(players.size.toString(), color = Frost, fontSize = 18.sp,
+                        modifier = Modifier.align(Alignment.CenterEnd))
                 }
-            } else {
-                playerList(Modifier.fillMaxWidth())
                 Spacer(Modifier.height(18.dp))
-                playerControls(Modifier.fillMaxWidth())
+                if (wide) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        playerControls(Modifier.weight(1f))
+                        playerList(Modifier.weight(1f))
+                    }
+                } else {
+                    playerList(Modifier.fillMaxWidth())
+                    Spacer(Modifier.height(18.dp))
+                    playerControls(Modifier.fillMaxWidth())
+                }
+            }
+            Spacer(Modifier.height(snowmanLaneHeight))
+            FrostButton(
+                text = stringResource(Res.string.done),
+                onClick = {
+                    val updatedPlayers = appendPendingPlayer(players, newPlayerName)
+                    if (updatedPlayers.size != players.size) onPlayers(updatedPlayers)
+                    onBack()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                style = FrostButtonStyle.Subtle,
+            )
+            if (!imeVisible) {
+                Spacer(Modifier.height(18.dp))
+                Box(Modifier.alpha(0f).clearAndSetSemantics {}) {
+                    FrostButton(
+                        text = stringResource(Res.string.unlock_full_version),
+                        onClick = {},
+                        modifier = Modifier.fillMaxWidth(),
+                        style = FrostButtonStyle.Subtle,
+                        enabled = false,
+                    )
+                }
             }
         }
     }
@@ -2423,9 +2451,12 @@ private fun FrostGlass(
         ?: session.starterPlayerId
     val impostorCount = session.assignments.count { it.role == Role.IMPOSTOR }
 
-    Column(
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val homeVerticalPadding = if (maxHeight < 740.dp) 8.dp else 20.dp
+        Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 24.dp),
+            .heightIn(min = maxHeight)
+            .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = homeVerticalPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(stringResource(Res.string.game_started), color = Frost.copy(alpha = .78f), fontSize = 13.sp, letterSpacing = 6.sp)
@@ -2466,6 +2497,7 @@ private fun FrostGlass(
             fontSize = 18.sp,
         )
         Spacer(Modifier.height(36.dp))
+        Spacer(Modifier.weight(1f))
         FrostButton(
             text = stringResource(Res.string.end_game),
             onClick = {
@@ -2477,5 +2509,16 @@ private fun FrostGlass(
             enabled = !hasCompleted,
             modifier = Modifier.fillMaxWidth(),
         )
+        Spacer(Modifier.height(18.dp))
+        Box(Modifier.alpha(0f).clearAndSetSemantics {}) {
+            FrostButton(
+                text = stringResource(Res.string.unlock_full_version),
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                style = FrostButtonStyle.Subtle,
+                enabled = false,
+            )
+        }
+    }
     }
 }

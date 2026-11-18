@@ -201,7 +201,12 @@ private final class StoreKitBridge {
 
 private struct ComposeRootView: UIViewControllerRepresentable {
     func makeUIViewController(context: Context) -> UIViewController {
-        let viewController = MainViewControllerKt.MainViewController()
+        #if DEBUG
+        let debugUnlockCategories = true
+        #else
+        let debugUnlockCategories = false
+        #endif
+        let viewController = MainViewControllerKt.MainViewController(debugUnlockCategories: debugUnlockCategories)
         viewController.modalPresentationStyle = .fullScreen
         viewController.additionalSafeAreaInsets = .zero
         return viewController

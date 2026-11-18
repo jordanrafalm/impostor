@@ -5,7 +5,8 @@ import platform.UIKit.UIColor
 import platform.UIKit.UIRectEdgeAll
 import platform.UIKit.UIViewController
 
-fun MainViewController(): UIViewController = ComposeUIViewController { ImpostorApp() }.apply {
+fun MainViewController(debugUnlockCategories: Boolean): UIViewController =
+    ComposeUIViewController { ImpostorApp(debugUnlockCategories) }.apply {
 	view.backgroundColor = UIColor.clearColor
 	edgesForExtendedLayout = UIRectEdgeAll
 	extendedLayoutIncludesOpaqueBars = true

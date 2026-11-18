@@ -1,5 +1,19 @@
 package com.impostor.app
 
+import com.impostor.domain.Entitlement
+import com.impostor.domain.TrialState
+import com.impostor.domain.canStartGame
+import com.impostor.domain.requiresTrialGame
+
+internal fun allCategoriesAvailable(debugUnlockCategories: Boolean, trial: TrialState, entitlement: Entitlement): Boolean =
+    debugUnlockCategories || trial.canStartGame(entitlement)
+
+internal fun shouldRecordCategoryTrial(
+    debugUnlockCategories: Boolean,
+    categoryIds: Set<String>,
+    entitlement: Entitlement,
+): Boolean = !debugUnlockCategories && requiresTrialGame(categoryIds, entitlement)
+
 internal fun readSelectedCategoryIds(): Set<String>? {
     val store = platformPreferenceStore()
     return decodeSelectedCategoryIds(
