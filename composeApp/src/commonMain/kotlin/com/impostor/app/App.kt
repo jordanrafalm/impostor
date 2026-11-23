@@ -827,6 +827,26 @@ private fun Shell(
                     Spacer(Modifier.height(10.dp))
                     FrostButton(stringResource(Res.string.unlock_full_version), onCodes, Modifier.fillMaxWidth(),
                         style = FrostButtonStyle.Subtle, autoPulse = true, pulseDelayMillis = 1800L)
+                    Spacer(Modifier.height(16.dp))
+                    val uriHandler = LocalUriHandler.current
+                    val creatorLinkInteractionSource = remember { MutableInteractionSource() }
+                    val isCreatorLinkHovered by creatorLinkInteractionSource.collectIsHoveredAsState()
+                    Text(
+                        "Made by CodeWithHoney",
+                        color = Frost.copy(alpha = if (isCreatorLinkHovered) .78f else .56f),
+                        fontSize = 10.sp,
+                        letterSpacing = 1.sp,
+                        modifier = Modifier
+                            .clickable(interactionSource = creatorLinkInteractionSource, indication = null) {
+                                uriHandler.openUri("https://www.codewithhoney.pl")
+                            },
+                    )
+                    Text(
+                        "v${appVersion()}",
+                        color = Frost.copy(alpha = .42f),
+                        fontSize = 9.sp,
+                        letterSpacing = 0.5.sp,
+                    )
                 }
             }
         } else Column(
@@ -953,6 +973,30 @@ private fun Shell(
                     autoPulse = true,
                     pulseDelayMillis = 1800L,
                 )
+                Spacer(Modifier.height(16.dp))
+                val uriHandler = LocalUriHandler.current
+                val creatorLinkInteractionSource = remember { MutableInteractionSource() }
+                val isCreatorLinkHovered by creatorLinkInteractionSource.collectIsHoveredAsState()
+                Text(
+                    "Made by CodeWithHoney",
+                    color = Frost.copy(alpha = if (isCreatorLinkHovered) .78f else .56f),
+                    fontSize = 10.sp,
+                    letterSpacing = 1.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(interactionSource = creatorLinkInteractionSource, indication = null) {
+                            uriHandler.openUri("https://www.codewithhoney.pl")
+                        },
+                )
+                Text(
+                    "v${appVersion()}",
+                    color = Frost.copy(alpha = .42f),
+                    fontSize = 9.sp,
+                    letterSpacing = 0.5.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
         FrostButton(
@@ -962,12 +1006,6 @@ private fun Shell(
                 translationX = buttonOffset.value * screenWidthPx
             },
             closeButton = true,
-        )
-        Text(
-            text = "v${appVersion()}",
-            color = Frost.copy(alpha = .78f),
-            fontSize = 12.sp,
-            modifier = Modifier.align(Alignment.TopEnd).padding(20.dp),
         )
         if (showRules) {
             GameRulesOverlay(onDismiss = { showRules = false })
