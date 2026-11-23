@@ -13,6 +13,12 @@
 		<string>en</string>
 		<string>pl</string>
 		<string>uk</string>
+		<string>ar</string>
+		<string>el</string>
+		<string>es</string>
+		<string>it</string>
+		<string>pt</string>
+		<string>ro</string>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>

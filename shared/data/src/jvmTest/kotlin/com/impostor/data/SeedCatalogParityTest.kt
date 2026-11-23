@@ -123,6 +123,51 @@ internal class SeedCatalogParityTest {
         )
     }
 
+    @Test
+    fun `new locale seeds preserve catalog structure and prompt IDs`() {
+        val englishJson = resource("/seed/prompts-en.json")
+        val english = Json.parseToJsonElement(englishJson).jsonObject
+        val englishCategories = english.getValue("categories").jsonArray.map(JsonElement::jsonObject)
+        val activeIds = english.getValue("activeCategoryIds").jsonArray
+            .map { it.jsonPrimitive.content }
+            .toSet()
+        val englishIds = SeedCatalogRepository(englishJson).prompts(activeIds).map { it.id }
+
+        for (locale in listOf("ar", "el", "es", "it", "pt", "ro")) {
+            val localizedJson = resource("/seed/prompts-$locale.json")
+            val localized = Json.parseToJsonElement(localizedJson).jsonObject
+            val localizedCategories = localized.getValue("categories").jsonArray.map(JsonElement::jsonObject)
+
+            assertEquals(english.getValue("schemaVersion"), localized.getValue("schemaVersion"), locale)
+            assertEquals(english.getValue("activeCategoryIds"), localized.getValue("activeCategoryIds"), locale)
+            assertEquals(
+                englishCategories.map { it.text("id") },
+                localizedCategories.map { it.text("id") },
+                locale,
+            )
+            for ((englishCategory, localizedCategory) in englishCategories.zip(localizedCategories)) {
+                val categoryId = localizedCategory.text("id")
+                assertTrue(localizedCategory.text("name").isNotBlank(), "$locale $categoryId blank name")
+                val englishPrompts = englishCategory.getValue("prompts").jsonArray
+                val localizedPrompts = localizedCategory.getValue("prompts").jsonArray
+                assertEquals(
+                    englishPrompts.size,
+                    localizedPrompts.size,
+                    "$locale $categoryId prompt count",
+                )
+                assertTrue(
+                    localizedPrompts.all { it.promptText().isNotBlank() },
+                    "$locale $categoryId contains a blank prompt",
+                )
+            }
+            assertEquals(
+                englishIds,
+                SeedCatalogRepository(localizedJson).prompts(activeIds).map { it.id },
+                locale,
+            )
+        }
+    }
+
     private fun assertEnglishPromptsHaveTextAndHints(categoryId: String, prompts: JsonArray) {
         val texts = prompts.map { it.promptText() }
         prompts.forEachIndexed { index, prompt ->

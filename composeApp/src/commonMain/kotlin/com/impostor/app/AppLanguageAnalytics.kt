@@ -7,7 +7,7 @@ internal fun reportAppLanguage(
     store: PreferenceStore,
     analytics: AnalyticsService,
 ) {
-    if (language !in setOf("en", "pl", "uk")) {
+    if (language !in setOf("en", "pl", "uk", "ar", "el", "es", "it", "pt", "ro")) {
         println("Cannot log unsupported app language: $language")
         return
     }

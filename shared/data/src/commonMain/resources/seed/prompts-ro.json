@@ -1,0 +1,2334 @@
+{
+  "schemaVersion": 1,
+  "activeCategoryIds": [
+    "animals",
+    "places",
+    "food",
+    "sports",
+    "professions",
+    "objects",
+    "nature",
+    "music",
+    "technology",
+    "everyday",
+    "adult",
+    "flirt",
+    "sex",
+    "polish_influencers",
+    "polish_actors",
+    "international_stars",
+    "christmas"
+  ],
+  "categories": [
+    {
+      "id": "animals",
+      "name": "Animale",
+      "iconKey": "paw",
+      "prompts": [
+        "Penguin",
+        "Sigiliul",
+        "Reni",
+        "Vulpe polară",
+        "Bufniță de zăpadă",
+        "Ursuleț polar",
+        "Lup",
+        "Fig",
+        "Vulpe",
+        "Bursuc",
+        "Cai",
+        "Veveriță",
+        "Iepuri",
+        "Cârtiță",
+        "Liliac",
+        "Vidre",
+        "Castor",
+        "Somon",
+        "Cerb",
+        "Sarna",
+        "Mistreț",
+        "Sfecle",
+        "Cai",
+        "Măgarule.",
+        "Vacă",
+        "Ovine",
+        "Caprine",
+        "Porcine",
+        "Câine",
+        "Pisică",
+        "Hamster",
+        "Iepure",
+        "Papagal",
+        "Canary",
+        "Porumbel",
+        "Stork",
+        "Vultur",
+        "Hawk.",
+        "Falcon",
+        "Corb",
+        "Corb",
+        "Magpie",
+        "Ciocănitoare",
+        "Flaming",
+        "Păun",
+        "Ostrich",
+        "Rață",
+        "Gâscă",
+        "Lebădă",
+        "Pui",
+        "Broască",
+        "Broască",
+        "Salamandra",
+        "Șopârlă",
+        "Cameleon",
+        "Ţestoasă",
+        "Crocodil",
+        "Aligator",
+        "Șarpe",
+        "LEGUAN",
+        "Rechin",
+        "Delfin",
+        "Balenă",
+        "Vultur",
+        "Caracatiță",
+        "Medusa",
+        "Cal de mare",
+        "Crabi",
+        "Lobster",
+        "Creveți",
+        "Pătrunjel",
+        "Somon",
+        "Carp",
+        "Șobolan",
+        "Suma",
+        "Ton",
+        "PESCUIT",
+        "Sardină",
+        "Merluciu",
+        "Fluture",
+        "Albină",
+        "Bumblebee",
+        "Viespe",
+        "Furnică",
+        "Buburuza",
+        "Dragonfly",
+        "Lăcustă",
+        "Greiere",
+        "Cărăbuș",
+        "Păianjen",
+        "Scorpion",
+        "Melc",
+        "Viermi",
+        "Centipede",
+        "Mantis",
+        "Gândac",
+        "Tomate",
+        "Zboară",
+        "Tic",
+        "Morsă"
+      ]
+    },
+    {
+      "id": "places",
+      "name": "Locuri",
+      "iconKey": "map",
+      "prompts": [
+        "Aeroport",
+        "Bibliotecă",
+        "Muzeul",
+        "Plajă",
+        "Pantă de schi",
+        "Parchează",
+        "Păduri",
+        "Munţi",
+        "Lac",
+        "Râu",
+        "Insulă",
+        "Deșert",
+        "Peșteră",
+        "Cascadă",
+        "Vulcan",
+        "Far",
+        "Port",
+        "Stație",
+        "Stop",
+        "Metro",
+        "Stadionul",
+        "Sala de sport",
+        "Piscină",
+        "Sala de sport",
+        "Teren de tenis",
+        "Curs de golf",
+        "Teatrul",
+        "Cinematograf",
+        "Opera",
+        "Galeria de Artă",
+        "Biserica",
+        "Castle",
+        "Palatul",
+        "Piața",
+        "Primăria",
+        "Puntea",
+        "Tunel",
+        "Turn",
+        "Monumentul",
+        "Cimitirul",
+        "Spital",
+        "Farmacie",
+        "Școală",
+        "Universitatea",
+        "Pepiniere",
+        "Secţia de poliţie.",
+        "Pompierii",
+        "Mail",
+        "Banca",
+        "Autoritatea",
+        "Comerţ",
+        "Supermarket",
+        "Șantier de piață",
+        "Brutărie",
+        "Cafenea",
+        "Restaurant",
+        "Bar",
+        "Hotel",
+        "Hostel",
+        "Camping",
+        "Fermă",
+        "Trist.",
+        "Podgoria",
+        "Grădină botanică",
+        "Grădină zoologică",
+        "Acvariu",
+        "Rezerva",
+        "Entertainment Park",
+        "Oraşul Fericit",
+        "Aquapark",
+        "Birou",
+        "Fabrica",
+        "Revistă",
+        "Șantier",
+        "A mea.",
+        "Benzinărie",
+        "Spălare auto",
+        "Atelier",
+        "Garaj",
+        "Parcare",
+        "Acasã",
+        "Apartament",
+        "Bucătărie",
+        "Baie",
+        "Dormitor",
+        "Balcon",
+        "Grădină",
+        "Subsol",
+        "Podul.",
+        "Rufe",
+        "Spațiu",
+        "Stație spațială",
+        "Luna",
+        "Marte",
+        "fundul oceanului",
+        "Reciful de corali",
+        "Polul Nord",
+        "Polul Sud",
+        "Jungle",
+        "Sawanna."
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Alimente",
+      "iconKey": "bowl",
+      "prompts": [
+        "Pizza",
+        "Sushi",
+        "Pui",
+        "clătite",
+        "găluște",
+        "Bigos",
+        "Cărăbuș",
+        "Borsch",
+        "Clătite cu cartofi",
+        "Copiază",
+        "Lăptuci",
+        "Gulaş",
+        "Porumbei",
+        "Fasole în Breton",
+        "Ratoni",
+        "Tăiței de lapte",
+        "Miseria",
+        "Salată de legume",
+        "Tatar",
+        "Bud",
+        "Prăjitură cu brânză",
+        "Mere",
+        "PESCUIT",
+        "Bunico.",
+        "Brownie",
+        "Tiramisu",
+        "Înghețată",
+        "Sorbet",
+        "Prăjitură desert",
+        "Jeleu",
+        "Hamburger",
+        "Hot dog.",
+        "Cartofi prăjiți",
+        "pâine prăjită",
+        "Sandviș",
+        "Înveliș",
+        "Taco",
+        "Burrito",
+        "Quesadilla",
+        "Nachos",
+        "Curry",
+        "Ramon",
+        "Pad Thai",
+        "Pho",
+        "Kimchi",
+        "Falafel",
+        "Humus",
+        "Kebab",
+        "Moussaka",
+        "Paella",
+        "Risotto",
+        "Lasagne",
+        "Spaghete",
+        "Ravioli",
+        "Gnocchi",
+        "Bruschetta",
+        "Focaccia",
+        "Bagaje",
+        "Croissant",
+        "Chiflă",
+        "Mere",
+        "Pere",
+        "Banană",
+        "Portocaliu",
+        "Mandarină",
+        "Lămâie",
+        "Căpșuni",
+        "Zmeură",
+        "Afine",
+        "Lămâi verzi \"lime\"",
+        "Tomate",
+        "Castravete",
+        "Morcovi",
+        "Cartofi",
+        "Ceapă",
+        "Usturoi",
+        "Ardei",
+        "Broccoli",
+        "Conopidă",
+        "Dovleac",
+        "Ciocolată",
+        "Miere",
+        "Gem",
+        "Unt de arahide",
+        "Brânză",
+        "Iaurt",
+        "Coacăze",
+        "Ouă",
+        "Șuncă",
+        "Cârnaţi",
+        "Pâine",
+        "Bucată",
+        "Orez",
+        "Paste alimentare",
+        "Cash",
+        "Ovăz",
+        "Cereale pentru micul dejun",
+        "Nuci",
+        "Floricele",
+        "Chipsuri"
+      ]
+    },
+    {
+      "id": "sports",
+      "name": "Sport",
+      "iconKey": "trophy",
+      "prompts": [
+        "Fotbal",
+        "Baschet",
+        "Volei",
+        "Handbal",
+        "Tenis",
+        "Tenis de masă",
+        "Badminton",
+        "Squash",
+        "Golf",
+        "Baseball",
+        "Hochei",
+        "Hochei de iarbă",
+        "Rugby",
+        "Fotbal american",
+        "Greiere",
+        "Cutie",
+        "Kickboxing",
+        "Karate",
+        "Judo",
+        "Taekwondo",
+        "Stocuri",
+        "Sebastă",
+        "Tir cu arcul",
+        "Filmări",
+        "Ridicarea greutăţii",
+        "Atributul forței",
+        "Gimnastică",
+        "Acrobaţii",
+        "Kalistenika",
+        "Crossfit",
+        "Rularea",
+        "Sprint",
+        "Maraton",
+        "Half Maraton",
+        "Plimbare sportivă",
+        "Salt mare",
+        "Salt lung",
+        "Javelin arunca",
+        "Condu Arunca",
+        "Ballstroke",
+        "Înot",
+        "Salturi de apă",
+        "Bila de apă",
+        "Surfing",
+        "Vâslire",
+        "Canoe",
+        "Navigare",
+        "Scufundări",
+        "Rafting",
+        "Pescuitul",
+        "Schiuri",
+        "Snowboard",
+        "Biatlon",
+        "Patinaj figura",
+        "Patinaj rapid",
+        "Slepping",
+        "Bobsled",
+        "Curling",
+        "Ski jumping",
+        "Schi alpin",
+        "Ciclul rutier",
+        "Biciclete montane",
+        "BMX",
+        "Curse auto",
+        "Karting",
+        "Motocross",
+        "Adunarea",
+        "Calari",
+        "Polo",
+        "Skateboarding",
+        "Dansează.",
+        "Balet",
+        "Breakdance",
+        "Majoretă",
+        "Yoga",
+        "Pilates",
+        "Aerobe",
+        "Fitness",
+        "Alpinism",
+        "Parkour",
+        "Bilanț",
+        "Bowling",
+        "Săgeată",
+        "Fotbal de masă",
+        "Paintball",
+        "Tag laser",
+        "Frisbee",
+        "Bule",
+        "Hula-hoop",
+        "Personal",
+        "Rasă",
+        "Potrivire",
+        "Turneu",
+        "Formare",
+        "Medalie",
+        "Cupa",
+        "Arbitrul",
+        "Echipa",
+        "Stadionul",
+        "Triatlon"
+      ]
+    },
+    {
+      "id": "professions",
+      "name": "Concurența",
+      "iconKey": "briefcase",
+      "prompts": [
+        "Doctore.",
+        "Soră.",
+        "Salvamar medical",
+        "Dentist",
+        "Veterinar",
+        "Farmaceutic",
+        "Psiholog",
+        "Fizioterapia",
+        "Chirurg",
+        "Moașe",
+        "Profesore.",
+        "Educator",
+        "Profesore.",
+        "Bibliotecar",
+        "Antrenor",
+        "Instructor de conducere",
+        "Tradu",
+        "Scriitor",
+        "Jurnalist",
+        "Editor",
+        "Dezvoltator",
+        "Proiectant UX",
+        "Testator software",
+        "Administrator de rețea",
+        "Analist de date",
+        "Fotograf",
+        "Operator aparat de fotografiat",
+        "Actor",
+        "Director",
+        "Muzician",
+        "Arhitect",
+        "Inginer",
+        "Geodeta",
+        "Electrice",
+        "Hidraulice",
+        "Waller",
+        "Carpenter",
+        "Welder",
+        "Mecanic",
+        "Roofer",
+        "Cook",
+        "Chelner.",
+        "Barista",
+        "Baker",
+        "Producător de plăcinte",
+        "Măcelar",
+        "Sommelier",
+        "Dietetic",
+        "Fermier",
+        "Grădinar",
+        "Pompier",
+        "Poliţist.",
+        "Soldat",
+        "Salvamar de munte",
+        "Paznic",
+        "Detectiv.",
+        "Arbitrul",
+        "Advocate",
+        "Procuror",
+        "Notebook",
+        "Șofer",
+        "Pilot",
+        "Marinar",
+        "Conductor",
+        "Curier",
+        "Poştaş.",
+        "Taximetrist",
+        "Șofer",
+        "Dispecerat",
+        "Șah",
+        "Vânzarea",
+        "Casier",
+        "Contabil",
+        "Bancher",
+        "Makler",
+        "Consilier financiar",
+        "Comerciant",
+        "Administrator",
+        "Recrutare",
+        "Antreprenor",
+        "Coafură",
+        "Produse cosmetice",
+        "Stilistă",
+        "Croitor",
+        "Watchmaker",
+        "Tatuaj",
+        "Maseur",
+        "Florida",
+        "Îngrijitorul animalelor",
+        "Ghid turistic",
+        "Om de ştiinţă",
+        "Astronaut",
+        "Arheolog",
+        "Istoric",
+        "Biologie",
+        "Substanță chimică",
+        "Fizică",
+        "Meteorolog",
+        "Oceanograf",
+        "Forester"
+      ]
+    },
+    {
+      "id": "objects",
+      "name": "Obiecte",
+      "iconKey": "cube",
+      "prompts": [
+        "Telefon",
+        "Laptop",
+        "Comprimat",
+        "TV",
+        "Pilot",
+        "Căști",
+        "Vorbitor",
+        "Aparat foto",
+        "Încărcător",
+        "Powerbank",
+        "Priveşte.",
+        "Alarmă",
+        "Calendar",
+        "Lampă",
+        "Lanternă",
+        "Lumânare",
+        "Chibrituri",
+        "Umbrella",
+        "Rucsac",
+        "Valiza",
+        "Cheie",
+        "Blocare",
+        "Portofel",
+        "Monedă",
+        "Nota bancară",
+        "Card de plată",
+        "Ochelari",
+        "Oglindă",
+        "Comb",
+        "Periuță de dinți",
+        "Cupa",
+        "Sticlă",
+        "Placă",
+        "Bol",
+        "Furculiță",
+        "Cuțit",
+        "Lingură",
+        "Pătrunjel",
+        "Oală",
+        "Ceainic",
+        "Frigider",
+        "Cuptor",
+        "Mixer",
+        "Toaster",
+        "Cuptoare cu microunde",
+        "Spălător",
+        "Mașină de spălat",
+        "Aspirator",
+        "Fier",
+        "Uscător de păr",
+        "Președintele",
+        "Tabel",
+        "Canapea",
+        "Scaun",
+        "Pat",
+        "Pernă",
+        "Coji",
+        "Pătură",
+        "Dulap",
+        "Perioada de valabilitate",
+        "Carte",
+        "Ziar",
+        "Notebook",
+        "Pen",
+        "Creion",
+        "Cauciuc",
+        "Linie",
+        "Foarfece",
+        "Lipici",
+        "Rucsac școlar",
+        "Minge",
+        "Rachetă",
+        "Skateboard",
+        "Biciclete",
+        "Casca",
+        "Scoop",
+        "Cort",
+        "Sac de dormit",
+        "Compas",
+        "Binocluri",
+        "Ciocanul",
+        "Șurubelniță",
+        "Mașini de găurit",
+        "Fierăstrău",
+        "Măsură",
+        "Orizontal",
+        "clești",
+        "Scară",
+        "Pictează",
+        "Perie",
+        "Cubul lui Rubik",
+        "Cărți",
+        "Șah",
+        "Pioneer",
+        "Consiliul",
+        "Puzzle",
+        "Balon",
+        "zmeu",
+        "Bug",
+        "Jojo"
+      ]
+    },
+    {
+      "id": "nature",
+      "name": "Natura",
+      "iconKey": "leaf",
+      "prompts": [
+        "Arbore",
+        "Pin",
+        "Moluște",
+        "Stejar",
+        "Mazăre",
+        "Clonă",
+        "Buk.",
+        "Willow",
+        "Yodel",
+        "Malț",
+        "Cactus",
+        "fern",
+        "Mech",
+        "lichen",
+        "Ivy",
+        "Bambus",
+        "Palmă",
+        "Baobab",
+        "Lemn roșu",
+        "Bonsai",
+        "Trandafir",
+        "Tulipan",
+        "Zmeură",
+        "Floarea-soarelui",
+        "Mak",
+        "Lavandă",
+        "Mușețel",
+        "Monk",
+        "Konwalia",
+        "Jacint",
+        "Lotus",
+        "Orhidee",
+        "Violet",
+        "Frate.",
+        "Goală",
+        "Urticarie",
+        "Mentă",
+        "Busuioc",
+        "Rozmarin",
+        "Cimbru",
+        "Nor",
+        "Ploaie",
+        "Zăpadă",
+        "Grad",
+        "Ceață",
+        "Curcubeu",
+        "Furtună",
+        "Fulger",
+        "Vânt",
+        "Uragan",
+        "Soare",
+        "Luna",
+        "Stea",
+        "Comet",
+        "Eclipsă",
+        "Calea Lactee",
+        "Cer",
+        "Orizont",
+        "Răsărirea soarelui",
+        "Apus de soare",
+        "Sus",
+        "Hill.",
+        "Valea",
+        "Canyon",
+        "Peșteră",
+        "Dune",
+        "Gheţar",
+        "Cliff",
+        "Gorge",
+        "Polana",
+        "Oceanul",
+        "Marea",
+        "Lac",
+        "Pondă",
+        "Stream",
+        "Râu",
+        "Sursă",
+        "Mlaștină",
+        "Rafa",
+        "Golful",
+        "Primăvară",
+        "Vară",
+        "Toamnă",
+        "Iarna",
+        "'Neaţa.",
+        "Sud",
+        "Seara",
+        "Noapte bună.",
+        "Zori",
+        "Crepuscul",
+        "Piatră",
+        "Piatră",
+        "Nisip",
+        "Viperă",
+        "Aluminiu",
+        "Pământ",
+        "Noroi",
+        "Cristal",
+        "Scoică",
+        "Amber"
+      ]
+    },
+    {
+      "id": "music",
+      "name": "Muzica",
+      "iconKey": "music",
+      "prompts": [
+        "Chitară",
+        "Chitară Bass",
+        "ukulele",
+        "Viori",
+        "Alternat",
+        "Violoncel",
+        "Contrabas",
+        "Harf",
+        "Mandolin",
+        "Banjo",
+        "Piano",
+        "Piano",
+        "Tastatură",
+        "Cadavre",
+        "Accordion",
+        "Sinteză",
+        "Celesta",
+        "KsylophoneName",
+        "Marimba",
+        "Flaut",
+        "Flaut transvers",
+        "Flaut drept",
+        "Clarinet",
+        "Oboi",
+        "Fagot",
+        "Saxofon",
+        "Trompetă",
+        "Țesuturi",
+        "Portofel",
+        "Tuba",
+        "Armonic",
+        "Dudy.",
+        "Didgeridoo",
+        "Tambourină",
+        "Tobă",
+        "Verbel",
+        "Cazan",
+        "Maracas",
+        "Castani",
+        "Tobă",
+        "Plăci",
+        "Cowbell",
+        "Bongo",
+        "Congo",
+        "Cajon",
+        "Djembe",
+        "Sticks",
+        "Metronom",
+        "Melody",
+        "Ritm",
+        "Refren",
+        "Text",
+        "Cor",
+        "Harmonia",
+        "Înregistrare",
+        "Muzică în foi",
+        "Scalare",
+        "Tonoație",
+        "Concert",
+        "Test",
+        "Orchestra",
+        "Sindrom",
+        "Solitar",
+        "Conductor",
+        "Compozitor",
+        "Vocalist",
+        "DJ",
+        "Producătorul",
+        "Microfon",
+        "Cablu",
+        "Amplificator",
+        "Studio",
+        "Scenă",
+        "Far",
+        "Placă",
+        "Casetă",
+        "Vinil",
+        "Streaming",
+        "Listă de redare",
+        "Video",
+        "Single",
+        "Album",
+        "DemoName",
+        "Remix",
+        "Eșantion",
+        "Înregistrarea",
+        "Rock",
+        "Pop",
+        "Jazz",
+        "Albastru",
+        "Funk",
+        "Reggae",
+        "Rap",
+        "Metal",
+        "Disco",
+        "Opera",
+        "Muzical",
+        "Ballada",
+        "Improvizarea",
+        "Soprană"
+      ]
+    },
+    {
+      "id": "technology",
+      "name": "Tehnologie",
+      "iconKey": "cpu",
+      "prompts": [
+        "Aplicare",
+        "Site web",
+        "Parolă",
+        "Autentificare",
+        "Profil",
+        "Avatar",
+        "Notificarea",
+        "Mesaj",
+        "Emoticon",
+        "Codul QR",
+        "Algoritm",
+        "Baza de date",
+        "Server",
+        "Cloud computing",
+        "Rețea",
+        "Router",
+        "Wi-Fi",
+        "Bluetooth",
+        "GPS",
+        "Satelit",
+        "Procesor",
+        "Memorie RAM",
+        "Disc dur",
+        "Card grafic",
+        "Placă principală",
+        "Cablu USB",
+        "Ecran",
+        "Tastatură",
+        "Șoarece",
+        "Imprimantă",
+        "Robot",
+        "Dronă",
+        "Automobil autonom",
+        "Ceasul inteligent",
+        "Cititor de cărți electronice",
+        "Consolă",
+        "Pad",
+        "Ochelari VR",
+        "Imprimantă 3D",
+        "Interfon",
+        "Inteligență artificială",
+        "Chatbot",
+        "Recunoașterea facială",
+        "Traducere automată",
+        "Asistenţă vocală",
+        "Caută",
+        "Hartă digitală",
+        "Video Chat",
+        "Transmiterea",
+        "Podcast",
+        "Actualizează",
+        "Întăriri",
+        "Fișier",
+        "Dosar",
+        "Document",
+        "Foaie",
+        "Prezentare",
+        "Editor",
+        "Navigator",
+        "Calendar digital",
+        "Firewall",
+        "Antivirus",
+        "Criptare",
+        "Virus informatic",
+        "Phishing",
+        "Spam",
+        "Captcha",
+        "Verificarea",
+        "Token",
+        "Biometrie",
+        "Baterie",
+        "Încărcare fără fir",
+        "Panou solar",
+        "Senzor",
+        "Aparat foto",
+        "Microfon",
+        "Termometru",
+        "Greutatea electronică",
+        "Uşă automată",
+        "Lumina LED",
+        "Codul sursei",
+        "Programare",
+        "Încercarea unității",
+        "Eroare",
+        "Depanare",
+        "Versiune",
+        "Depozit",
+        "Comite",
+        "Interfață",
+        "Configurări",
+        "Internet",
+        "Email",
+        "Media socială",
+        "Magazin Internet",
+        "Plata mobilă",
+        "Servicii bancare online",
+        "Videoconferință",
+        "Joc pe calculator",
+        "Clasament",
+        "Realitatea virtuală"
+      ]
+    },
+    {
+      "id": "everyday",
+      "name": "Situaţii zilnice",
+      "iconKey": "sparkles",
+      "prompts": [
+        "Târziu.",
+        "Ridică-te şi străluceşte",
+        "Micul dejun",
+        "Spălarea dinților",
+        "Duş",
+        "Rochie",
+        "Şcolarizare",
+        "Ambalajul",
+        "Plecăm de acasă",
+        "Acasã",
+        "Cumpărături",
+        "Coadă",
+        "Paragon",
+        "Promovarea",
+        "Plata cu cardul",
+        "Cheie pierdută",
+        "Deschiderea ușilor",
+        "Liftul",
+        "Scări",
+        "Reparații",
+        "Gătitul",
+        "Gătitul",
+        "Curățare",
+        "Curățare",
+        "Aspirație",
+        "Rufe",
+        "Spânzurarea rufelor",
+        "Haine pliante",
+        "Eliminarea gunoiului",
+        "Udarea florilor",
+        "Telefon",
+        "Nu se poate deschide mesajul",
+        "Citirea mesajelor",
+        "Făcând o poză",
+        "Ridicarea pachetelor",
+        "Trimiterea unei scrisori",
+        "Imprimare",
+        "Căutarea adresei",
+        "Rezervare",
+        "Anulare",
+        "Şedinţă",
+        "Discută",
+        "Aspect",
+        "Scuze.",
+        "Completează",
+        "Argument",
+        "S-a făcut.",
+        "Glumă.",
+        "Mister",
+        "Zvonuri",
+        "Muncă",
+        "Lecţie",
+        "Examinarea",
+        "Acasã",
+        "Prezentare",
+        "Break",
+        "Vacanţă",
+        "Vacanţă",
+        "Weekend",
+        "Zi liberă",
+        "Călătorii",
+        "Biletul",
+        "Controlul biletelor",
+        "Transfer",
+        "Aşteptând.",
+        "Bagaje pierdute",
+        "Revizuirea",
+        "Hartă",
+        "Tur",
+        "Memorial",
+        "Petrecere",
+        "Ziua de naștere",
+        "Tort",
+        "Cadou",
+        "Dansează.",
+        "Karaoke",
+        "Joc de bord",
+        "Fotografie comună",
+        "Pâine prăjită",
+        "Surpriză.",
+        "Ploaie fără umbrelă",
+        "Telefon descărcat",
+        "Fără internet",
+        "Cafea rece",
+        "Cina arsă",
+        "Frigider gol",
+        "Toc rupt",
+        "Pata de pe hainele tale",
+        "Vecin tare",
+        "Dimineaţa somnoroasă",
+        "Dormit",
+        "Dormi",
+        "Coşmar",
+        "Dormi",
+        "Citind o carte",
+        "Vizionarea unui film",
+        "Ascultând muzică",
+        "Mergi.",
+        "Relaxează-te.",
+        "Ordine în dulap"
+      ]
+    },
+    {
+      "id": "fantasy",
+      "name": "Fantezie",
+      "iconKey": "sparkles",
+      "prompts": [
+        "Dragon",
+        "Unicorn",
+        "Sirena",
+        "Zâna",
+        "Expert",
+        "Vrăjitoare",
+        "Knight",
+        "Prinţesă.",
+        "King.",
+        "Regina",
+        "Goblin",
+        "Trol",
+        "Elf",
+        "Piticule",
+        "Gigant",
+        "Phoenix",
+        "Basilisk",
+        "Griff",
+        "Centaur",
+        "Minotaur",
+        "Vampir",
+        "Vârcolac",
+        "Spirit",
+        "Mami.",
+        "Zombi",
+        "Monstru",
+        "Demon",
+        "Angel.",
+        "Extraterestru",
+        "Robot de luptă",
+        "Baghetă magică",
+        "Elixir",
+        "Mingea de cristal",
+        "Covor zburător",
+        "Capă invizibilă",
+        "Sabia usoara",
+        "Harta comorilor",
+        "Cutie de comori",
+        "Pădurea Fermecată",
+        "Castelul în nori",
+        "Orașul subteran",
+        "Insula Misterelor",
+        "Portal",
+        "Masina timpului",
+        "Ou de dragon",
+        "Inel magic",
+        "Cartea vrăjitoarelor",
+        "Vrajă",
+        "Blestemul",
+        "Profeţie",
+        "Misiune",
+        "Erou",
+        "Anti-erou",
+        "Companie de călătorii",
+        "Stăpânul întunericului",
+        "Camera ascunsă",
+        "Labirint",
+        "Capcană",
+        "Comoara",
+        "Amuletă",
+        "Coroană",
+        "Tronul",
+        "Arena",
+        "Turneul Magi",
+        "Şcoala de Magie",
+        "Academia Eroilor",
+        "Lupta spaţială",
+        "Planeta extraterestră",
+        "Nave spațiale",
+        "Stație orbitală",
+        "Robot ajutor",
+        "Sabie",
+        "Scut",
+        "Arcul",
+        "Armura",
+        "Casca",
+        "Amestec",
+        "Portalul magic",
+        "Obiectul fermecat",
+        "Ruine antice",
+        "Templu",
+        "Nava naibii.",
+        "Islanda",
+        "Ţara Focului",
+        "Ţara viselor",
+        "Umbra",
+        "Țara luminii",
+        "Marele Război",
+        "Alianţa",
+        "Trădare",
+        "Potrivire",
+        "Evadare",
+        "Urmărire",
+        "Descoperire",
+        "Mister",
+        "Legendă",
+        "Aventură",
+        "Final",
+        "Turnul Dragonului",
+        "Portalul stelar"
+      ]
+    },
+    {
+      "id": "adult",
+      "name": "18+",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Sărut",
+          "hint": "Primul"
+        },
+        {
+          "text": "Flirt",
+          "hint": "Vedere"
+        },
+        {
+          "text": "Pasiune",
+          "hint": "Noapte bună."
+        },
+        {
+          "text": "Dorinţă",
+          "hint": "Uite."
+        },
+        {
+          "text": "Sensibilitate",
+          "hint": "Mână"
+        },
+        {
+          "text": "Şoptind",
+          "hint": "Ureche"
+        },
+        {
+          "text": "Apropiere",
+          "hint": "Respiră"
+        },
+        {
+          "text": "Hotel",
+          "hint": "Recepție"
+        },
+        {
+          "text": "Masaj",
+          "hint": "Uleiuri"
+        },
+        {
+          "text": "Bath",
+          "hint": "Spumă"
+        },
+        {
+          "text": "Lumânări",
+          "hint": "Umbră"
+        },
+        {
+          "text": "Lenjerie de corp",
+          "hint": "Sertar"
+        },
+        {
+          "text": "Ciorapi",
+          "hint": "Bara de unelte"
+        },
+        {
+          "text": "Pinuri",
+          "hint": "Pas"
+        },
+        {
+          "text": "Miroase.",
+          "hint": "Gât"
+        },
+        {
+          "text": "Piele",
+          "hint": "Căldură"
+        },
+        {
+          "text": "Gât",
+          "hint": "Sărut"
+        },
+        {
+          "text": "Înapoi",
+          "hint": "Fire"
+        },
+        {
+          "text": "Şolduri",
+          "hint": "Ritm"
+        },
+        {
+          "text": "coapse",
+          "hint": "Moale"
+        },
+        {
+          "text": "Seducţie",
+          "hint": "Joc"
+        },
+        {
+          "text": "Tentaţie",
+          "hint": "Zâmbeşte."
+        },
+        {
+          "text": "Mister",
+          "hint": "Scrisoare"
+        },
+        {
+          "text": "Interzicere",
+          "hint": "Fructe"
+        },
+        {
+          "text": "Romantism",
+          "hint": "Soţ"
+        },
+        {
+          "text": "Trădare",
+          "hint": "Telefon"
+        },
+        {
+          "text": "Fire",
+          "hint": "Epinefrină"
+        },
+        {
+          "text": "Excitare",
+          "hint": "Adrenalină"
+        },
+        {
+          "text": "Excitare",
+          "hint": "Puls"
+        },
+        {
+          "text": "Încântat.",
+          "hint": "Respiraţie"
+        },
+        {
+          "text": "Sărutări",
+          "hint": "Încet."
+        },
+        {
+          "text": "Îmbrăţişare.",
+          "hint": "Umeri"
+        },
+        {
+          "text": "Stroking",
+          "hint": "Degete"
+        },
+        {
+          "text": "Sapă",
+          "hint": "Dinţi"
+        },
+        {
+          "text": "Scratching",
+          "hint": "Cuie"
+        },
+        {
+          "text": "Trage",
+          "hint": "Chimie"
+        },
+        {
+          "text": "Magneticism",
+          "hint": "Uite."
+        },
+        {
+          "text": "Scânteie",
+          "hint": "Primul"
+        },
+        {
+          "text": "Căldură",
+          "hint": "Piele"
+        },
+        {
+          "text": "Umiditate",
+          "hint": "Respiră"
+        },
+        {
+          "text": "Fierbinte",
+          "hint": "Numere"
+        },
+        {
+          "text": "Umbră",
+          "hint": "Zid"
+        },
+        {
+          "text": "Balcon",
+          "hint": "Noapte bună."
+        },
+        {
+          "text": "Ploaie",
+          "hint": "Sticlă"
+        },
+        {
+          "text": "Oxamat",
+          "hint": "Atinge"
+        },
+        {
+          "text": "Lace",
+          "hint": "Margine"
+        },
+        {
+          "text": "Mătase",
+          "hint": "Foaie de pat"
+        },
+        {
+          "text": "Parfumuri",
+          "hint": "Încheietură"
+        },
+        {
+          "text": "Ruj",
+          "hint": "Trace"
+        },
+        {
+          "text": "Cercel",
+          "hint": "Ureche"
+        }
+      ]
+    },
+    {
+      "id": "flirt",
+      "name": "Flirt",
+      "iconKey": "heart",
+      "prompts": [
+        {
+          "text": "Pick-up",
+          "hint": "Numărul de telefon"
+        },
+        {
+          "text": "Vertij",
+          "hint": "Zâmbeşte."
+        },
+        {
+          "text": "Cochetă",
+          "hint": "Geană"
+        },
+        {
+          "text": "Seducţie",
+          "hint": "Uite."
+        },
+        {
+          "text": "Dorinţă",
+          "hint": "Pasiune"
+        },
+        {
+          "text": "Pasiune",
+          "hint": "Sărut"
+        },
+        {
+          "text": "Chimie",
+          "hint": "Scânteie"
+        },
+        {
+          "text": "Scânteie",
+          "hint": "Tensiune"
+        },
+        {
+          "text": "Tensiune",
+          "hint": "Tremor"
+        },
+        {
+          "text": "Fire",
+          "hint": "Adrenalină"
+        },
+        {
+          "text": "Adrenalină",
+          "hint": "Risc"
+        },
+        {
+          "text": "Provocare",
+          "hint": "Plantă"
+        },
+        {
+          "text": "Alouzie",
+          "hint": "Glumă."
+        },
+        {
+          "text": "ambiguitate",
+          "hint": "Comentație"
+        },
+        {
+          "text": "Subtext",
+          "hint": "Discută"
+        },
+        {
+          "text": "Intrigă",
+          "hint": "Zvonuri"
+        },
+        {
+          "text": "Secret",
+          "hint": "Mister"
+        },
+        {
+          "text": "Mister",
+          "hint": "Mister"
+        },
+        {
+          "text": "Roșu",
+          "hint": "Umilinţă"
+        },
+        {
+          "text": "Clipește",
+          "hint": "Ochi"
+        },
+        {
+          "text": "Încântat.",
+          "hint": "Completează"
+        },
+        {
+          "text": "Apropiere",
+          "hint": "Atinge"
+        },
+        {
+          "text": "Magie",
+          "hint": "Farmecul"
+        },
+        {
+          "text": "Fascinaţie",
+          "hint": "Curiozitate"
+        },
+        {
+          "text": "Farmecul",
+          "hint": "Carisma"
+        },
+        {
+          "text": "Încredere în sine",
+          "hint": "Curaj"
+        },
+        {
+          "text": "Timiditate",
+          "hint": "Roșu"
+        },
+        {
+          "text": "Fii îndrăzneţ.",
+          "hint": "Risc"
+        },
+        {
+          "text": "Risc",
+          "hint": "Jocuri de noroc"
+        },
+        {
+          "text": "Rata",
+          "hint": "Plantă"
+        },
+        {
+          "text": "Tentaţie",
+          "hint": "Păcat"
+        },
+        {
+          "text": "Emotii",
+          "hint": "Tensiune"
+        },
+        {
+          "text": "Rival",
+          "hint": "Gelozie"
+        },
+        {
+          "text": "Mister",
+          "hint": "Mister"
+        },
+        {
+          "text": "Urmărire",
+          "hint": "Adrenalină"
+        }
+      ]
+    },
+    {
+      "id": "sex",
+      "name": "SEX",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Chick",
+          "hint": "Genunchi"
+        },
+        {
+          "text": "Gât",
+          "hint": "Lacrimi"
+        },
+        {
+          "text": "Anal",
+          "hint": "Fund"
+        },
+        {
+          "text": "Dublu",
+          "hint": "Trei."
+        },
+        {
+          "text": "Creampie",
+          "hint": "Înăuntru."
+        },
+        {
+          "text": "facial",
+          "hint": "Față"
+        },
+        {
+          "text": "Squirt",
+          "hint": "Fântână"
+        },
+        {
+          "text": "Legare",
+          "hint": "Linii"
+        },
+        {
+          "text": "BDSM",
+          "hint": "Cătușe"
+        },
+        {
+          "text": "Flapsuri",
+          "hint": "Cizme"
+        },
+        {
+          "text": "Peggy",
+          "hint": "Curea"
+        },
+        {
+          "text": "Roleplay",
+          "hint": "Costum"
+        },
+        {
+          "text": "Tati.",
+          "hint": "Tati."
+        },
+        {
+          "text": "Animale",
+          "hint": "Frontieră"
+        },
+        {
+          "text": "Corn cu coarne",
+          "hint": "Încornorat"
+        },
+        {
+          "text": "Viaţa caldă",
+          "hint": "Soţie"
+        },
+        {
+          "text": "Triunghi",
+          "hint": "Trei."
+        },
+        {
+          "text": "Gangbang",
+          "hint": "Coadă"
+        },
+        {
+          "text": "Public",
+          "hint": "Risc"
+        },
+        {
+          "text": "Repede.",
+          "hint": "Toaletă"
+        },
+        {
+          "text": "Automat",
+          "hint": "Parcare"
+        },
+        {
+          "text": "Birou",
+          "hint": "Birou"
+        },
+        {
+          "text": "Duş",
+          "hint": "Săpun"
+        },
+        {
+          "text": "Oglindă",
+          "hint": "Reflecţie"
+        },
+        {
+          "text": "Bandă",
+          "hint": "Întuneric"
+        },
+        {
+          "text": "Cătușe",
+          "hint": "Metal"
+        },
+        {
+          "text": "Whip",
+          "hint": "Păduchi"
+        },
+        {
+          "text": "Buckles",
+          "hint": "Sfârcuri"
+        },
+        {
+          "text": "Ficat",
+          "hint": "Vibrație"
+        },
+        {
+          "text": "Dildo",
+          "hint": "Silicon"
+        },
+        {
+          "text": "Plută",
+          "hint": "Fund"
+        },
+        {
+          "text": "Mărgele",
+          "hint": "Serie"
+        },
+        {
+          "text": "Inel",
+          "hint": "Presiune"
+        },
+        {
+          "text": "Coada",
+          "hint": "Margine"
+        },
+        {
+          "text": "Control",
+          "hint": "Interzicere"
+        },
+        {
+          "text": "Forțat",
+          "hint": "Milă."
+        },
+        {
+          "text": "Distrus.",
+          "hint": "Ruinat"
+        },
+        {
+          "text": "Prostata",
+          "hint": "Cornișoni"
+        },
+        {
+          "text": "Punctul G",
+          "hint": "Măsură"
+        },
+        {
+          "text": "Formare",
+          "hint": "Răspuns"
+        },
+        {
+          "text": "Udă",
+          "hint": "Prune"
+        },
+        {
+          "text": "Ouă",
+          "hint": "Aspirație"
+        },
+        {
+          "text": "Rimming",
+          "hint": "Fund"
+        },
+        {
+          "text": "Facesite",
+          "hint": "Tronul"
+        },
+        {
+          "text": "69",
+          "hint": "Peste drum"
+        },
+        {
+          "text": "Câine",
+          "hint": "Înapoi"
+        },
+        {
+          "text": "Misionară",
+          "hint": "Față"
+        },
+        {
+          "text": "Rider",
+          "hint": "Sus"
+        },
+        {
+          "text": "Înapoi",
+          "hint": "Înapoi"
+        },
+        {
+          "text": "Prone",
+          "hint": "Abdomen"
+        }
+      ]
+    },
+    {
+      "id": "polish_influencers",
+      "name": "Influențatori polonezi",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Provincia Cuba",
+          "hint": "Talk-show"
+        },
+        {
+          "text": "Karol Wiśniewski",
+          "hint": "Minecraft"
+        },
+        {
+          "text": "Veronica Owl",
+          "hint": "Vlog"
+        },
+        {
+          "text": "Michael Baron",
+          "hint": "Faima MMA"
+        },
+        {
+          "text": "Marta Bloch",
+          "hint": "Squad"
+        },
+        {
+          "text": "Agata Fąk",
+          "hint": "Lupta ciudat"
+        },
+        {
+          "text": "Julia Zugaj",
+          "hint": "Dansator"
+        },
+        {
+          "text": "Maja Kuczyńska",
+          "hint": "Tunel aerodinamic"
+        },
+        {
+          "text": "Lexy Chaplin",
+          "hint": "Cutie"
+        },
+        {
+          "text": "Natsu.",
+          "hint": "Echipa X"
+        },
+        {
+          "text": "Błoński Casper",
+          "hint": "Luptă"
+        },
+        {
+          "text": "Monika Cauldron",
+          "hint": "TickTok"
+        },
+        {
+          "text": "Kamil Labudda",
+          "hint": "Motorizare"
+        },
+        {
+          "text": "Michał Sikorski",
+          "hint": "Bud"
+        },
+        {
+          "text": "David Kwiatkowski",
+          "hint": "Instagram"
+        },
+        {
+          "text": "Andziax",
+          "hint": "Vlog"
+        },
+        {
+          "text": "Gimper",
+          "hint": "Jocuri de noroc"
+        },
+        {
+          "text": "Krzysztof Gontier",
+          "hint": "Japonia"
+        },
+        {
+          "text": "Maffeshion",
+          "hint": "Moda"
+        },
+        {
+          "text": "Deynn",
+          "hint": "Fitness"
+        },
+        {
+          "text": "Karol Goose",
+          "hint": "Abonamente"
+        },
+        {
+          "text": "Hanna Puchalska",
+          "hint": "Genzie"
+        },
+        {
+          "text": "Jessica Mercedes Kirschner",
+          "hint": "Köln"
+        },
+        {
+          "text": "Iwona Blecharczyk",
+          "hint": "Camion"
+        },
+        {
+          "text": "James Chuptys",
+          "hint": "Podcast"
+        },
+        {
+          "text": "Marcin Banot",
+          "hint": "Alpinism"
+        },
+        {
+          "text": "Thomas Marquis",
+          "hint": "Canal."
+        },
+        {
+          "text": "Remigius Wierzgon",
+          "hint": "Schițe"
+        }
+      ]
+    },
+    {
+      "id": "polish_actors",
+      "name": "Actorii polonezi",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Peter Adamczyk",
+          "hint": "Papa"
+        },
+        {
+          "text": "Robert Więckiewicz",
+          "hint": "Balenă"
+        },
+        {
+          "text": "Tomasz Kot",
+          "hint": "Războiul Rece"
+        },
+        {
+          "text": "Boris Szyc",
+          "hint": "Vinci"
+        },
+        {
+          "text": "Maciej Stuhr",
+          "hint": "Testosteron"
+        },
+        {
+          "text": "Caesars Claw",
+          "hint": "Kiler"
+        },
+        {
+          "text": "Marek Kondrat",
+          "hint": "O zi nebună."
+        },
+        {
+          "text": "Janusz Gajos",
+          "hint": "Patru Armours"
+        },
+        {
+          "text": "Andrzej Seweryn",
+          "hint": "King."
+        },
+        {
+          "text": "Marcin Dorociński",
+          "hint": "Jack Strong"
+        },
+        {
+          "text": "Jakub Gierszał.",
+          "hint": "Camera sinucigaşilor."
+        },
+        {
+          "text": "David Gardener",
+          "hint": "Vrei să trăieşti"
+        },
+        {
+          "text": "Agata Kulesza",
+          "hint": "Ida"
+        },
+        {
+          "text": "Kinga Preis",
+          "hint": "Comisare."
+        },
+        {
+          "text": "Maja Ostashewska",
+          "hint": "Teatrul"
+        },
+        {
+          "text": "Magdalena Cielecka",
+          "hint": "Belfer"
+        },
+        {
+          "text": "Joanna Kulig",
+          "hint": "Războiul Rece"
+        },
+        {
+          "text": "Anna Dymna",
+          "hint": "Teatrul"
+        },
+        {
+          "text": "Danuta Stenka",
+          "hint": "Niciodată în viaţa mea"
+        },
+        {
+          "text": "Beata Tyszkiewicz",
+          "hint": "Lady"
+        },
+        {
+          "text": "Bogusław Linda",
+          "hint": "Câini"
+        },
+        {
+          "text": "Zbigniew Zamacowski",
+          "hint": "Decalog"
+        },
+        {
+          "text": "Jerzy Stuhr",
+          "hint": "Sexmission"
+        },
+        {
+          "text": "Daniel Olbrychski",
+          "hint": "Inundaţie"
+        },
+        {
+          "text": "Sophia Janda",
+          "hint": "Omul de marmură"
+        },
+        {
+          "text": "dl Schuchardt",
+          "hint": "Botez"
+        },
+        {
+          "text": "Antoni Królikowski",
+          "hint": "Bodo"
+        },
+        {
+          "text": "Veronica Rosati",
+          "hint": "Pitbull"
+        }
+      ]
+    },
+    {
+      "id": "international_stars",
+      "name": "Stele străine",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Taylor Swift",
+          "hint": "Chitară"
+        },
+        {
+          "text": "Beyoncé",
+          "hint": "Copilul lui Destiny"
+        },
+        {
+          "text": "Rihanna",
+          "hint": "Barbados"
+        },
+        {
+          "text": "Lady Gaga",
+          "hint": "Poker Face"
+        },
+        {
+          "text": "Adele",
+          "hint": "Londra"
+        },
+        {
+          "text": "Justin Bieber",
+          "hint": "Canada"
+        },
+        {
+          "text": "Leonardo DiCaprio",
+          "hint": "Titanic"
+        },
+        {
+          "text": "Brad Pitt",
+          "hint": "Hollywood"
+        },
+        {
+          "text": "Angelina Jolie",
+          "hint": "Malefic"
+        },
+        {
+          "text": "Tom Cruise",
+          "hint": "Misiune imposibilă"
+        },
+        {
+          "text": "Dwayne Johnson",
+          "hint": "Rock"
+        },
+        {
+          "text": "Will Smith",
+          "hint": "Bel-Air"
+        },
+        {
+          "text": "Jennifer Aniston",
+          "hint": "Prieteni"
+        },
+        {
+          "text": "Keanu Reeves",
+          "hint": "Matrix"
+        },
+        {
+          "text": "Emma Watson",
+          "hint": "Hermione"
+        },
+        {
+          "text": "Cristiano Ronaldo",
+          "hint": "Portugalia"
+        },
+        {
+          "text": "Lionel Messi",
+          "hint": "Argentina"
+        },
+        {
+          "text": "Michael Jordan",
+          "hint": "Baschet"
+        },
+        {
+          "text": "Oprah Winfrey",
+          "hint": "Talk-show"
+        },
+        {
+          "text": "Kim Kardashian",
+          "hint": "Realitate spectacol"
+        },
+        {
+          "text": "Johnny Depp",
+          "hint": "Jack Sparrow"
+        },
+        {
+          "text": "Scarlett Johansson",
+          "hint": "Văduvă neagră"
+        },
+        {
+          "text": "Robert Downey Jr.",
+          "hint": "Iron Man"
+        },
+        {
+          "text": "Meryl Streep",
+          "hint": "Diavolul se îmbracă la Prada."
+        },
+        {
+          "text": "Zendaya",
+          "hint": "Euforia"
+        },
+        {
+          "text": "Chris Hemsworth",
+          "hint": "Thor"
+        },
+        {
+          "text": "Billie Eilish",
+          "hint": "Bad Guy"
+        },
+        {
+          "text": "Ed Sheeran",
+          "hint": "Forma ta"
+        },
+        {
+          "text": "Serena Williams",
+          "hint": "Tenis"
+        },
+        {
+          "text": "Novak Djokovic",
+          "hint": "Serbia"
+        }
+      ]
+    },
+    {
+      "id": "christmas",
+      "name": "Crăciun",
+      "iconKey": "tree",
+      "prompts": [
+        {
+          "text": "Brad de Crăciun",
+          "hint": "Camera de zi"
+        },
+        {
+          "text": "Bombardier",
+          "hint": "Brutalitate"
+        },
+        {
+          "text": "Lanțul",
+          "hint": "Longitudine"
+        },
+        {
+          "text": "Lămpi",
+          "hint": "Curent"
+        },
+        {
+          "text": "Steaua Betleemului",
+          "hint": "Papagal"
+        },
+        {
+          "text": "Nuci comune",
+          "hint": "Înălțime"
+        },
+        {
+          "text": "Cadou",
+          "hint": "Aşteptând."
+        },
+        {
+          "text": "Panglică",
+          "hint": "Decorare"
+        },
+        {
+          "text": "Hârtie de ambalaj",
+          "hint": "Foarfece"
+        },
+        {
+          "text": "Moş Crăciun.",
+          "hint": "Noapte bună."
+        },
+        {
+          "text": "Reni",
+          "hint": "Rece"
+        },
+        {
+          "text": "Sanie.",
+          "hint": "Călătorii"
+        },
+        {
+          "text": "Elf",
+          "hint": "Atelier"
+        },
+        {
+          "text": "Chimen",
+          "hint": "Funingine"
+        },
+        {
+          "text": "Sock pentru cadouri",
+          "hint": "Gol"
+        },
+        {
+          "text": "Turtă dulce",
+          "hint": "Gătitul"
+        },
+        {
+          "text": "Cabană cu turtă dulce",
+          "hint": "Construcţii"
+        },
+        {
+          "text": "Sfeclă de zahăr",
+          "hint": "Dulce"
+        },
+        {
+          "text": "Mandarină",
+          "hint": "Miroase."
+        },
+        {
+          "text": "Ciocolată caldă",
+          "hint": "Căldură"
+        },
+        {
+          "text": "Borsch",
+          "hint": "Roșu"
+        },
+        {
+          "text": "Ureche",
+          "hint": "Mică"
+        },
+        {
+          "text": "găluște",
+          "hint": "Mai bine."
+        },
+        {
+          "text": "Carp",
+          "hint": "Apă"
+        },
+        {
+          "text": "PESCUIT",
+          "hint": "Desert"
+        },
+        {
+          "text": "Compot uscat",
+          "hint": "Cupa"
+        },
+        {
+          "text": "Taxe",
+          "hint": "Împarte"
+        },
+        {
+          "text": "Ajunul Crăciunului",
+          "hint": "Şedinţă"
+        },
+        {
+          "text": "Prima stea",
+          "hint": "Căutare"
+        },
+        {
+          "text": "Acoperire goală",
+          "hint": "Tabel"
+        },
+        {
+          "text": "Carol",
+          "hint": "Tradiţie"
+        },
+        {
+          "text": "Pastorală",
+          "hint": "Bucurie"
+        },
+        {
+          "text": "Jasele",
+          "hint": "Școală"
+        },
+        {
+          "text": "Raton",
+          "hint": "Cifre"
+        },
+        {
+          "text": "Angel.",
+          "hint": "Grijă"
+        },
+        {
+          "text": "Coroană Advent",
+          "hint": "Aşteptând."
+        },
+        {
+          "text": "Calendar advent",
+          "hint": "decembrie"
+        },
+        {
+          "text": "Omul de zăpadă",
+          "hint": "Curtea"
+        },
+        {
+          "text": "Zăpadă",
+          "hint": "Distracţie"
+        },
+        {
+          "text": "Fulgi de zăpadă",
+          "hint": "Blândețe"
+        },
+        {
+          "text": "Sopel",
+          "hint": "Capere"
+        },
+        {
+          "text": "Mănuși",
+          "hint": "Cuplu"
+        },
+        {
+          "text": "Eșarfă",
+          "hint": "Haină"
+        },
+        {
+          "text": "Tinker Bell",
+          "hint": "Metal"
+        },
+        {
+          "text": "Vâsc",
+          "hint": "Personalizat"
+        },
+        {
+          "text": "Seara filmului",
+          "hint": "Relaxează-te."
+        },
+        {
+          "text": "Pulover de Crăciun",
+          "hint": "Țesături tricotate sau croșetate"
+        },
+        {
+          "text": "Carte de Crăciun",
+          "hint": "Hârtie"
+        },
+        {
+          "text": "Dorinţe",
+          "hint": "Bunătate"
+        },
+        {
+          "text": "Kulig",
+          "hint": "Tur"
+        }
+      ]
+    }
+  ]
+}

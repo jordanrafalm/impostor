@@ -46,6 +46,31 @@ internal class SeedCatalogRepositoryTest {
     }
 
     @Test
+    fun `new locale catalogs are selected by language tag and fall back when missing`() {
+        val locales = listOf(
+            AppLocale.ARABIC, AppLocale.GREEK, AppLocale.SPANISH,
+            AppLocale.ITALIAN, AppLocale.PORTUGUESE, AppLocale.ROMANIAN,
+        )
+        val localized = seed("Localized", "Word", "Clue")
+        val polish = seed("Zwierzęta", "Wydra", "Rzeka")
+
+        locales.forEach { locale ->
+            val requested = mutableListOf<String>()
+            val repository = localizedCatalogRepository(locale) { fileName ->
+                requested += fileName
+                if (fileName == "prompts-${locale.languageTag}.json") localized else null
+            }
+            assertEquals(listOf("prompts-${locale.languageTag}.json"), requested)
+            assertEquals("Localized", repository.categories().single().displayName)
+
+            val fallback = localizedCatalogRepository(locale) { fileName ->
+                if (fileName == "prompts-pl.json") polish else null
+            }
+            assertEquals("Zwierzęta", fallback.categories().single().displayName)
+        }
+    }
+
+    @Test
     fun `should provide complete premium celebrity categories`() {
         // Given
         val categories = mapOf(

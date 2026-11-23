@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Impostor</string>
+    <string name="party_reminder_channel">Invitații la joc</string>
+    <string name="party_reminder_title">O petrecere?</string>
+    <string name="party_reminder_body">Joacă Impostor cu prietenii tăi!</string>
+</resources>

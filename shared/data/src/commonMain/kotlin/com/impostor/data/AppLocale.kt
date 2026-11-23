@@ -5,6 +5,12 @@ enum class AppLocale(val languageTag: String) {
     ENGLISH("en"),
     POLISH("pl"),
     UKRAINIAN("uk"),
+    ARABIC("ar"),
+    GREEK("el"),
+    SPANISH("es"),
+    ITALIAN("it"),
+    PORTUGUESE("pt"),
+    ROMANIAN("ro"),
 }
 
 /**
@@ -17,6 +23,12 @@ fun resolveAppLocale(preferredTags: List<String>): AppLocale =
             "pl" -> AppLocale.POLISH
             "en" -> AppLocale.ENGLISH
             "uk" -> AppLocale.UKRAINIAN
+            "ar" -> AppLocale.ARABIC
+            "el" -> AppLocale.GREEK
+            "es" -> AppLocale.SPANISH
+            "it" -> AppLocale.ITALIAN
+            "pt" -> AppLocale.PORTUGUESE
+            "ro" -> AppLocale.ROMANIAN
             else -> null
         }
     } ?: AppLocale.ENGLISH

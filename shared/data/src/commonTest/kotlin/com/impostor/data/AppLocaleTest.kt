@@ -65,4 +65,14 @@ internal class AppLocaleTest {
         // Then
         assertEquals(AppLocale.UKRAINIAN, locale)
     }
+
+    @Test
+    fun `should resolve all newly supported language tags`() {
+        assertEquals(AppLocale.ARABIC, resolveAppLocale(listOf("ar-AE")))
+        assertEquals(AppLocale.GREEK, resolveAppLocale(listOf("el-GR")))
+        assertEquals(AppLocale.SPANISH, resolveAppLocale(listOf("es-ES")))
+        assertEquals(AppLocale.ITALIAN, resolveAppLocale(listOf("it-IT")))
+        assertEquals(AppLocale.PORTUGUESE, resolveAppLocale(listOf("pt-BR")))
+        assertEquals(AppLocale.ROMANIAN, resolveAppLocale(listOf("ro-RO")))
+    }
 }

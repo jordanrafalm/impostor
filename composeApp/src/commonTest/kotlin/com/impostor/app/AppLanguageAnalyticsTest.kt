@@ -43,6 +43,34 @@ internal class AppLanguageAnalyticsTest {
 
         assertEquals(listOf("en"), analytics.languages)
     }
+
+    @Test
+    fun `reports every supported new locale`() {
+        val store = LanguageTestStore()
+        val analytics = LanguageTestAnalytics()
+
+        listOf("ar", "el", "es", "it", "pt", "ro").forEach { language ->
+            reportAppLanguage(language, store, analytics)
+        }
+
+        assertEquals(listOf("ar", "el", "es", "it", "pt", "ro"), analytics.languages)
+    }
+
+    @Test
+    fun `reports every supported language once and rejects unsupported tags`() {
+        val store = LanguageTestStore()
+        val analytics = LanguageTestAnalytics()
+        val languages = listOf("en", "pl", "uk", "ar", "el", "es", "it", "pt", "ro")
+
+        languages.forEach { language ->
+            reportAppLanguage(language, store, analytics)
+            reportAppLanguage(language, store, analytics)
+        }
+        listOf("", "fr", "pt-BR", "AR").forEach { reportAppLanguage(it, store, analytics) }
+
+        assertEquals(languages, analytics.languages)
+        assertEquals("ro", store.getString(PreferenceKeys.LAST_REPORTED_APP_LANGUAGE))
+    }
 }
 
 private class LanguageTestAnalytics(var succeeds: Boolean = true) : AnalyticsService {

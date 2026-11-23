@@ -1,0 +1,2334 @@
+{
+  "schemaVersion": 1,
+  "activeCategoryIds": [
+    "animals",
+    "places",
+    "food",
+    "sports",
+    "professions",
+    "objects",
+    "nature",
+    "music",
+    "technology",
+    "everyday",
+    "adult",
+    "flirt",
+    "sex",
+    "polish_influencers",
+    "polish_actors",
+    "international_stars",
+    "christmas"
+  ],
+  "categories": [
+    {
+      "id": "animals",
+      "name": "Animais",
+      "iconKey": "paw",
+      "prompts": [
+        "Pinguim",
+        "Selo",
+        "Rena",
+        "Raposa polar",
+        "Coruja de neve",
+        "Urso polar",
+        "Lobo",
+        "Fig.",
+        "Raposa",
+        "Texugo",
+        "Equino",
+        "Esquilo",
+        "Lebre",
+        "Toupeira",
+        "Bat",
+        "Lontras",
+        "Castor",
+        "Salmão",
+        "Cervo",
+        "Sarna",
+        "Javalis",
+        "Beterrabas",
+        "Equino",
+        "Burro",
+        "Vaca",
+        "Ovinos",
+        "Cabra",
+        "Suínos",
+        "Cão",
+        "Gato",
+        "Hamster",
+        "Coelho",
+        "Papagaio",
+        "Canário",
+        "Pombo",
+        "Cegonha",
+        "Águia",
+        "Falcão",
+        "Falcão",
+        "Raven",
+        "Corvo",
+        "Magpie",
+        "Pica-pau",
+        "Flamejamento",
+        "Pavão",
+        "Avestruz",
+        "Pata",
+        "Gansa",
+        "Cisne",
+        "Galinha",
+        "Rã",
+        "Sapo",
+        "Salamandra",
+        "Lagarto",
+        "Camaleão",
+        "Tartaruga",
+        "Crocodilo",
+        "Jacaré",
+        "Cobra",
+        "Leguan",
+        "Tubarão",
+        "Golfinho",
+        "Baleia",
+        "Águia",
+        "Polvo",
+        "Medusa",
+        "Cavalo-marinho",
+        "Caranguejo",
+        "Lagosta",
+        "Camarão",
+        "Truta",
+        "Salmão",
+        "Carpa",
+        "Rato",
+        "Soma",
+        "Atum",
+        "Sarda",
+        "Sardinha",
+        "Pescada",
+        "Borboleta",
+        "Abelha",
+        "Bumblebee",
+        "Vespa",
+        "Formiga",
+        "Joaninha",
+        "Libélula",
+        "Gafanhoto",
+        "Críquete",
+        "Besouro",
+        "Aranha",
+        "Escorpião",
+        "Caracóis",
+        "Vermes",
+        "Centopeia",
+        "Manteiga",
+        "Barata",
+        "Tomate",
+        "Voar",
+        "Tique",
+        "Morsa"
+      ]
+    },
+    {
+      "id": "places",
+      "name": "Locais",
+      "iconKey": "map",
+      "prompts": [
+        "Aeroporto",
+        "Biblioteca",
+        "Museu",
+        "Praia",
+        "Deslocamento do esqui",
+        "Parque",
+        "Floresta",
+        "Montanhas",
+        "Lago",
+        "Rio",
+        "Ilha",
+        "Deserto",
+        "Caverna",
+        "Cachoeira",
+        "Vulcão",
+        "Farol",
+        "Porto",
+        "Estação",
+        "Parar",
+        "Metro",
+        "Estádio",
+        "Sala de esportes",
+        "Piscina",
+        "Ginásio",
+        "Quadra de ténis",
+        "Campo de golfe",
+        "Teatro",
+        "Cinema",
+        "Opera",
+        "Galeria de arte",
+        "Igreja",
+        "Castelo",
+        "Palácio",
+        "Mercado",
+        "Câmara Municipal",
+        "Ponte",
+        "Túnel",
+        "Torre",
+        "Monumento",
+        "Cemitério",
+        "Hospital",
+        "Farmácia",
+        "Escola",
+        "Universidade",
+        "Criação",
+        "Delegacia de Polícia",
+        "Corpos de bombeiros",
+        "Correio",
+        "Banco",
+        "Autoridade",
+        "Loja",
+        "Supermercado",
+        "Mercado",
+        "Padaria",
+        "Café",
+        "Restaurante",
+        "Barra",
+        "Hotel",
+        "Hostel",
+        "Acampar",
+        "Fazenda",
+        "Triste",
+        "Vinhas",
+        "Jardim botânico",
+        "Zoológico",
+        "Aquário",
+        "Reserva",
+        "Parque de entretenimento",
+        "Cidade Feliz",
+        "Aquapark",
+        "Escritório",
+        "Fábrica",
+        "Revista",
+        "Construção",
+        "Mina",
+        "Posto de gasolina",
+        "Lavagem de automóveis",
+        "Oficina",
+        "Garagem",
+        "Estacionamento",
+        "Principal",
+        "Apartamento",
+        "Cozinha",
+        "Casa de banho",
+        "Quarto",
+        "Varanda",
+        "Jardim",
+        "Porão",
+        "O sótão",
+        "Lavandaria",
+        "Espaço",
+        "Estação espacial",
+        "Lua",
+        "Marte",
+        "Fundo do oceano",
+        "Recife de coral",
+        "Pólo Norte",
+        "Pólo Sul",
+        "Selva",
+        "Sawanna"
+      ]
+    },
+    {
+      "id": "food",
+      "name": "Alimentos",
+      "iconKey": "bowl",
+      "prompts": [
+        "Pizza",
+        "Sushi",
+        "Galinha",
+        "panquecas",
+        "bolinhos",
+        "Bigos",
+        "Besouro",
+        "Borsch",
+        "Panquecas de batata",
+        "Copiar",
+        "Lombos",
+        "Gulash",
+        "Pombos",
+        "Feijões em Breton",
+        "Raquetes",
+        "Massas alimentícias de leite",
+        "Miseria",
+        "Salada de legumes",
+        "Tártaro",
+        "Bud",
+        "Bolo de queijo",
+        "Maçãs",
+        "Sarda",
+        "Avó.",
+        "Brownie",
+        "Tiramisu",
+        "Sorvete",
+        "Sorbet",
+        "Sobremesa de pudim",
+        "Geleia",
+        "Hamburger",
+        "Cachorro-quente",
+        "Batatas fritas",
+        "torrado",
+        "Sanduíche",
+        "Quebrar",
+        "Taco",
+        "Burrito",
+        "Quesadilla",
+        "Nachos",
+        "Caril",
+        "Ramon",
+        "Pat tailandês",
+        "Pho",
+        "Kimchi",
+        "Falafel",
+        "Hummus",
+        "Kebab",
+        "Moussaka",
+        "Paella",
+        "Risotto",
+        "Lasanha",
+        "Espaguete",
+        "Ravioli",
+        "Gnocchi",
+        "Bruschetta",
+        "Focaccia",
+        "Bagagem",
+        "Croissant",
+        "Bagel",
+        "Maçã",
+        "Peras",
+        "Banana",
+        "Laranja",
+        "Mandarina",
+        "Limão",
+        "Morangos",
+        "Framboesa",
+        "Mirtilos",
+        "Melancias",
+        "Tomate",
+        "Pepinos",
+        "Cenouras",
+        "Batata",
+        "Cebolas",
+        "Alhos",
+        "Pimentos",
+        "Brócolos",
+        "Couve-flor",
+        "Abóbora",
+        "Chocolate",
+        "Querida.",
+        "Jam",
+        "Manteiga de amendoim",
+        "Queijos",
+        "Iogurte",
+        "Groselhas",
+        "Ovos",
+        "Bacon",
+        "Salsichas",
+        "Pão",
+        "Peça",
+        "Rice",
+        "Pasta",
+        "Dinheiro",
+        "Aveia",
+        "Cereais para pequeno-almoço",
+        "Nozes",
+        "Pipoca",
+        "Batatas fritas"
+      ]
+    },
+    {
+      "id": "sports",
+      "name": "Desporto",
+      "iconKey": "trophy",
+      "prompts": [
+        "Futebol",
+        "Basquetebol",
+        "Voleibol",
+        "Handebol",
+        "Tênis",
+        "Tênis de mesa",
+        "Badminton",
+        "Squash",
+        "Golfe",
+        "Baseball",
+        "Hóquei",
+        "Hóquei na grama",
+        "Rugby",
+        "Futebol Americano",
+        "Críquete",
+        "Caixa",
+        "Kickboxing",
+        "Karatê",
+        "Judô",
+        "Taekwondo",
+        "Existências",
+        "Peixe-espada",
+        "Arqueiro",
+        "Tiro",
+        "Levantamento de peso",
+        "Forçar o afluente",
+        "Ginástica",
+        "Acrobacias",
+        "Kalistenika",
+        "Crossfit",
+        "Em execução",
+        "Sprint",
+        "Maratona",
+        "Meia Maratona",
+        "Passeio Desportivo",
+        "Salto alto",
+        "Salto longo",
+        "Arremesso de dardo",
+        "Drive Throw",
+        "Golpe de bola",
+        "Natação",
+        "Saltos de água",
+        "Bola d'água",
+        "Surfe",
+        "Remo",
+        "Canoagem",
+        "Vela",
+        "Mergulho",
+        "Rafting",
+        "Pesca",
+        "Esqui",
+        "Snowboard",
+        "Biatlo",
+        "Patinagem de figuras",
+        "Patinagem rápida",
+        "Descolagem",
+        "Bobsled",
+        "Curling",
+        "Salto de esqui",
+        "Esqui alpino",
+        "Bicicleta rodoviária",
+        "Bicicleta de montanha",
+        "BMX",
+        "Corrida de carros",
+        "Karting",
+        "Motocross",
+        "Rally",
+        "Equitação",
+        "Polo",
+        "Skateboarding",
+        "Dança",
+        "Balé",
+        "Breakdance",
+        "Líderes de claque",
+        "Yoga",
+        "Pilates",
+        "Aeróbica",
+        "Fitness",
+        "Escalada",
+        "Parkour",
+        "Balanço",
+        "Boliche",
+        "Dardo",
+        "Futebol de mesa",
+        "Paintball",
+        "Marca laser",
+        "Frisbee",
+        "Bulas",
+        "Hula-hoop",
+        "Pessoal",
+        "Raça",
+        "Corresponder",
+        "Torneio",
+        "Formação",
+        "Medalha",
+        "Copo",
+        "Juiz",
+        "Equipa",
+        "Estádio",
+        "Triatlo"
+      ]
+    },
+    {
+      "id": "professions",
+      "name": "Concorrência",
+      "iconKey": "briefcase",
+      "prompts": [
+        "Médico",
+        "Enfermeira",
+        "Salva-vidas médicas",
+        "Dentista",
+        "Veterinário",
+        "Farmacêutico",
+        "Psicólogo",
+        "Fisioterapia",
+        "Cirurgião",
+        "Parteiras",
+        "Professor",
+        "Educador",
+        "Professor",
+        "Bibliotecário",
+        "Treinador",
+        "Instrutor de condução",
+        "Traduzir",
+        "Escritor",
+        "Jornalista",
+        "Editor",
+        "Desenvolvimento",
+        "UX Designer",
+        "Teste de software",
+        "Administrador de rede",
+        "Analista de dados",
+        "Fotógrafo",
+        "Operador de câmera",
+        "Ator",
+        "Director",
+        "Músico",
+        "Arquiteto",
+        "Engenheiro",
+        "Geodeta",
+        "Eléctrico",
+        "Hidráulico",
+        "Waller",
+        "Carpinteiro",
+        "Soldador",
+        "Mecânica",
+        "Roofer",
+        "Cozinheiro",
+        "Garçom",
+        "Barista",
+        "Baker",
+        "Fabricante de tortas",
+        "Açougueiro",
+        "Sommelier",
+        "Dietário",
+        "Agricultor",
+        "Jardineiro",
+        "Bombeiro",
+        "Polícia",
+        "Soldado",
+        "Salva-vidas da montanha",
+        "Guarda de segurança",
+        "Detective.",
+        "Juiz",
+        "Advogado",
+        "Procurador",
+        "Notebook",
+        "Controlador",
+        "Piloto",
+        "Marinheiro",
+        "Condutor",
+        "Correio",
+        "Correio",
+        "Taxista",
+        "Controlador",
+        "Expedidor",
+        "Verificador",
+        "Vendedor",
+        "Caixa",
+        "Contabilista",
+        "Banqueiro",
+        "Makler",
+        "Consultor financeiro",
+        "Comércio",
+        "Gestor",
+        "Recrutamento",
+        "Empresário",
+        "Cabeleireiro",
+        "Cosméticos",
+        "Stylist",
+        "Alfaiate",
+        "Relojoeiro",
+        "Tatuador",
+        "Massagista",
+        "Florida",
+        "Cuidador de Animais",
+        "Guia turístico",
+        "Cientista",
+        "Astronauta",
+        "Arqueólogo",
+        "Historiador",
+        "Biologia",
+        "Químico",
+        "Física",
+        "Meteorologista",
+        "Oceanografia",
+        "Florestador"
+      ]
+    },
+    {
+      "id": "objects",
+      "name": "Objectos",
+      "iconKey": "cube",
+      "prompts": [
+        "Telefone",
+        "Laptop",
+        "Comprimido",
+        "TV",
+        "Piloto",
+        "Auscultadores",
+        "Alto-falante",
+        "Câmera",
+        "Carregador",
+        "Powerbank",
+        "Observar",
+        "Alarme",
+        "Calendário",
+        "Lâmpada",
+        "Lanterna",
+        "Vela",
+        "Corresponder",
+        "Guarda-chuvas",
+        "Mochila",
+        "Mala",
+        "Chave",
+        "Bloquear",
+        "Carteira",
+        "Moeda",
+        "Notas",
+        "Cartão de pagamento",
+        "Óculos",
+        "Espelho",
+        "Comb",
+        "Escova de dentes",
+        "Copo",
+        "Vidro",
+        "Placa",
+        "Bowl",
+        "Garfo",
+        "Faca",
+        "Colher",
+        "Salsa",
+        "Pote",
+        "Chaleira",
+        "Refrigerador",
+        "Forno",
+        "Mistura",
+        "Torradeira",
+        "Forno de micro-ondas",
+        "Arruela",
+        "Máquina de lavar roupa",
+        "Aspirador",
+        "Ferro",
+        "Secador de cabelo",
+        "Presidente",
+        "Quadro",
+        "Sofá",
+        "Assento",
+        "Cama",
+        "Travesseiro",
+        "Cascas",
+        "Cobertor",
+        "Armário",
+        "Prateleira",
+        "Livro",
+        "Jornal",
+        "Notebook",
+        "Caneta",
+        "Lápis",
+        "Borracha",
+        "Linha",
+        "Tesoura",
+        "Cola",
+        "Mochila escolar",
+        "Bola",
+        "Rocket",
+        "Skate",
+        "Bicicleta",
+        "Capacete",
+        "Scoop",
+        "Tenda",
+        "Saco de dormir",
+        "Compasse",
+        "Binóculos",
+        "Martelo",
+        "Chave de fendas",
+        "Máquinas de furar",
+        "Serra",
+        "Medida",
+        "Horizontal",
+        "alicate",
+        "Escada",
+        "Tinta",
+        "Pincel",
+        "Cubo de Rubik",
+        "Cartões",
+        "xadrez",
+        "Pioneer",
+        "Placa",
+        "Puzzle",
+        "Balão",
+        "kite",
+        "Erro",
+        "Jojo"
+      ]
+    },
+    {
+      "id": "nature",
+      "name": "Natureza",
+      "iconKey": "leaf",
+      "prompts": [
+        "Árvore",
+        "Pinho",
+        "Abeto",
+        "Carvalho",
+        "Ervilhas",
+        "Clone",
+        "Buk",
+        "Salgueiro",
+        "Yodel",
+        "Malte",
+        "Cacto",
+        "fern",
+        "Mech",
+        "líquen",
+        "Ivy",
+        "Bambu",
+        "Palmito",
+        "Baobab",
+        "Sequoia",
+        "Bonsai",
+        "Rosa",
+        "Tulipano",
+        "Margaridas",
+        "Girassol",
+        "Mak",
+        "Lavanda",
+        "Camomila",
+        "Monk",
+        "Konwalia",
+        "Jacint",
+        "Lotus",
+        "Orquídeas",
+        "Violeta",
+        "Irmão.",
+        "Nus",
+        "Urticária",
+        "Menta",
+        "Basílio",
+        "Alecrim",
+        "tomilho",
+        "Nuvem",
+        "Chuva",
+        "Neve",
+        "Grad",
+        "Nevoeiro",
+        "Arco- íris",
+        "Storm",
+        "Raios",
+        "Vento",
+        "Furacão",
+        "Sol",
+        "Lua",
+        "Estrela",
+        "Cometa",
+        "Eclipse",
+        "Via Láctea",
+        "Céu",
+        "Horizonte",
+        "Nascer do sol",
+        "Pôr do sol",
+        "Topo",
+        "Colina",
+        "Vale",
+        "Canyon",
+        "Caverna",
+        "Duna",
+        "Geleira",
+        "Cliff",
+        "Gorge",
+        "Polana",
+        "Oceano",
+        "Mar",
+        "Lago",
+        "Lagoa",
+        "Fluxo",
+        "Rio",
+        "Origem",
+        "Pântano",
+        "Rafa",
+        "Golfo",
+        "Primavera",
+        "Verão",
+        "Outono",
+        "Inverno",
+        "Bom dia.",
+        "Sul",
+        "Boa noite.",
+        "Noite",
+        "Dawn",
+        "Crepúsculo",
+        "Pedra",
+        "Pedra",
+        "Sand",
+        "Viper",
+        "Alumínio",
+        "Terra",
+        "Lama",
+        "Cristal",
+        "Shell",
+        "Amber"
+      ]
+    },
+    {
+      "id": "music",
+      "name": "Música",
+      "iconKey": "music",
+      "prompts": [
+        "Guitarra",
+        "Guitarra de baixo",
+        "ukulele",
+        "Violinos",
+        "Alternativo",
+        "Cello",
+        "Contrabaixo",
+        "Harf",
+        "Mandalim",
+        "Banjo",
+        "Piano",
+        "Piano",
+        "Teclado",
+        "Órgãos",
+        "Acordeão",
+        "Síntese",
+        "Celesta",
+        "Ksylophone",
+        "Marimba",
+        "Flauta",
+        "Flauta transversal",
+        "Flauta reta",
+        "Clarinete",
+        "Oboe",
+        "Bicha",
+        "Saxofone",
+        "Trompete",
+        "Tecido",
+        "Carteira",
+        "Tuba",
+        "Harmonic",
+        "Dudy",
+        "Didgeridoo",
+        "Tamborine",
+        "Tambor",
+        "Verbel",
+        "Caldeira",
+        "Maracas",
+        "Castanhas",
+        "Tambor",
+        "Chapas",
+        "Cowbell",
+        "Bongos",
+        "Congo",
+        "Cajon",
+        "Djembe",
+        "Varetas",
+        "Metronom",
+        "Melody",
+        "Ritmo",
+        "Refren",
+        "Texto",
+        "Coro",
+        "Harmonia",
+        "Gravar",
+        "Música de folha",
+        "Escala",
+        "Tonação",
+        "Concerto",
+        "Ensaio",
+        "Orquestra",
+        "Síndrome",
+        "Solitário",
+        "Condutor",
+        "Compositor",
+        "Vocalista",
+        "DJ",
+        "Fabricante",
+        "Microfone",
+        "Cabo",
+        "Amplificador",
+        "Estúdio",
+        "Cena",
+        "Faróis",
+        "Placa",
+        "Cassete",
+        "Vinilo",
+        "Streaming",
+        "Lista de Reprodução",
+        "Vídeo",
+        "Simples",
+        "Álbum",
+        "Demonstração",
+        "Remix",
+        "Amostra",
+        "Gravação",
+        "Pedra",
+        "Pop",
+        "Jazz",
+        "Azul",
+        "Funk",
+        "Reggae",
+        "Rap",
+        "Metal",
+        "Disco",
+        "Opera",
+        "Musical",
+        "Ballada",
+        "Improvisação",
+        "Soprano"
+      ]
+    },
+    {
+      "id": "technology",
+      "name": "Tecnologia",
+      "iconKey": "cpu",
+      "prompts": [
+        "Aplicação",
+        "Sítio Web",
+        "Senha",
+        "Login",
+        "Perfil",
+        "Avatar",
+        "Notificação",
+        "Mensagem",
+        "Emoticon",
+        "Código QR",
+        "Algoritmo",
+        "Base de dados",
+        "Servidor",
+        "Computação em nuvem",
+        "Rede",
+        "Roteador",
+        "Wi-Fi",
+        "Bluetooth",
+        "GPS",
+        "Satélite",
+        "Processador",
+        "Memória RAM",
+        "Disco rígido",
+        "Placa gráfica",
+        "Quadro principal",
+        "Cabo USB",
+        "Ecrã",
+        "Teclado",
+        "Mouse",
+        "Impressora",
+        "Robô",
+        "Drone",
+        "Automóvel autónomo",
+        "Relógio inteligente",
+        "Leitor de livros eletrónicos",
+        "Consola",
+        "Pá",
+        "Óculos de VR",
+        "Impressora 3D",
+        "Interfone",
+        "Inteligência artificial",
+        "Chatbot",
+        "Reconhecimento facial",
+        "Tradução automática",
+        "Ajuda de voz",
+        "Procurar",
+        "Mapa digital",
+        "Conversa de Vídeo",
+        "Transmissão",
+        "Podcast",
+        "Atualizar",
+        "Cópia de Segurança",
+        "Ficheiro",
+        "Pasta",
+        "Documento",
+        "Folha",
+        "Apresentação",
+        "Editor",
+        "Navegador",
+        "Calendário Digital",
+        "Firewall",
+        "Antivírus",
+        "Criptografia",
+        "Vírus informático",
+        "Phishing",
+        "Spam",
+        "Captcha",
+        "Verificação",
+        "Token",
+        "Biometria",
+        "Bateria",
+        "Carregamento sem fios",
+        "Painel Solar",
+        "Sensor",
+        "Câmera",
+        "Microfone",
+        "Termómetro",
+        "Peso electrónico",
+        "Porta automática",
+        "Luz LED",
+        "Código-fonte",
+        "Programação",
+        "Ensaio unitário",
+        "Erro",
+        "Depurar",
+        "Versão",
+        "Repositório",
+        "Enviar",
+        "Interface",
+        "Configuração",
+        "Internet",
+        "E- mail",
+        "Redes sociais",
+        "Loja da Internet",
+        "Pagamento móvel",
+        "Banca em linha",
+        "Videoconferência",
+        "Jogo de computador",
+        "Ranking",
+        "Realidade Virtual"
+      ]
+    },
+    {
+      "id": "everyday",
+      "name": "Situações diárias",
+      "iconKey": "sparkles",
+      "prompts": [
+        "Tarde",
+        "Toca a acordar",
+        "Pequeno-almoço",
+        "Lavagem de dentes",
+        "Chuveiro",
+        "Vestir",
+        "Tuição",
+        "Embalagem",
+        "Sair de Casa",
+        "Principal",
+        "Compras",
+        "Fila",
+        "Paragon",
+        "Promoção",
+        "Pagamento por cartão",
+        "Chave Perdida",
+        "Portas de abertura",
+        "Elevador",
+        "Escadas",
+        "Reparação",
+        "Cozimento",
+        "Cozimento",
+        "Limpeza",
+        "Limpeza",
+        "Vacuum",
+        "Lavandaria",
+        "Penduramento de roupa suja",
+        "Roupas dobradas",
+        "Eliminação do lixo",
+        "Rega de flores",
+        "Telefone",
+        "Mensagem",
+        "Lendo Mensagens",
+        "A tirar uma fotografia",
+        "A recolher os pacotes",
+        "Enviando uma carta",
+        "Impressão",
+        "A Procurar o Endereço",
+        "Reserva",
+        "Cancelamento",
+        "Reunião",
+        "Conversar",
+        "Aparência",
+        "Desculpas",
+        "Complemento",
+        "Argumento",
+        "Combinado.",
+        "Brincadeira",
+        "Mistério",
+        "Rumores",
+        "Trabalho",
+        "Lição",
+        "Exame",
+        "Principal",
+        "Apresentação",
+        "Quebrar",
+        "Férias",
+        "Férias",
+        "Fim de semana",
+        "Dia livre",
+        "Viagens",
+        "Bilhete",
+        "Controlo dos bilhetes",
+        "Transferência",
+        "Esperando",
+        "Bagagem perdida",
+        "Revisão",
+        "Mapa",
+        "Tour",
+        "Memorial",
+        "Festa",
+        "Aniversário",
+        "Bolo",
+        "Presente",
+        "Dança",
+        "Karaoke",
+        "Jogo de Tabuleiro",
+        "Foto Comum",
+        "Brinde",
+        "Surpresa",
+        "Chuva sem guarda-chuva",
+        "Telefone descarregado",
+        "Sem Internet",
+        "Café frio",
+        "Jantar queimado",
+        "Geladeira vazia",
+        "Salto partido",
+        "A mancha nas tuas roupas",
+        "Vizinho Alto",
+        "Manhã sonolenta",
+        "Dormindo",
+        "Dormir",
+        "Pesadelo",
+        "Dormir",
+        "Lendo um livro",
+        "Assistir a um filme",
+        "Ouvir música",
+        "Caminhar",
+        "Relaxa.",
+        "Ordens no armário"
+      ]
+    },
+    {
+      "id": "fantasy",
+      "name": "Fantasia",
+      "iconKey": "sparkles",
+      "prompts": [
+        "Dragão",
+        "Unicórnio",
+        "Sereia",
+        "A Fada",
+        "Assistente",
+        "Bruxa",
+        "Cavaleiro",
+        "Princesa",
+        "Rei",
+        "Rainha",
+        "Goblin",
+        "Troll",
+        "Elf",
+        "Anão",
+        "Gigante",
+        "Phoenix",
+        "Basilisk",
+        "Griff",
+        "Centauro",
+        "Minotauro",
+        "Vampiro",
+        "Lobisomem",
+        "Espírito",
+        "Mamã.",
+        "Zumbis",
+        "Monstro",
+        "Demónio",
+        "Anjo",
+        "Alienígena",
+        "Robô de combate",
+        "Varinha mágica",
+        "Elixir",
+        "Bola de cristal",
+        "Tapete voador",
+        "Capa invisível",
+        "Espada leve",
+        "Mapa do Tesouro",
+        "Caixa de tesouro",
+        "A Floresta Encantada",
+        "Castelo nas nuvens",
+        "Cidade subterrânea",
+        "Ilha Mistério",
+        "Portal",
+        "Máquina do tempo",
+        "Ovo de dragão",
+        "Anel mágico",
+        "O Livro da Bruxaria",
+        "Feitiço",
+        "Maldição",
+        "Profecia",
+        "Missão",
+        "Herói",
+        "Anti-herói",
+        "Acompanhante de viagem",
+        "O Soberano das Trevas",
+        "Câmara Oculta",
+        "Labirinto",
+        "Armadilha",
+        "Tesouro",
+        "Amuleto",
+        "Coroa",
+        "Trono",
+        "Arena",
+        "Torneio Magi",
+        "Escola de Magia",
+        "Academia de Heróis",
+        "Batalha Espacial",
+        "Planeta alienígena",
+        "Nave espacial",
+        "Estação orbital",
+        "Robô auxiliar",
+        "Espada",
+        "Escudo",
+        "Arco",
+        "Armadura",
+        "Capacete",
+        "Mistura",
+        "Portal mágico",
+        "O objeto encantado",
+        "Ruínas antigas",
+        "Templo",
+        "Maldita nave.",
+        "Islândia",
+        "Terra de Fogo",
+        "Dreamland",
+        "Shadowland",
+        "Terra de luz",
+        "Grande Guerra",
+        "Aliança",
+        "Traição",
+        "Corresponder",
+        "Escapar",
+        "Buscar",
+        "Descoberta",
+        "Mistério",
+        "Legenda",
+        "Aventura",
+        "Final",
+        "Torre do Dragão",
+        "Portal Estelar"
+      ]
+    },
+    {
+      "id": "adult",
+      "name": "18+",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Beijo",
+          "hint": "Primeiro"
+        },
+        {
+          "text": "Flertar",
+          "hint": "Visão"
+        },
+        {
+          "text": "Paixão",
+          "hint": "Noite"
+        },
+        {
+          "text": "Desejo",
+          "hint": "Olha."
+        },
+        {
+          "text": "Sensibilidade",
+          "hint": "Mão"
+        },
+        {
+          "text": "Sussurrando",
+          "hint": "Orelha"
+        },
+        {
+          "text": "Aproximação",
+          "hint": "Respiração"
+        },
+        {
+          "text": "Hotel",
+          "hint": "Recepção"
+        },
+        {
+          "text": "Massagem",
+          "hint": "Óleos"
+        },
+        {
+          "text": "Banho",
+          "hint": "Espuma"
+        },
+        {
+          "text": "Velas",
+          "hint": "Sombra"
+        },
+        {
+          "text": "Roupa interior",
+          "hint": "Gaveta"
+        },
+        {
+          "text": "Meias",
+          "hint": "Barra de Ferramentas"
+        },
+        {
+          "text": "Pinos",
+          "hint": "Passo"
+        },
+        {
+          "text": "Cheiro",
+          "hint": "Pescoço"
+        },
+        {
+          "text": "Pele",
+          "hint": "Calor"
+        },
+        {
+          "text": "Pescoço",
+          "hint": "Beijo"
+        },
+        {
+          "text": "Voltar",
+          "hint": "Fio"
+        },
+        {
+          "text": "Ancas",
+          "hint": "Ritmo"
+        },
+        {
+          "text": "coxas",
+          "hint": "Suavidade"
+        },
+        {
+          "text": "Sedução",
+          "hint": "Jogo"
+        },
+        {
+          "text": "Tentação",
+          "hint": "Sorria"
+        },
+        {
+          "text": "Mistério",
+          "hint": "Carta"
+        },
+        {
+          "text": "Proibição",
+          "hint": "Frutos"
+        },
+        {
+          "text": "Romance",
+          "hint": "Marido"
+        },
+        {
+          "text": "Traição",
+          "hint": "Telefone"
+        },
+        {
+          "text": "Fio",
+          "hint": "Espinha"
+        },
+        {
+          "text": "Excitação",
+          "hint": "Adrenalina"
+        },
+        {
+          "text": "Excitação",
+          "hint": "Pulso"
+        },
+        {
+          "text": "Adorável",
+          "hint": "Respiração"
+        },
+        {
+          "text": "Beijar",
+          "hint": "Devagar"
+        },
+        {
+          "text": "Abraço",
+          "hint": "Ombros"
+        },
+        {
+          "text": "Acariciar",
+          "hint": "Dedos"
+        },
+        {
+          "text": "Escavando",
+          "hint": "Dentes"
+        },
+        {
+          "text": "Arranhamento",
+          "hint": "Pregos"
+        },
+        {
+          "text": "Desenhar",
+          "hint": "Química"
+        },
+        {
+          "text": "Magnetismo",
+          "hint": "Olha."
+        },
+        {
+          "text": "Faísca",
+          "hint": "Primeiro"
+        },
+        {
+          "text": "Calor",
+          "hint": "Pele"
+        },
+        {
+          "text": "Humidade",
+          "hint": "Respiração"
+        },
+        {
+          "text": "Quente",
+          "hint": "Números"
+        },
+        {
+          "text": "Sombra",
+          "hint": "Parede"
+        },
+        {
+          "text": "Varanda",
+          "hint": "Noite"
+        },
+        {
+          "text": "Chuva",
+          "hint": "Vidro"
+        },
+        {
+          "text": "Oxamato",
+          "hint": "Toque"
+        },
+        {
+          "text": "Lace",
+          "hint": "Borda"
+        },
+        {
+          "text": "Seda",
+          "hint": "Lençóis de cama"
+        },
+        {
+          "text": "Perfumes",
+          "hint": "Pulso"
+        },
+        {
+          "text": "Batom",
+          "hint": "Rastrear"
+        },
+        {
+          "text": "Brinco",
+          "hint": "Orelha"
+        }
+      ]
+    },
+    {
+      "id": "flirt",
+      "name": "Flertar",
+      "iconKey": "heart",
+      "prompts": [
+        {
+          "text": "Recolha",
+          "hint": "Número de telefone"
+        },
+        {
+          "text": "Vertigens",
+          "hint": "Sorria"
+        },
+        {
+          "text": "Coquete",
+          "hint": "Cílios"
+        },
+        {
+          "text": "Sedução",
+          "hint": "Olha."
+        },
+        {
+          "text": "Desejo",
+          "hint": "Paixão"
+        },
+        {
+          "text": "Paixão",
+          "hint": "Beijo"
+        },
+        {
+          "text": "Química",
+          "hint": "Faísca"
+        },
+        {
+          "text": "Faísca",
+          "hint": "Tensão"
+        },
+        {
+          "text": "Tensão",
+          "hint": "Tremor"
+        },
+        {
+          "text": "Fio",
+          "hint": "Adrenalina"
+        },
+        {
+          "text": "Adrenalina",
+          "hint": "Risco"
+        },
+        {
+          "text": "Provocação",
+          "hint": "Planta"
+        },
+        {
+          "text": "Alousia",
+          "hint": "Brincadeira"
+        },
+        {
+          "text": "ambiguidade",
+          "hint": "Comentário"
+        },
+        {
+          "text": "Subtexto",
+          "hint": "Conversar"
+        },
+        {
+          "text": "Intriga",
+          "hint": "Rumores"
+        },
+        {
+          "text": "Segredo",
+          "hint": "Mistério"
+        },
+        {
+          "text": "Mistério",
+          "hint": "Mistério"
+        },
+        {
+          "text": "Vermelho",
+          "hint": "Humilhação"
+        },
+        {
+          "text": "Blink",
+          "hint": "Olho"
+        },
+        {
+          "text": "Adorável",
+          "hint": "Complemento"
+        },
+        {
+          "text": "Aproximação",
+          "hint": "Toque"
+        },
+        {
+          "text": "Magia",
+          "hint": "O encanto"
+        },
+        {
+          "text": "Fascinação",
+          "hint": "Curiosidade"
+        },
+        {
+          "text": "O encanto",
+          "hint": "Carisma"
+        },
+        {
+          "text": "Autoconfiança",
+          "hint": "Coragem"
+        },
+        {
+          "text": "Tímido",
+          "hint": "Vermelho"
+        },
+        {
+          "text": "Seja ousado",
+          "hint": "Risco"
+        },
+        {
+          "text": "Risco",
+          "hint": "Jogo"
+        },
+        {
+          "text": "Taxa",
+          "hint": "Planta"
+        },
+        {
+          "text": "Tentação",
+          "hint": "Pecado"
+        },
+        {
+          "text": "Emoções",
+          "hint": "Tensão"
+        },
+        {
+          "text": "Rival",
+          "hint": "Ciúme"
+        },
+        {
+          "text": "Mistério",
+          "hint": "Mistério"
+        },
+        {
+          "text": "Buscar",
+          "hint": "Adrenalina"
+        }
+      ]
+    },
+    {
+      "id": "sex",
+      "name": "Sexo",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Chick.",
+          "hint": "Joelhos"
+        },
+        {
+          "text": "Garganta",
+          "hint": "Lágrimas"
+        },
+        {
+          "text": "Anal",
+          "hint": "Bumbum"
+        },
+        {
+          "text": "Duplo",
+          "hint": "Três"
+        },
+        {
+          "text": "Creampie",
+          "hint": "Dentro"
+        },
+        {
+          "text": "Facial",
+          "hint": "Cara"
+        },
+        {
+          "text": "Esguicho",
+          "hint": "Fonte"
+        },
+        {
+          "text": "Encadernação",
+          "hint": "Linhas"
+        },
+        {
+          "text": "BDSM",
+          "hint": "Algemas"
+        },
+        {
+          "text": "Flaps",
+          "hint": "Botas"
+        },
+        {
+          "text": "Pegging",
+          "hint": "Cinta"
+        },
+        {
+          "text": "Representação",
+          "hint": "Fantasia"
+        },
+        {
+          "text": "Papá.",
+          "hint": "Papá."
+        },
+        {
+          "text": "Animais",
+          "hint": "Contorno"
+        },
+        {
+          "text": "Corno",
+          "hint": "Corno"
+        },
+        {
+          "text": "Vida quente",
+          "hint": "Esposa"
+        },
+        {
+          "text": "Triângulo",
+          "hint": "Três"
+        },
+        {
+          "text": "Gangbang",
+          "hint": "Fila"
+        },
+        {
+          "text": "Público",
+          "hint": "Risco"
+        },
+        {
+          "text": "Rápido",
+          "hint": "Banheiro"
+        },
+        {
+          "text": "Automático",
+          "hint": "Estacionamento"
+        },
+        {
+          "text": "Escritório",
+          "hint": "Secretária"
+        },
+        {
+          "text": "Chuveiro",
+          "hint": "Sabão"
+        },
+        {
+          "text": "Espelho",
+          "hint": "Reflexão"
+        },
+        {
+          "text": "Cabeçalha",
+          "hint": "Escuridão"
+        },
+        {
+          "text": "Algemas",
+          "hint": "Metal"
+        },
+        {
+          "text": "Chicote",
+          "hint": "Smudge"
+        },
+        {
+          "text": "Fivelas",
+          "hint": "Mamilos"
+        },
+        {
+          "text": "Fígado",
+          "hint": "Vibração"
+        },
+        {
+          "text": "Dildo",
+          "hint": "Silício"
+        },
+        {
+          "text": "Cortiça",
+          "hint": "Bumbum"
+        },
+        {
+          "text": "Contas",
+          "hint": "Lote"
+        },
+        {
+          "text": "Anel",
+          "hint": "Pressão"
+        },
+        {
+          "text": "Cobertura",
+          "hint": "Borda"
+        },
+        {
+          "text": "Controlo",
+          "hint": "Proibição"
+        },
+        {
+          "text": "Forçado",
+          "hint": "Misericórdia"
+        },
+        {
+          "text": "Destruído",
+          "hint": "Arruinado"
+        },
+        {
+          "text": "Prostata",
+          "hint": "Cogumelos silvestres"
+        },
+        {
+          "text": "Ponto G",
+          "hint": "Medida"
+        },
+        {
+          "text": "Formação",
+          "hint": "Resposta"
+        },
+        {
+          "text": "Molhado",
+          "hint": "Ameixa"
+        },
+        {
+          "text": "Ovos",
+          "hint": "Sucção"
+        },
+        {
+          "text": "Arremesso",
+          "hint": "Bumbum"
+        },
+        {
+          "text": "Facesite",
+          "hint": "Trono"
+        },
+        {
+          "text": "Sessenta e nove",
+          "hint": "Do outro lado da rua"
+        },
+        {
+          "text": "Cão",
+          "hint": "Voltar"
+        },
+        {
+          "text": "Missionário",
+          "hint": "Cara"
+        },
+        {
+          "text": "Rider",
+          "hint": "Topo"
+        },
+        {
+          "text": "Inversa",
+          "hint": "Voltar"
+        },
+        {
+          "text": "Prona",
+          "hint": "Abdómen"
+        }
+      ]
+    },
+    {
+      "id": "polish_influencers",
+      "name": "Influenciadores polacos",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Província de Cuba",
+          "hint": "Talk- show"
+        },
+        {
+          "text": "Karol Wiśniewski",
+          "hint": "Minecraft"
+        },
+        {
+          "text": "Veronica Coruja",
+          "hint": "Vlog"
+        },
+        {
+          "text": "Michael Baron",
+          "hint": "Fama MMA"
+        },
+        {
+          "text": "Marta Bloch",
+          "hint": "Esquadrão"
+        },
+        {
+          "text": "Agata Fąk",
+          "hint": "Luta de aberrações"
+        },
+        {
+          "text": "Julia Zugaj",
+          "hint": "Dançarino"
+        },
+        {
+          "text": "Maja Kuczyńska",
+          "hint": "Túnel aerodinâmico"
+        },
+        {
+          "text": "Lexy Chaplin",
+          "hint": "Caixa"
+        },
+        {
+          "text": "Natsu",
+          "hint": "Equipa X"
+        },
+        {
+          "text": "Błoński Casper",
+          "hint": "Lutar"
+        },
+        {
+          "text": "Monika Caldeirão",
+          "hint": "TickTok"
+        },
+        {
+          "text": "Kamil Labudda",
+          "hint": "Motorização"
+        },
+        {
+          "text": "Michał Sikorski",
+          "hint": "Bud"
+        },
+        {
+          "text": "David Kwiatkowski",
+          "hint": "Instagram"
+        },
+        {
+          "text": "Andziax",
+          "hint": "Vlog"
+        },
+        {
+          "text": "Gimper",
+          "hint": "Jogos"
+        },
+        {
+          "text": "Krzysztof Gontier",
+          "hint": "Japão"
+        },
+        {
+          "text": "Maffeshion",
+          "hint": "Moda"
+        },
+        {
+          "text": "Deynn",
+          "hint": "Fitness"
+        },
+        {
+          "text": "Karol Goose",
+          "hint": "Assinaturas"
+        },
+        {
+          "text": "Hanna Puchalska",
+          "hint": "Genzie"
+        },
+        {
+          "text": "Jessica Mercedes Kirschner",
+          "hint": "Colónia"
+        },
+        {
+          "text": "Iwona Blecharczyk",
+          "hint": "Camião"
+        },
+        {
+          "text": "James Chuptys",
+          "hint": "Podcast"
+        },
+        {
+          "text": "Marcin Banot",
+          "hint": "Escalada"
+        },
+        {
+          "text": "Thomas Marquis",
+          "hint": "Canal+"
+        },
+        {
+          "text": "Remigius Wierzgon",
+          "hint": "Desenhos"
+        }
+      ]
+    },
+    {
+      "id": "polish_actors",
+      "name": "Actores polacos",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Peter Adamczyk",
+          "hint": "Papa"
+        },
+        {
+          "text": "Robert Więckiewicz",
+          "hint": "Baleia"
+        },
+        {
+          "text": "Tomasz Kot",
+          "hint": "Guerra Fria"
+        },
+        {
+          "text": "Boris Szyc",
+          "hint": "Vinci"
+        },
+        {
+          "text": "Maciej Stuhr",
+          "hint": "Testosterona"
+        },
+        {
+          "text": "Garra de César",
+          "hint": "Kiler"
+        },
+        {
+          "text": "Marek Kondrat",
+          "hint": "Dia louco."
+        },
+        {
+          "text": "Janusz Gajos",
+          "hint": "Quatro Armaduras"
+        },
+        {
+          "text": "Andrzej Seweryn",
+          "hint": "Rei"
+        },
+        {
+          "text": "Marcin Dorociński",
+          "hint": "Jack Forte"
+        },
+        {
+          "text": "Jakub Gierszał",
+          "hint": "Sala de suicídio"
+        },
+        {
+          "text": "David Gardener",
+          "hint": "Queres viver"
+        },
+        {
+          "text": "Agata Kulesza",
+          "hint": "Ida"
+        },
+        {
+          "text": "Kinga Preis",
+          "hint": "Comissário"
+        },
+        {
+          "text": "Maja Ostashewska",
+          "hint": "Teatro"
+        },
+        {
+          "text": "Magdalena Cielecka",
+          "hint": "Belfer"
+        },
+        {
+          "text": "Joanna Kulig",
+          "hint": "Guerra Fria"
+        },
+        {
+          "text": "Anna Dymna",
+          "hint": "Teatro"
+        },
+        {
+          "text": "Danuta Stenka",
+          "hint": "Nunca na minha vida"
+        },
+        {
+          "text": "Beata Tyszkiewicz",
+          "hint": "Senhora."
+        },
+        {
+          "text": "Bogusław Linda",
+          "hint": "Cães"
+        },
+        {
+          "text": "Zbigniew Zamachowski",
+          "hint": "Decálogo"
+        },
+        {
+          "text": "Jerzy Stuhr",
+          "hint": "Sexmissão"
+        },
+        {
+          "text": "Daniel Olbrychski",
+          "hint": "Inundação"
+        },
+        {
+          "text": "Sophia Janda",
+          "hint": "Homem de mármore"
+        },
+        {
+          "text": "Schuchardt",
+          "hint": "Batismo"
+        },
+        {
+          "text": "Antoni Królikowski",
+          "hint": "Bodo"
+        },
+        {
+          "text": "Veronica Rosati",
+          "hint": "Pitbull"
+        }
+      ]
+    },
+    {
+      "id": "international_stars",
+      "name": "Estrelas estrangeiras",
+      "iconKey": "sparkles",
+      "prompts": [
+        {
+          "text": "Taylor Swift",
+          "hint": "Guitarra"
+        },
+        {
+          "text": "Beyoncé",
+          "hint": "Criança do Destino"
+        },
+        {
+          "text": "Rihanna",
+          "hint": "Barbados"
+        },
+        {
+          "text": "Lady Gaga",
+          "hint": "Cara de Poker"
+        },
+        {
+          "text": "Adele",
+          "hint": "Londres"
+        },
+        {
+          "text": "Justin Bieber",
+          "hint": "Canadá"
+        },
+        {
+          "text": "Leonardo DiCaprio",
+          "hint": "Titanic"
+        },
+        {
+          "text": "Brad Pitt",
+          "hint": "Hollywood"
+        },
+        {
+          "text": "Angelina Jolie",
+          "hint": "Maléfica"
+        },
+        {
+          "text": "Tom Cruise",
+          "hint": "Missão Impossível"
+        },
+        {
+          "text": "Dwayne Johnson",
+          "hint": "Pedra"
+        },
+        {
+          "text": "Will Smith",
+          "hint": "Bel-Air"
+        },
+        {
+          "text": "Jennifer Aniston",
+          "hint": "Amigos"
+        },
+        {
+          "text": "Keanu Reeves",
+          "hint": "Matriz"
+        },
+        {
+          "text": "Emma Watson",
+          "hint": "Hermione"
+        },
+        {
+          "text": "Cristiano Ronaldo",
+          "hint": "Portugal"
+        },
+        {
+          "text": "Lionel Messi",
+          "hint": "Argentina"
+        },
+        {
+          "text": "Michael Jordan",
+          "hint": "Basquetebol"
+        },
+        {
+          "text": "Oprah Winfrey",
+          "hint": "Talk- show"
+        },
+        {
+          "text": "Kim Kardashian",
+          "hint": "Reality show"
+        },
+        {
+          "text": "Johnny Depp",
+          "hint": "Jack Sparrow"
+        },
+        {
+          "text": "Scarlett Johansson",
+          "hint": "Viúva Negra"
+        },
+        {
+          "text": "Robert Downey Jr.",
+          "hint": "Homem de Ferro"
+        },
+        {
+          "text": "Meryl Streep",
+          "hint": "O Diabo veste-se no Prada's."
+        },
+        {
+          "text": "Zendaya",
+          "hint": "Euforia"
+        },
+        {
+          "text": "Chris Hemsworth",
+          "hint": "Thor"
+        },
+        {
+          "text": "Billie Eilish",
+          "hint": "Mauzão."
+        },
+        {
+          "text": "Ed Sheeran",
+          "hint": "Forma de Você"
+        },
+        {
+          "text": "Serena Williams",
+          "hint": "Tênis"
+        },
+        {
+          "text": "Novak Djokovic",
+          "hint": "Sérvia"
+        }
+      ]
+    },
+    {
+      "id": "christmas",
+      "name": "Natal",
+      "iconKey": "tree",
+      "prompts": [
+        {
+          "text": "Árvore de Natal",
+          "hint": "Sala de estar"
+        },
+        {
+          "text": "Bomber",
+          "hint": "Crudeness"
+        },
+        {
+          "text": "Cadeia",
+          "hint": "Longitude"
+        },
+        {
+          "text": "Lâmpadas",
+          "hint": "Atual"
+        },
+        {
+          "text": "A Estrela de Belém",
+          "hint": "Papagaio"
+        },
+        {
+          "text": "Frutos de casca rija",
+          "hint": "Altura"
+        },
+        {
+          "text": "Presente",
+          "hint": "Esperando"
+        },
+        {
+          "text": "Fita",
+          "hint": "Decoração"
+        },
+        {
+          "text": "Papel de embalagem",
+          "hint": "Tesoura"
+        },
+        {
+          "text": "Papai Noel.",
+          "hint": "Noite"
+        },
+        {
+          "text": "Rena",
+          "hint": "Frio"
+        },
+        {
+          "text": "Sanie",
+          "hint": "Viagens"
+        },
+        {
+          "text": "Elf",
+          "hint": "Oficina"
+        },
+        {
+          "text": "Chimin",
+          "hint": "Fuligem"
+        },
+        {
+          "text": "Meia para presentes",
+          "hint": "Vazio"
+        },
+        {
+          "text": "Pão de gengibre",
+          "hint": "Cozimento"
+        },
+        {
+          "text": "Chalé de gengibre",
+          "hint": "Construção"
+        },
+        {
+          "text": "Cana-de-açúcar",
+          "hint": "Doce"
+        },
+        {
+          "text": "Mandarina",
+          "hint": "Cheiro"
+        },
+        {
+          "text": "Chocolate quente",
+          "hint": "Aquecimento"
+        },
+        {
+          "text": "Borsch",
+          "hint": "Vermelho"
+        },
+        {
+          "text": "Orelha",
+          "hint": "Pequeno"
+        },
+        {
+          "text": "bolinhos",
+          "hint": "Melhor."
+        },
+        {
+          "text": "Carpa",
+          "hint": "Água"
+        },
+        {
+          "text": "Sarda",
+          "hint": "Sobremesa"
+        },
+        {
+          "text": "Compota seca",
+          "hint": "Copo"
+        },
+        {
+          "text": "Taxas",
+          "hint": "Dividir"
+        },
+        {
+          "text": "Véspera de Natal",
+          "hint": "Reunião"
+        },
+        {
+          "text": "Primeira Estrela",
+          "hint": "Pesquisando"
+        },
+        {
+          "text": "Cobertura vazia",
+          "hint": "Quadro"
+        },
+        {
+          "text": "Carol",
+          "hint": "Tradição"
+        },
+        {
+          "text": "Pastoral",
+          "hint": "Joy"
+        },
+        {
+          "text": "Jasele",
+          "hint": "Escola"
+        },
+        {
+          "text": "Racoon",
+          "hint": "Figuras"
+        },
+        {
+          "text": "Anjo",
+          "hint": "Cuidado"
+        },
+        {
+          "text": "Coroa de Advento",
+          "hint": "Esperando"
+        },
+        {
+          "text": "Calendário de Advento",
+          "hint": "Dezembro"
+        },
+        {
+          "text": "Snowman",
+          "hint": "Pátio"
+        },
+        {
+          "text": "Neve",
+          "hint": "Diversão"
+        },
+        {
+          "text": "Flocos de neve",
+          "hint": "Gentileza"
+        },
+        {
+          "text": "Sopel",
+          "hint": "Alcaparras"
+        },
+        {
+          "text": "Luvas",
+          "hint": "Casal"
+        },
+        {
+          "text": "Cachecol",
+          "hint": "Casaco"
+        },
+        {
+          "text": "Sininho",
+          "hint": "Metal"
+        },
+        {
+          "text": "Azevinho",
+          "hint": "Personalizado"
+        },
+        {
+          "text": "Noite do filme",
+          "hint": "Relaxa."
+        },
+        {
+          "text": "Suéter de Natal",
+          "hint": "Tecidos de malha"
+        },
+        {
+          "text": "Cartão de Natal",
+          "hint": "Papel"
+        },
+        {
+          "text": "Desejos",
+          "hint": "Bondade"
+        },
+        {
+          "text": "Kulig",
+          "hint": "Tour"
+        }
+      ]
+    }
+  ]
+}
