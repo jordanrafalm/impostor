@@ -22,4 +22,5 @@ internal object PreferenceKeys {
     const val REVIEW_STORE_OPENED = "reviewStoreOpened"
     const val REVIEW_PROMOTION_DISMISSED = "reviewPromotionDismissed"
     const val LAST_REPORTED_APP_LANGUAGE = "lastReportedAppLanguage"
+    const val MONTHLY_PRICE_NOTICE_ACKNOWLEDGED = "monthlyPriceNoticeAcknowledged"
 }

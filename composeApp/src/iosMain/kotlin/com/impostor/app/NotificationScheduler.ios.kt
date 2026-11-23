@@ -12,6 +12,11 @@ import platform.Foundation.NSNotificationCenter
 import platform.UserNotifications.UNAuthorizationOptionAlert
 import platform.UserNotifications.UNAuthorizationOptionBadge
 import platform.UserNotifications.UNAuthorizationOptionSound
+import platform.UserNotifications.UNAuthorizationStatusAuthorized
+import platform.UserNotifications.UNAuthorizationStatusDenied
+import platform.UserNotifications.UNAuthorizationStatusEphemeral
+import platform.UserNotifications.UNAuthorizationStatusNotDetermined
+import platform.UserNotifications.UNAuthorizationStatusProvisional
 import platform.UserNotifications.UNCalendarNotificationTrigger
 import platform.UserNotifications.UNMutableNotificationContent
 import platform.UserNotifications.UNNotificationRequest
@@ -31,12 +36,35 @@ private class IosNotificationScheduler : NotificationScheduler {
         }
     }
 
-    override fun requestPermissionAndSchedulePartyReminder() {
+    override fun requestPermissionAndSchedulePartyReminder(
+        onPermissionPromptStatusChanged: (NotificationPermissionPromptStatus) -> Unit,
+    ) {
         val center = UNUserNotificationCenter.currentNotificationCenter()
-        center.requestAuthorizationWithOptions(
-            UNAuthorizationOptionAlert or UNAuthorizationOptionBadge or UNAuthorizationOptionSound,
-        ) { granted, _ ->
-            if (granted) scheduleMonthlyPartyReminder(center)
+        onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.PENDING_CHECK)
+        center.getNotificationSettingsWithCompletionHandler { settings ->
+            when (settings?.authorizationStatus) {
+                UNAuthorizationStatusNotDetermined -> {
+                    onPermissionPromptStatusChanged(
+                        NotificationPermissionPromptStatus.PROMPT_REQUIRED_OR_IN_PROGRESS,
+                    )
+                    center.requestAuthorizationWithOptions(
+                        UNAuthorizationOptionAlert or UNAuthorizationOptionBadge or UNAuthorizationOptionSound,
+                    ) { granted, _ ->
+                        if (granted) scheduleMonthlyPartyReminder(center)
+                        onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
+                    }
+                }
+                UNAuthorizationStatusAuthorized,
+                UNAuthorizationStatusProvisional,
+                UNAuthorizationStatusEphemeral -> {
+                    scheduleMonthlyPartyReminder(center)
+                    onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
+                }
+                UNAuthorizationStatusDenied -> {
+                    onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
+                }
+                else -> onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
+            }
         }
     }
 }

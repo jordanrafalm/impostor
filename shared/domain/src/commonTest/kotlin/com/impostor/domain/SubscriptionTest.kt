@@ -55,6 +55,15 @@ internal class SubscriptionTest {
     }
 
     @Test
+    fun `should map only the configured monthly and yearly product ids`() {
+        assertEquals(SubscriptionPlan.MONTHLY, SubscriptionPlan.fromProductId("com.impostor.app.premium.monthly"))
+        assertEquals(SubscriptionPlan.YEARLY, SubscriptionPlan.fromProductId("com.impostor.app.premium.yearly"))
+        assertEquals(null, SubscriptionPlan.fromProductId("com.impostor.app.premium.unknown"))
+        assertEquals("com.impostor.app.premium.monthly", SubscriptionPlan.MONTHLY.productId)
+        assertEquals("com.impostor.app.premium.yearly", SubscriptionPlan.YEARLY.productId)
+    }
+
+    @Test
     fun `should not unlock expired revoked pending or unavailable entitlement`() {
         listOf(
             SubscriptionState.EXPIRED,

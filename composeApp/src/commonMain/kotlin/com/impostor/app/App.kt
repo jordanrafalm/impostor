@@ -39,9 +39,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
@@ -97,8 +99,11 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.Role as SemanticsRole
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -110,6 +115,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -123,10 +129,12 @@ import com.impostor.domain.GameSetup
 import com.impostor.domain.Player
 import com.impostor.domain.RandomSource
 import com.impostor.domain.Role
+import com.impostor.domain.MonthlyPriceNoticeEligibility
 import com.impostor.domain.SetupValidation
 import com.impostor.domain.StartGameUseCase
 import com.impostor.domain.SubscriptionError
 import com.impostor.domain.SubscriptionException
+import com.impostor.domain.SubscriptionPlan
 import com.impostor.domain.SubscriptionRepository
 import com.impostor.domain.SubscriptionState
 import com.impostor.domain.PurchasePremiumUseCase
@@ -163,6 +171,8 @@ private val Ink = Color(0xFF050914)
 private val Navy = Color(0xFF162846)
 private val Cyan = Color(0xFF00F0FF)
 private val Frost = Color(0xFFBDEBFF)
+private val PremiumMagenta = Color(0xFFFF35D3)
+private val PremiumGold = Color(0xFFFFD166)
 private fun glassOpacity(color: Color): Color = color.copy(alpha = color.alpha + (1f - color.alpha) * .3f)
 private val PanelBorder = glassOpacity(Color(0xFF7FCBFF).copy(alpha = .44f))
 private val PanelTop = glassOpacity(Color(0xFF5E9FE0).copy(alpha = .28f))
@@ -232,8 +242,16 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
     }
     var sexIntroIsUpgradeNotice by remember { mutableStateOf(showSexCategoryIntro) }
     val reviewPreferences = remember { ReviewPromptPreferences(platformPreferenceStore()) }
+    val monthlyPriceNoticePreferences = remember { MonthlyPriceNoticePreferences(platformPreferenceStore()) }
     var showReviewPrompt by rememberSaveable { mutableStateOf(false) }
     var reviewCheckedProcessId by rememberSaveable { mutableStateOf("") }
+    var reviewPromptShownThisLaunch by remember { mutableStateOf(false) }
+    var priceNoticeShownThisLaunch by remember { mutableStateOf(false) }
+    var priceNoticeDismissedThisLaunch by remember { mutableStateOf(false) }
+    var priceNoticeDeferredThisLaunch by remember { mutableStateOf(false) }
+    var priceNoticeAcknowledged by remember {
+        mutableStateOf(monthlyPriceNoticePreferences.hasAcknowledged())
+    }
     val reviewLaunchChecked = reviewCheckedProcessId == reviewProcessId
     var skipBlackFridayForReview by rememberSaveable { mutableStateOf(false) }
     var reviewOpenFailed by remember { mutableStateOf(false) }
@@ -266,6 +284,16 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
     val appLanguageStore = remember { platformPreferenceStore() }
     val appLanguage = stringResource(Res.string.app_language_code)
     val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var appInForeground by remember(lifecycle) {
+        mutableStateOf(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+    }
+    var monthlyPriceNoticeEligibility by remember {
+        mutableStateOf<MonthlyPriceNoticeEligibility>(MonthlyPriceNoticeEligibility.Unknown)
+    }
+    var notificationPermissionPromptStatus by remember {
+        mutableStateOf(NotificationPermissionPromptStatus.PENDING_CHECK)
+    }
+    var notificationPermissionPromptRequiredThisLaunch by remember { mutableStateOf(false) }
     LaunchedEffect(appLanguage) {
         reportAppLanguage(appLanguage, appLanguageStore, analytics)
     }
@@ -275,8 +303,12 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
     DisposableEffect(lifecycle, subscriptionRepository, appLanguage) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
+                appInForeground = true
                 reportAppLanguage(appLanguage, appLanguageStore, analytics)
                 scope.launch { subscriptionRepository.reconcileEntitlement() }
+            } else if (event == Lifecycle.Event.ON_PAUSE) {
+                appInForeground = false
+                monthlyPriceNoticeEligibility = MonthlyPriceNoticeEligibility.Unknown
             }
         }
         lifecycle.addObserver(observer)
@@ -293,6 +325,51 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
     var promotionActionInProgress by remember { mutableStateOf(false) }
     var reminderRequested by rememberSaveable { mutableStateOf(false) }
     val showBlackFriday = !trialState.blackFridayClaimed && !promotionDismissedThisLaunch
+    val reviewPromptIsShown = rememberUpdatedState(showReviewPrompt)
+    val reviewWasShownThisLaunch = rememberUpdatedState(reviewPromptShownThisLaunch)
+    LaunchedEffect(
+        subscriptionRepository,
+        appInForeground,
+        priceNoticeAcknowledged,
+        priceNoticeDismissedThisLaunch,
+        notificationPermissionPromptRequiredThisLaunch,
+        entitlement.state,
+        entitlement.source,
+        entitlement.expiresAtMillis,
+    ) {
+        monthlyPriceNoticeEligibility = MonthlyPriceNoticeEligibility.Unknown
+        if (!appInForeground || priceNoticeAcknowledged || priceNoticeDismissedThisLaunch) {
+            return@LaunchedEffect
+        }
+        val eligibility = subscriptionRepository.monthlyPriceNoticeEligibility()
+        monthlyPriceNoticeEligibility = eligibility
+        if (eligibility is MonthlyPriceNoticeEligibility.Eligible &&
+            (reviewWasShownThisLaunch.value || reviewPromptIsShown.value ||
+                notificationPermissionPromptRequiredThisLaunch)
+        ) {
+            priceNoticeDeferredThisLaunch = true
+        }
+    }
+    val priceNoticeMayShowThisLaunch =
+        monthlyPriceNoticeEligibility is MonthlyPriceNoticeEligibility.Eligible &&
+            !priceNoticeAcknowledged &&
+            !priceNoticeDismissedThisLaunch &&
+            !priceNoticeDeferredThisLaunch
+    val showMonthlyPriceNotice = shouldShowMonthlyPriceNotice(
+        eligibility = monthlyPriceNoticeEligibility,
+        acknowledged = priceNoticeAcknowledged,
+        dismissedThisLaunch = priceNoticeDismissedThisLaunch,
+        deferredThisLaunch = priceNoticeDeferredThisLaunch,
+        isHome = route == Route.Home,
+        isForeground = appInForeground,
+        startupPromptChecked = reviewLaunchChecked,
+        hasBlockingPrompt = showBlackFriday || showSexCategoryIntro || showReviewPrompt ||
+            reviewPromptShownThisLaunch,
+        notificationPermissionPromptStatus = notificationPermissionPromptStatus,
+    )
+    LaunchedEffect(showMonthlyPriceNotice) {
+        if (showMonthlyPriceNotice) priceNoticeShownThisLaunch = true
+    }
     val categories = remember { repository.categories() }
     val allCategoryIds = remember(categories) { categories.map { it.id }.toSet() }
     val prompts = remember(repository, catalogRevision) {
@@ -305,14 +382,13 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
         allCategoryIds.intersect(com.impostor.domain.AlwaysFreeCategoryIds)
     }
 
-    LaunchedEffect(allCategoryIds) {
-        val validSelection = selectedCategories.intersect(allCategoryIds)
-        if (validSelection != selectedCategories) {
-            selectedCategories = if (validSelection.isNotEmpty() || selectedCategories.isEmpty()) {
-                validSelection
-            } else {
-                setOf("animals").intersect(allCategoryIds)
-            }
+    LaunchedEffect(categories) {
+        val normalizedSelection = normalizeSelectedCategoryIds(
+            selectedCategoryIds = selectedCategories,
+            categoryIdsInCatalogOrder = categories.map { it.id },
+        )
+        if (normalizedSelection != selectedCategories) {
+            selectedCategories = normalizedSelection
         }
     }
 
@@ -327,9 +403,11 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
         if (route != Route.Splash && !reviewLaunchChecked) {
             showReviewPrompt = route == Route.Home && reviewPreferences.shouldShowAtLaunch(
                 nowMillis = currentReviewTimeMillis(),
-                hasOtherStartupDialog = showSexCategoryIntro,
+                hasOtherStartupDialog = showSexCategoryIntro ||
+                    priceNoticeMayShowThisLaunch || priceNoticeShownThisLaunch,
                 blackFridayVisible = showBlackFriday,
             )
+            reviewPromptShownThisLaunch = showReviewPrompt
             skipBlackFridayForReview = showReviewPrompt && showBlackFriday
             if (showReviewPrompt) analytics.log(AnalyticsEvent.REVIEW_PROMPT_SHOWN)
             reviewCheckedProcessId = reviewProcessId
@@ -352,12 +430,27 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
             if (bytes != null) launchSoundPlayer.play(bytes)
         }
     }
-    LaunchedEffect(route, showBlackFriday, showSexCategoryIntro, showReviewPrompt, reviewLaunchChecked) {
+    LaunchedEffect(
+        route,
+        showBlackFriday,
+        showSexCategoryIntro,
+        showReviewPrompt,
+        reviewLaunchChecked,
+    ) {
         if (route == Route.Home && !showBlackFriday && !showSexCategoryIntro &&
             reviewLaunchChecked && !showReviewPrompt && !reminderRequested
         ) {
             reminderRequested = true
-            platformNotificationScheduler().requestPermissionAndSchedulePartyReminder()
+            notificationPermissionPromptStatus = NotificationPermissionPromptStatus.PENDING_CHECK
+            platformNotificationScheduler().requestPermissionAndSchedulePartyReminder { status ->
+                notificationPermissionPromptStatus = status
+                if (shouldDeferMonthlyPriceNoticeForNotificationPrompt(status)) {
+                    notificationPermissionPromptRequiredThisLaunch = true
+                    if (monthlyPriceNoticeEligibility is MonthlyPriceNoticeEligibility.Eligible) {
+                        priceNoticeDeferredThisLaunch = true
+                    }
+                }
+            }
         }
     }
     LaunchedEffect(route, holidaySequencePhase) {
@@ -401,13 +494,17 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
         SnowfallBackdrop()
         Surface(
             color = Color.Transparent,
-            modifier = Modifier.fillMaxSize()
-                .windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout)),
+            modifier = Modifier.fillMaxSize().then(
+                if (route == Route.Premium) Modifier
+                else Modifier.windowInsetsPadding(WindowInsets.systemBars.union(WindowInsets.displayCutout)),
+            ),
         ) {
             AnimatedContent(route) { current ->
                 when (current) {
                     Route.Splash -> SplashScreen()
                     Route.Home -> HomeScreen(players, impostorCount, hintsEnabled, error,
+                        selectedCategorySummary = categories.filter { it.id in selectedCategories }
+                            .map { it.displayName }.takeIf { it.isNotEmpty() }?.joinToString(", "),
                         onPlayers = { route = Route.Players }, onCategories = { route = Route.Categories },
                         onCodes = { route = Route.Premium }, onImpostorDecrease = {
                             error = null
@@ -445,9 +542,14 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                         },
                         onStart = start@{
                             if (startingGame || route != Route.Home) return@start
-                            val usesOnlyAlwaysFreeCategories = selectedCategories.isNotEmpty() &&
+                            if (selectedCategories.isEmpty()) {
+                                error = null
+                                route = Route.Categories
+                                return@start
+                            }
+                            val usesOnlyAlwaysFreeCategories =
                                 selectedCategories.all { it in com.impostor.domain.AlwaysFreeCategoryIds }
-                            if (selectedCategories.isNotEmpty() && !usesOnlyAlwaysFreeCategories &&
+                            if (!usesOnlyAlwaysFreeCategories &&
                                 !allCategoriesAvailable(
                                     debugUnlockCategories,
                                     trialRepository.state.value,
@@ -554,6 +656,19 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                 sexIntroIsUpgradeNotice = false
                 showSexCategoryIntro = false
             }
+        } else if (showMonthlyPriceNotice) {
+            when (val eligibility = monthlyPriceNoticeEligibility) {
+                is MonthlyPriceNoticeEligibility.Eligible -> MonthlyPriceNoticeDialog(
+                    renewalPrice = eligibility.renewalPrice,
+                    currentPrice = eligibility.currentPrice,
+                    onDismiss = { priceNoticeDismissedThisLaunch = true },
+                    onAcknowledge = {
+                        monthlyPriceNoticePreferences.acknowledge()
+                        priceNoticeAcknowledged = true
+                    },
+                )
+                else -> Unit
+            }
         } else if (route == Route.Home && reviewLaunchChecked && showReviewPrompt &&
             !reviewPreferences.hasOpenedStore()
         ) {
@@ -626,6 +741,176 @@ private fun ReviewPromptDialog(openFailed: Boolean, onRate: () -> Unit, onNotNow
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MonthlyPriceNoticeDialog(
+    renewalPrice: String,
+    currentPrice: String,
+    onDismiss: () -> Unit,
+    onAcknowledge: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(
+            usePlatformDefaultWidth = false,
+            dismissOnBackPress = true,
+            dismissOnClickOutside = true,
+        ),
+    ) {
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 12.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            val isCompact = maxWidth < 600.dp
+            val shape = RoundedCornerShape(28.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth()
+                    .widthIn(max = 760.dp)
+                    .clip(shape)
+                    .background(Color(0xFF0B1431))
+                    .border(1.dp, Color(0xFF1A294E), shape)
+                    .verticalScroll(rememberScrollState())
+                    .padding(if (isCompact) 20.dp else 28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                Text("♛", color = PremiumGold, fontSize = 42.sp, lineHeight = 46.sp)
+                Text(
+                    text = stringResource(Res.string.monthly_price_notice_title),
+                    color = Color.White,
+                    fontSize = if (isCompact) 22.sp else 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                )
+                Text(
+                    text = stringResource(Res.string.monthly_price_notice_description),
+                    color = Frost,
+                    fontSize = if (isCompact) 15.sp else 18.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 24.sp,
+                )
+                if (isCompact) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        MonthlyPriceNoticePriceCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            label = stringResource(Res.string.monthly_price_notice_new_price),
+                            price = currentPrice,
+                            highlight = false,
+                        )
+                        MonthlyPriceNoticePriceCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            label = stringResource(Res.string.monthly_price_notice_your_price),
+                            price = renewalPrice,
+                            highlight = true,
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        MonthlyPriceNoticePriceCard(
+                            modifier = Modifier.weight(1f),
+                            label = stringResource(Res.string.monthly_price_notice_new_price),
+                            price = currentPrice,
+                            highlight = false,
+                        )
+                        MonthlyPriceNoticePriceCard(
+                            modifier = Modifier.weight(1f),
+                            label = stringResource(Res.string.monthly_price_notice_your_price),
+                            price = renewalPrice,
+                            highlight = true,
+                        )
+                    }
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("✓", color = Color(0xFF62E7B5), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = stringResource(Res.string.monthly_price_notice_preserved),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+                Text(
+                    text = stringResource(Res.string.monthly_price_notice_active_subscription, renewalPrice),
+                    color = Frost,
+                    fontSize = if (isCompact) 14.sp else 17.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 23.sp,
+                )
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .heightIn(min = 56.dp)
+                        .clip(RoundedCornerShape(30.dp))
+                        .background(PremiumMagenta)
+                        .clickable(role = SemanticsRole.Button, onClick = onAcknowledge)
+                        .padding(horizontal = 20.dp, vertical = 14.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.monthly_price_notice_button),
+                        color = Color.White,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun MonthlyPriceNoticePriceCard(
+    modifier: Modifier,
+    label: String,
+    price: String,
+    highlight: Boolean,
+) {
+    val shape = RoundedCornerShape(20.dp)
+    Column(
+        modifier = modifier.heightIn(min = 132.dp)
+            .clip(shape)
+            .background(if (highlight) Color(0xFF1E4149) else Color(0xFF1B274A))
+            .border(
+                width = if (highlight) 1.dp else 0.dp,
+                color = if (highlight) Color(0xFF37D7A6) else Color.Transparent,
+                shape = shape,
+            )
+            .padding(horizontal = 12.dp, vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(
+            text = label,
+            color = if (highlight) Color(0xFF9DE3CD) else Frost,
+            fontSize = 15.sp,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = price,
+            color = if (highlight) Color(0xFF6DE8B9) else Color.White,
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+        Text(
+            text = stringResource(Res.string.monthly_price_notice_period),
+            color = if (highlight) Color(0xFF9DE3CD) else Frost,
+            fontSize = 14.sp,
+            modifier = Modifier.padding(top = 2.dp),
+        )
     }
 }
 
@@ -718,6 +1003,7 @@ private fun Shell(
     impostorCount: Int,
     hintsEnabled: Boolean,
     error: SetupValidation.Reason?,
+    selectedCategorySummary: String?,
     holidaySequencePhase: HomeHolidaySequencePhase,
     onPlayers: () -> Unit,
     onCategories: () -> Unit,
@@ -801,7 +1087,10 @@ private fun Shell(
                     }
                     HomeReveal(index = 1, height = 88.dp) {
                         FrostSettingButton(stringResource(Res.string.home_categories), "→", onCategories,
-                            autoPulse = true, pulseDelayMillis = 600L)
+                            autoPulse = true, pulseDelayMillis = 600L,
+                            subtitle = selectedCategorySummary?.let {
+                                stringResource(Res.string.home_selected_category, it)
+                            })
                     }
                     HomeReveal(index = 2, height = 72.dp) {
                         FrostToggleSetting(stringResource(Res.string.home_hint), hintsEnabled, onHintsChanged)
@@ -921,6 +1210,9 @@ private fun Shell(
                             onCategories,
                             autoPulse = true,
                             pulseDelayMillis = 600L,
+                            subtitle = selectedCategorySummary?.let {
+                                stringResource(Res.string.home_selected_category, it)
+                            },
                         )
                     }
                     HomeReveal(index = 2, height = 72.dp) {
@@ -1545,6 +1837,7 @@ internal fun FrostSettingButton(
     onClick: () -> Unit,
     autoPulse: Boolean = false,
     pulseDelayMillis: Long = 0L,
+    subtitle: String? = null,
 ) {
     FrostButtonSurface(
         onClick = onClick,
@@ -1558,7 +1851,18 @@ internal fun FrostSettingButton(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(label, color = Color(0xFFF2FAFF), fontSize = 21.sp)
+            Column(Modifier.weight(1f).padding(end = 8.dp)) {
+                Text(label, color = Color(0xFFF2FAFF), fontSize = 21.sp)
+                subtitle?.let {
+                    Text(
+                        it,
+                        color = Frost.copy(alpha = .8f),
+                        fontSize = 12.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.size(52.dp).clip(RoundedCornerShape(18.dp))
@@ -1965,118 +2269,348 @@ private fun PremiumSubscriptionScreen(
     analytics: com.impostor.domain.AnalyticsService,
     onClose: () -> Unit,
 ) {
-    val entitlement by repository.entitlement.collectAsState(SubscriptionState.LOCKED.let {
-        com.impostor.domain.Entitlement(state = it, source = com.impostor.domain.EntitlementSource.LOCAL_CACHE)
-    })
-    var product by remember { mutableStateOf<com.impostor.domain.SubscriptionProduct?>(null) }
+    val entitlement by repository.entitlement.collectAsState(
+        com.impostor.domain.Entitlement(
+            state = SubscriptionState.LOCKED,
+            source = com.impostor.domain.EntitlementSource.LOCAL_CACHE,
+        ),
+    )
+    var products by remember { mutableStateOf<Map<SubscriptionPlan, com.impostor.domain.SubscriptionProduct>>(emptyMap()) }
+    var selectedPlan by rememberSaveable { mutableStateOf<SubscriptionPlan?>(null) }
     var message by remember { mutableStateOf<SubscriptionError?>(null) }
     val scope = rememberCoroutineScope()
     val uriHandler = LocalUriHandler.current
     val purchase = remember(repository) { PurchasePremiumUseCase(repository) }
     val restore = remember(repository) { RestorePurchasesUseCase(repository) }
+    val isBusy = entitlement.state == SubscriptionState.PURCHASING ||
+        entitlement.state == SubscriptionState.RESTORING
+    val closeDescription = stringResource(Res.string.close)
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(repository) {
         analytics.log(AnalyticsEvent.PREMIUM_SCREEN_OPENED)
-        repository.loadProduct()
-            .onSuccess {
-                product = it
-                analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
+        repository.loadProducts()
+            .onSuccess { loadedProducts ->
+                products = loadedProducts
+                    .filter { it.productId == it.plan.productId && it.formattedPrice.isNotBlank() }
+                    .associateBy { it.plan }
+                if (selectedPlan?.let { it in products } != true) {
+                    selectedPlan = when {
+                        SubscriptionPlan.YEARLY in products -> SubscriptionPlan.YEARLY
+                        SubscriptionPlan.MONTHLY in products -> SubscriptionPlan.MONTHLY
+                        else -> null
+                    }
+                }
+                if (products.isNotEmpty()) analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
             }
             .onFailure { message = subscriptionError(it) }
-        // Restore is store-account authenticated (AppStore.sync() on iOS) and must stay user-initiated only.
     }
     LaunchedEffect(entitlement.state, entitlement.source) {
         analytics.log(AnalyticsEvent.PREMIUM_ENTITLEMENT_CHANGED, mapOf("state" to entitlement.state.name.lowercase()))
     }
 
-    Shell(
-        title = stringResource(Res.string.premium_title),
-        bottomContent = {
-            FrostButton(
-                text = stringResource(Res.string.close),
-                onClick = onClose,
-                modifier = Modifier.fillMaxWidth(),
-                style = FrostButtonStyle.Subtle,
-            )
-        },
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color(0xC9050914)),
     ) {
-        Text(product?.title ?: stringResource(Res.string.premium_product_fallback), color = Color.White, fontSize = 22.sp)
-        Text(stringResource(Res.string.premium_benefit_description), color = Frost)
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .windowInsetsPadding(WindowInsets.statusBars.union(WindowInsets.displayCutout))
+                    .padding(horizontal = 22.dp)
+                    .padding(bottom = 18.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.premium_title),
+                        color = PremiumMagenta,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 3.sp,
+                    )
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clickable(role = SemanticsRole.Button, onClick = onClose)
+                            .semantics { contentDescription = closeDescription },
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text("×", color = Frost, fontSize = 30.sp)
+                    }
+                }
+
+                Image(
+                    painter = painterResource(Res.drawable.premium_crew),
+                    contentDescription = stringResource(Res.string.premium_illustration),
+                    modifier = Modifier.fillMaxWidth().height(238.dp).padding(top = 8.dp),
+                    contentScale = ContentScale.Fit,
+                )
+                Text(
+                    text = stringResource(Res.string.premium_unlock_headline),
+                    color = Color.White,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 34.sp,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Text(
+                    text = stringResource(Res.string.premium_benefit_description),
+                    color = Frost,
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    lineHeight = 21.sp,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 22.dp),
+                )
+
+                Column(
+                    modifier = Modifier.widthIn(max = 520.dp).fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    PremiumPlanCard(
+                        plan = SubscriptionPlan.MONTHLY,
+                        product = products[SubscriptionPlan.MONTHLY],
+                        selected = selectedPlan == SubscriptionPlan.MONTHLY,
+                        onSelect = { selectedPlan = SubscriptionPlan.MONTHLY },
+                    )
+                    PremiumPlanCard(
+                        plan = SubscriptionPlan.YEARLY,
+                        product = products[SubscriptionPlan.YEARLY],
+                        selected = selectedPlan == SubscriptionPlan.YEARLY,
+                        onSelect = { selectedPlan = SubscriptionPlan.YEARLY },
+                    )
+
+                    Text(
+                        text = subscriptionStateLabel(entitlement.state),
+                        color = if (entitlement.state == SubscriptionState.ACTIVE) PremiumGold else Frost,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                    message?.let {
+                        Text(text = subscriptionErrorLabel(it), color = Color(0xFFFF8A9B), fontSize = 14.sp)
+                    }
+                }
+            }
+
+            val selectedProduct = selectedPlan?.let(products::get)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .windowInsetsPadding(WindowInsets.navigationBars.union(WindowInsets.displayCutout))
+                    .padding(horizontal = 22.dp)
+                    .padding(bottom = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    modifier = Modifier
+                        .widthIn(max = 520.dp)
+                        .fillMaxWidth()
+                        .heightIn(min = 56.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                        .background(Brush.horizontalGradient(listOf(PremiumMagenta, Color(0xFF825BFF), Cyan)))
+                        .border(1.dp, Color.White.copy(alpha = .45f), RoundedCornerShape(18.dp))
+                        .clickable(
+                            enabled = selectedProduct != null && !isBusy,
+                            role = SemanticsRole.Button,
+                        ) {
+                            val plan = selectedPlan ?: return@clickable
+                            analytics.log(AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED)
+                            message = null
+                            scope.launch {
+                                purchase.invoke(plan)
+                                    .onFailure {
+                                        message = subscriptionError(it)
+                                        analytics.log(
+                                            AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT,
+                                            mapOf("result" to purchaseFailureResult(it)),
+                                        )
+                                    }
+                                    .onSuccess {
+                                        analytics.log(
+                                            AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT,
+                                            mapOf("result" to purchaseResult(it.state)),
+                                        )
+                                    }
+                            }
+                        }
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.subscribe),
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        letterSpacing = 1.2.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
+                selectedProduct?.let { product ->
+                    Text(
+                        modifier = Modifier.widthIn(max = 520.dp).fillMaxWidth(),
+                        text = stringResource(
+                            Res.string.subscription_auto_renewal,
+                            localizedPeriodLabel(product.periodLabel),
+                        ),
+                        color = Frost.copy(alpha = .8f),
+                        fontSize = 12.sp,
+                        lineHeight = 17.sp,
+                    )
+                }
+                Row(
+                    modifier = Modifier.widthIn(max = 520.dp).fillMaxWidth().padding(top = 2.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.privacy_policy),
+                        color = Cyan,
+                        fontSize = 12.sp,
+                        style = TextStyle(textDecoration = TextDecoration.Underline),
+                        modifier = Modifier.clickable { uriHandler.openUri(PrivacyPolicyUrl) },
+                    )
+                    Text("  ·  ", color = Frost, fontSize = 12.sp)
+                    Text(
+                        text = stringResource(Res.string.terms_of_use),
+                        color = Cyan,
+                        fontSize = 12.sp,
+                        style = TextStyle(textDecoration = TextDecoration.Underline),
+                        modifier = Modifier.clickable { uriHandler.openUri(TermsOfUseUrl) },
+                    )
+                }
+                Row(
+                    modifier = Modifier.widthIn(max = 520.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        text = stringResource(Res.string.restore_purchases),
+                        color = if (isBusy) Frost.copy(alpha = .55f) else Cyan,
+                        fontSize = 12.sp,
+                        style = TextStyle(textDecoration = TextDecoration.Underline),
+                        modifier = Modifier
+                            .clickable(
+                                enabled = !isBusy,
+                                role = SemanticsRole.Button,
+                            ) {
+                                message = null
+                                scope.launch {
+                                    restore.invoke()
+                                        .onFailure {
+                                            message = subscriptionError(it)
+                                            analytics.log(
+                                                AnalyticsEvent.SUBSCRIPTION_RESTORE_RESULT,
+                                                mapOf("result" to "failed"),
+                                            )
+                                        }
+                                        .onSuccess { restored ->
+                                            analytics.log(
+                                                AnalyticsEvent.SUBSCRIPTION_RESTORE_RESULT,
+                                                mapOf(
+                                                    "result" to if (restored.state == SubscriptionState.ACTIVE) "active" else "none",
+                                                ),
+                                            )
+                                        }
+                                }
+                            }
+                            .padding(vertical = 4.dp),
+                    )
+                    Text("  ·  ", color = Frost, fontSize = 12.sp)
+                    Text(
+                        text = stringResource(Res.string.manage_subscription),
+                        color = Cyan,
+                        fontSize = 12.sp,
+                        style = TextStyle(textDecoration = TextDecoration.Underline),
+                        modifier = Modifier
+                            .clickable(role = SemanticsRole.Button) {
+                                scope.launch {
+                                    repository.openManageSubscriptions()
+                                        .onFailure { message = subscriptionError(it) }
+                                }
+                            }
+                            .padding(vertical = 4.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PremiumPlanCard(
+    plan: SubscriptionPlan,
+    product: com.impostor.domain.SubscriptionProduct?,
+    selected: Boolean,
+    onSelect: () -> Unit,
+) {
+    val available = product != null
+    val accent = if (plan == SubscriptionPlan.YEARLY) PremiumGold else PremiumMagenta
+    val planName = when (plan) {
+        SubscriptionPlan.MONTHLY -> stringResource(Res.string.premium_monthly_plan)
+        SubscriptionPlan.YEARLY -> stringResource(Res.string.premium_yearly_plan)
+    }
+    val period = when (plan) {
+        SubscriptionPlan.MONTHLY -> stringResource(Res.string.premium_monthly_period)
+        SubscriptionPlan.YEARLY -> stringResource(Res.string.premium_yearly_period)
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(if (selected) Color(0xFF20182F) else Color(0xFF111322))
+            .border(
+                width = if (selected) 2.dp else 1.dp,
+                color = if (selected) accent else Color(0xFF33384D),
+                shape = RoundedCornerShape(20.dp),
+            )
+            .clickable(enabled = available, role = SemanticsRole.RadioButton, onClick = onSelect)
+            .semantics {
+                role = SemanticsRole.RadioButton
+                this.selected = selected
+            }
+            .padding(horizontal = 16.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(22.dp)
+                .clip(RoundedCornerShape(50))
+                .border(2.dp, if (selected) accent else Color(0xFF778094), RoundedCornerShape(50))
+                .padding(5.dp)
+                .background(if (selected) accent else Color.Transparent, RoundedCornerShape(50)),
+        )
+        Column(modifier = Modifier.weight(1f).padding(start = 13.dp)) {
+            Text(
+                text = planName,
+                color = if (available) Color.White else Frost.copy(alpha = .55f),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = if (available) period else stringResource(Res.string.premium_plan_unavailable),
+                color = Frost.copy(alpha = if (available) .82f else .55f),
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 3.dp),
+            )
+        }
         Text(
-            product?.let { "${it.formattedPrice} / ${localizedPeriodLabel(it.periodLabel)}" }
-                ?: stringResource(Res.string.subscription_unavailable),
-            color = Frost,
+            text = product?.formattedPrice ?: stringResource(Res.string.subscription_unavailable),
+            color = if (available) accent else Frost.copy(alpha = .5f),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.End,
         )
-        product?.let {
-            Text(
-                stringResource(Res.string.subscription_auto_renewal, localizedPeriodLabel(it.periodLabel)),
-                color = Frost,
-                fontSize = 13.sp,
-            )
-        }
-        Text(subscriptionStateLabel(entitlement.state), color = if (entitlement.state == SubscriptionState.ACTIVE) Cyan else Frost)
-        message?.let { Text(subscriptionErrorLabel(it), color = Color(0xFFFF8A8A)) }
-        FrostButton(
-            text = stringResource(Res.string.subscribe),
-            onClick = {
-                analytics.log(AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED)
-                message = null
-                scope.launch {
-                    purchase.invoke()
-                        .onFailure { message = subscriptionError(it) }
-                        .onSuccess { analytics.log(AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT, mapOf("result" to purchaseResult(it.state))) }
-                }
-            },
-            enabled = product != null && entitlement.state != SubscriptionState.PURCHASING && entitlement.state != SubscriptionState.RESTORING,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        FrostButton(
-            text = stringResource(Res.string.restore_purchases),
-            onClick = {
-                message = null
-                scope.launch {
-                    restore.invoke()
-                        .onFailure {
-                            message = subscriptionError(it)
-                            analytics.log(AnalyticsEvent.SUBSCRIPTION_RESTORE_RESULT, mapOf("result" to "failed"))
-                        }
-                        .onSuccess { restored ->
-                            analytics.log(
-                                AnalyticsEvent.SUBSCRIPTION_RESTORE_RESULT,
-                                mapOf("result" to if (restored.state == SubscriptionState.ACTIVE) "active" else "none"),
-                            )
-                        }
-                }
-            },
-            enabled = entitlement.state != SubscriptionState.PURCHASING && entitlement.state != SubscriptionState.RESTORING,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        FrostButton(
-            text = stringResource(Res.string.manage_subscription),
-            onClick = { scope.launch { repository.openManageSubscriptions().onFailure { message = subscriptionError(it) } } },
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = stringResource(Res.string.privacy_policy),
-                color = Cyan,
-                fontSize = 13.sp,
-                style = TextStyle(textDecoration = TextDecoration.Underline),
-                modifier = Modifier.clickable { uriHandler.openUri(PrivacyPolicyUrl) },
-            )
-            Text("·", color = Frost, fontSize = 13.sp)
-            Text(
-                text = stringResource(Res.string.terms_of_use),
-                color = Cyan,
-                fontSize = 13.sp,
-                style = TextStyle(textDecoration = TextDecoration.Underline),
-                modifier = Modifier.clickable { uriHandler.openUri(TermsOfUseUrl) },
-            )
-        }
     }
 }
 
@@ -2085,6 +2619,13 @@ private fun purchaseResult(state: SubscriptionState): String = when (state) {
     SubscriptionState.PURCHASING -> "pending"
     else -> "failed"
 }
+
+private fun purchaseFailureResult(error: Throwable): String =
+    when ((error as? SubscriptionException)?.error) {
+        SubscriptionError.PURCHASE_CANCELLED -> "cancelled"
+        SubscriptionError.PURCHASE_PENDING -> "pending"
+        else -> "failed"
+    }
 
 private fun subscriptionError(error: Throwable): SubscriptionError =
     (error as? SubscriptionException)?.error ?: SubscriptionError.PURCHASE_FAILED

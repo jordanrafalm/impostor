@@ -2,10 +2,11 @@ package com.impostor.data
 
 import com.impostor.domain.Entitlement
 import com.impostor.domain.EntitlementSource
-import com.impostor.domain.PremiumProductId
+import com.impostor.domain.MonthlyPriceNoticeEligibility
 import com.impostor.domain.SubscriptionError
 import com.impostor.domain.SubscriptionException
 import com.impostor.domain.SubscriptionProduct
+import com.impostor.domain.SubscriptionPlan
 import com.impostor.domain.SubscriptionState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,6 +30,25 @@ actual fun platformTrialStore(): TrialStore = UserDefaultsTrialStore()
 actual fun initializePlatformStoreBilling(context: Any) = Unit
 
 private class IosStoreKitBillingClient : StoreBillingClient {
+	override suspend fun monthlyPriceNoticeEligibility(): MonthlyPriceNoticeEligibility =
+		request("monthlyPriceNotice") { response ->
+			Result.success(
+				when (response["status"]) {
+					"eligible" -> {
+						val renewal = response["renewalPrice"] as? String
+						val current = response["currentPrice"] as? String
+						if (renewal.isNullOrBlank() || current.isNullOrBlank()) {
+							MonthlyPriceNoticeEligibility.Unknown
+						} else {
+							MonthlyPriceNoticeEligibility.Eligible(renewal, current)
+						}
+					}
+					"ineligible" -> MonthlyPriceNoticeEligibility.Ineligible
+					else -> MonthlyPriceNoticeEligibility.Unknown
+				},
+			)
+		}.getOrElse { MonthlyPriceNoticeEligibility.Unknown }
+
 	override val entitlementUpdates: Flow<Entitlement>
 		get() = updates
 	private val updates = MutableSharedFlow<Entitlement>(extraBufferCapacity = 1)
@@ -43,22 +63,35 @@ private class IosStoreKitBillingClient : StoreBillingClient {
 			?.let(updates::tryEmit)
 	}
 
-	override suspend fun loadProduct(): Result<SubscriptionProduct> = request("load") { response ->
-		if (response["status"] == "success") {
-			Result.success(
-				SubscriptionProduct(
-					productId = PremiumProductId,
-					title = response["title"] as? String ?: "Impostor Premium",
-					formattedPrice = response["price"] as? String ?: "",
-					periodLabel = response["period"] as? String ?: "month",
-				),
-			)
-		} else {
-			Result.failure(response.error(SubscriptionError.PRODUCT_UNAVAILABLE))
+	override suspend fun loadProducts(): Result<List<SubscriptionProduct>> {
+		val products = mutableListOf<SubscriptionProduct>()
+		for (plan in SubscriptionPlan.entries) {
+			val result = request("load", plan.productId) { response ->
+				if (response["status"] == "success" && response["productId"] == plan.productId) {
+					Result.success(
+						SubscriptionProduct(
+							plan = plan,
+							productId = plan.productId,
+							title = response["title"] as? String ?: "Impostor Premium",
+							formattedPrice = response["price"] as? String ?: "",
+							periodLabel = response["period"] as? String ?: "",
+						),
+					)
+				} else {
+					Result.failure(response.error(SubscriptionError.PRODUCT_UNAVAILABLE))
+				}
+			}
+			result.onSuccess(products::add)
+			result.onFailure {
+				if ((it as? SubscriptionException)?.error != SubscriptionError.PRODUCT_UNAVAILABLE) {
+					return Result.failure(it)
+				}
+			}
 		}
+		return Result.success(products)
 	}
 
-	override suspend fun purchase(): Result<Entitlement> = request("purchase") { response ->
+	override suspend fun purchase(plan: SubscriptionPlan): Result<Entitlement> = request("purchase", plan.productId) { response ->
 		response.toEntitlementResult(SubscriptionError.PURCHASE_FAILED)
 	}
 
@@ -77,6 +110,7 @@ private class IosStoreKitBillingClient : StoreBillingClient {
 
 	private suspend fun <T> request(
 		action: String,
+		productId: String? = null,
 		map: (Map<Any?, Any?>) -> Result<T>,
 	): Result<T> = suspendCancellableCoroutine { continuation ->
 		val center = NSNotificationCenter.defaultCenter
@@ -91,8 +125,8 @@ private class IosStoreKitBillingClient : StoreBillingClient {
 		val values = mutableMapOf<Any?, Any?>(
 			"requestId" to requestId,
 			"action" to action,
-			"productId" to PremiumProductId,
 		)
+		productId?.let { values["productId"] = it }
 		center.postNotificationName(REQUEST_NOTIFICATION, null, values)
 		continuation.invokeOnCancellation { observer?.let(center::removeObserver) }
 	}
@@ -173,6 +207,8 @@ private fun Map<Any?, Any?>.error(default: SubscriptionError): SubscriptionExcep
 			"cancelled" -> SubscriptionError.PURCHASE_CANCELLED
 			"pending" -> SubscriptionError.PURCHASE_PENDING
 			"unverified" -> SubscriptionError.PURCHASE_FAILED
+			"unavailable" -> SubscriptionError.PRODUCT_UNAVAILABLE
+			"store_unavailable" -> SubscriptionError.STORE_UNAVAILABLE
 			else -> default
 		},
 	)

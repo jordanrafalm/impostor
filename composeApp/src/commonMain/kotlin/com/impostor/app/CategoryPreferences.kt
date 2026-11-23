@@ -36,5 +36,15 @@ internal fun decodeSelectedCategoryIds(encodedIds: String?, legacyId: String?): 
     encodedIds?.split(",")?.filter(String::isNotBlank)?.toSet()
         ?: legacyId?.let(::setOf)
 
+internal fun normalizeSelectedCategoryIds(
+    selectedCategoryIds: Set<String>,
+    categoryIdsInCatalogOrder: List<String>,
+): Set<String> {
+    val firstValidSelection = categoryIdsInCatalogOrder.firstOrNull { it in selectedCategoryIds }
+    if (firstValidSelection != null) return setOf(firstValidSelection)
+    if (selectedCategoryIds.isEmpty()) return emptySet()
+    return setOf("animals").intersect(categoryIdsInCatalogOrder.toSet())
+}
+
 internal fun toggleCategorySelection(selected: Set<String>, categoryId: String): Set<String> =
-    if (categoryId in selected) selected - categoryId else selected + categoryId
+    if (categoryId in selected) emptySet() else setOf(categoryId)

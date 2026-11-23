@@ -2,10 +2,11 @@ package com.impostor.data
 
 import com.impostor.domain.Entitlement
 import com.impostor.domain.EntitlementSource
-import com.impostor.domain.PremiumProductId
+import com.impostor.domain.MonthlyPriceNoticeEligibility
 import com.impostor.domain.SubscriptionError
 import com.impostor.domain.SubscriptionException
 import com.impostor.domain.SubscriptionProduct
+import com.impostor.domain.SubscriptionPlan
 import com.impostor.domain.SubscriptionRepository
 import com.impostor.domain.SubscriptionState
 import kotlinx.coroutines.CoroutineScope
@@ -24,9 +25,10 @@ interface StoreBillingClient {
     val entitlementUpdates: Flow<Entitlement>?
         get() = null
 
-    suspend fun loadProduct(): Result<SubscriptionProduct>
+    suspend fun loadProducts(): Result<List<SubscriptionProduct>>
+    suspend fun monthlyPriceNoticeEligibility(): MonthlyPriceNoticeEligibility
     suspend fun queryCurrentEntitlement(): Result<Entitlement> = restorePurchases()
-    suspend fun purchase(): Result<Entitlement>
+    suspend fun purchase(plan: SubscriptionPlan): Result<Entitlement>
     suspend fun restorePurchases(): Result<Entitlement>
     suspend fun openManageSubscriptions(): Result<Unit>
 }
@@ -67,11 +69,29 @@ class SubscriptionRepositoryImpl(
     updateScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),
 ) : SubscriptionRepository {
     private val transitionMutex = Mutex()
+    private val productMutex = Mutex()
+    private var availablePlans: Set<SubscriptionPlan> = emptySet()
     private val initial = entitlementStore.read()?.toEntitlement(nowMillis()) ?:
         Entitlement(state = SubscriptionState.LOCKED, source = EntitlementSource.LOCAL_CACHE)
     private val _entitlement = MutableStateFlow(initial)
 
     override val entitlement: Flow<Entitlement> = _entitlement.asStateFlow()
+
+    override suspend fun monthlyPriceNoticeEligibility(): MonthlyPriceNoticeEligibility = try {
+        when (val result = billingClient.monthlyPriceNoticeEligibility()) {
+            is MonthlyPriceNoticeEligibility.Eligible ->
+                if (result.renewalPrice.isBlank() || result.currentPrice.isBlank()) {
+                    MonthlyPriceNoticeEligibility.Unknown
+                } else {
+                    result
+                }
+            else -> result
+        }
+    } catch (exception: CancellationException) {
+        throw exception
+    } catch (_: Exception) {
+        MonthlyPriceNoticeEligibility.Unknown
+    }
 
     init {
         billingClient.entitlementUpdates?.let { updates ->
@@ -83,14 +103,25 @@ class SubscriptionRepositoryImpl(
         }
     }
 
-    override suspend fun loadProduct(): Result<SubscriptionProduct> = billingClient.loadProduct()
+    override suspend fun loadProducts(): Result<List<SubscriptionProduct>> {
+        val result = billingClient.loadProducts()
+        result.onSuccess { products ->
+            val verifiedProducts = products.filter {
+                it.productId == it.plan.productId && it.formattedPrice.isNotBlank()
+            }
+            productMutex.withLock { availablePlans = verifiedProducts.mapTo(mutableSetOf()) { it.plan } }
+            return Result.success(verifiedProducts)
+        }
+        productMutex.withLock { availablePlans = emptySet() }
+        return result
+    }
 
     override suspend fun reconcileEntitlement(): Result<Entitlement> = transitionMutex.withLock {
         val result = try {
             billingClient.queryCurrentEntitlement()
         } catch (exception: CancellationException) {
             throw exception
-        } catch (exception: Throwable) {
+        } catch (exception: Exception) {
             Result.failure(exception)
         }
         result.onSuccess(::storeVerified).onFailure {
@@ -99,8 +130,12 @@ class SubscriptionRepositoryImpl(
         result
     }
 
-    override suspend fun purchase(): Result<Entitlement> = transition(SubscriptionState.PURCHASING) {
-        billingClient.purchase()
+    override suspend fun purchase(plan: SubscriptionPlan): Result<Entitlement> {
+        val available = productMutex.withLock { plan in availablePlans }
+        if (!available) {
+            return Result.failure(SubscriptionException(SubscriptionError.PRODUCT_UNAVAILABLE))
+        }
+        return transition(SubscriptionState.PURCHASING) { billingClient.purchase(plan) }
     }
 
     override suspend fun restorePurchases(): Result<Entitlement> = transition(SubscriptionState.RESTORING) {
@@ -123,7 +158,7 @@ class SubscriptionRepositoryImpl(
             action()
         } catch (exception: CancellationException) {
             throw exception
-        } catch (exception: Throwable) {
+        } catch (exception: Exception) {
             Result.failure(exception)
         }
         result.onSuccess { storeVerified(it) }
@@ -170,10 +205,12 @@ private fun CachedEntitlement.toEntitlement(nowMillis: Long): Entitlement = Enti
 internal fun fallbackEntitlementStore(): EntitlementStore = fallbackStore
 
 internal fun unavailableStoreBillingClient(): StoreBillingClient = object : StoreBillingClient {
-    override suspend fun loadProduct(): Result<SubscriptionProduct> =
+    override suspend fun monthlyPriceNoticeEligibility(): MonthlyPriceNoticeEligibility =
+        MonthlyPriceNoticeEligibility.Ineligible
+    override suspend fun loadProducts(): Result<List<SubscriptionProduct>> =
         Result.failure(SubscriptionException(SubscriptionError.STORE_UNAVAILABLE))
 
-    override suspend fun purchase(): Result<Entitlement> =
+    override suspend fun purchase(plan: SubscriptionPlan): Result<Entitlement> =
         Result.failure(SubscriptionException(SubscriptionError.STORE_UNAVAILABLE))
 
     override suspend fun restorePurchases(): Result<Entitlement> =

@@ -1,6 +1,7 @@
 package com.impostor.data
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.Intent
@@ -19,10 +20,11 @@ import com.android.billingclient.api.QueryProductDetailsParams
 import com.android.billingclient.api.QueryPurchasesParams
 import com.impostor.domain.Entitlement
 import com.impostor.domain.EntitlementSource
-import com.impostor.domain.PremiumProductId
+import com.impostor.domain.MonthlyPriceNoticeEligibility
 import com.impostor.domain.SubscriptionError
 import com.impostor.domain.SubscriptionException
 import com.impostor.domain.SubscriptionProduct
+import com.impostor.domain.SubscriptionPlan
 import com.impostor.domain.SubscriptionState
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.CancellableContinuation
@@ -53,7 +55,8 @@ actual fun platformTrialStore(): TrialStore = billingContext?.let {
 private class AndroidStoreBillingClient(
 	private val context: Context,
 ) : StoreBillingClient {
-	private var productDetails: ProductDetails? = null
+	override suspend fun monthlyPriceNoticeEligibility(): MonthlyPriceNoticeEligibility =
+		MonthlyPriceNoticeEligibility.Ineligible
 
 	private suspend fun connectedClient(): Result<BillingClient> = suspendCancellableCoroutine { continuation ->
 		val client = BillingClient.newBuilder(context)
@@ -84,49 +87,54 @@ private class AndroidStoreBillingClient(
 		continuation.invokeOnCancellation { client.endConnection() }
 	}
 
-	override suspend fun loadProduct(): Result<SubscriptionProduct> {
+	override suspend fun loadProducts(): Result<List<SubscriptionProduct>> {
 		val client = connectedClient().getOrElse { return Result.failure(it) }
 		return suspendCancellableCoroutine { continuation ->
 			client.queryProductDetailsAsync(
 				QueryProductDetailsParams.newBuilder()
 					.setProductList(
-						listOf(
+						SubscriptionPlan.entries.map { plan ->
 							QueryProductDetailsParams.Product.newBuilder()
-								.setProductId(PremiumProductId)
+								.setProductId(plan.productId)
 								.setProductType(ProductType.SUBS)
-								.build(),
-						),
+								.build()
+						},
 					)
 					.build(),
 			) { result, details ->
 				client.endConnection()
-				val detail = details.productDetailsList.firstOrNull()
-				if (result.responseCode != BillingResponseCode.OK || detail == null) {
+				if (result.responseCode != BillingResponseCode.OK) {
 					continuation.resume(Result.failure(result.toSubscriptionException(SubscriptionError.PRODUCT_UNAVAILABLE)))
 				} else {
-					productDetails = detail
-					val offer = detail.subscriptionOfferDetails?.firstOrNull()
-					val phase = offer?.pricingPhases?.pricingPhaseList?.firstOrNull()
-					continuation.resume(
-						Result.success(
-							SubscriptionProduct(
-								productId = detail.productId,
-								title = detail.title,
-								formattedPrice = phase?.formattedPrice ?: detail.oneTimePurchaseOfferDetails?.formattedPrice.orEmpty(),
-								periodLabel = phase?.billingPeriod?.toPeriodLabel() ?: "month",
-							),
-						),
-					)
+					val products = details.productDetailsList.mapNotNull { detail ->
+						val plan = SubscriptionPlan.fromProductId(detail.productId) ?: return@mapNotNull null
+						val offer = detail.subscriptionOfferDetails?.firstOrNull {
+							it.offerToken.isNotBlank() && it.pricingPhases.pricingPhaseList.isNotEmpty()
+						}
+							?: return@mapNotNull null
+						val phase = offer.pricingPhases.pricingPhaseList.lastOrNull()
+							?: return@mapNotNull null
+						SubscriptionProduct(
+							plan = plan,
+							productId = detail.productId,
+							title = detail.title,
+							formattedPrice = phase.formattedPrice,
+							periodLabel = phase.billingPeriod.toPeriodLabel(),
+						)
+					}
+					continuation.resume(Result.success(products))
 				}
 			}
 		}
 	}
 
-	override suspend fun purchase(): Result<Entitlement> {
+	override suspend fun purchase(plan: SubscriptionPlan): Result<Entitlement> {
 		val activity = billingActivity?.get()
 			?: return Result.failure(SubscriptionException(SubscriptionError.STORE_UNAVAILABLE))
-		val details = productDetails ?: return Result.failure(SubscriptionException(SubscriptionError.PRODUCT_UNAVAILABLE))
-		val offerToken = details.subscriptionOfferDetails?.firstOrNull()?.offerToken
+		val details = refreshProductDetails(plan).getOrElse { return Result.failure(it) }
+		val offerToken = details.subscriptionOfferDetails?.firstOrNull {
+			it.offerToken.isNotBlank() && it.pricingPhases.pricingPhaseList.isNotEmpty()
+		}?.offerToken
 			?: return Result.failure(SubscriptionException(SubscriptionError.PRODUCT_UNAVAILABLE))
 		return suspendCancellableCoroutine { continuation ->
 			lateinit var listenerClient: BillingClient
@@ -136,7 +144,7 @@ private class AndroidStoreBillingClient(
 						listenerClient.endConnection()
 						continuation.resume(Result.failure(result.toSubscriptionException(result.toSubscriptionError())))
 					} else {
-						handlePurchases(purchases.orEmpty(), continuation, listenerClient)
+						handlePurchases(purchases.orEmpty(), continuation, listenerClient, plan)
 					}
 				}
 				.enablePendingPurchases(
@@ -182,6 +190,40 @@ private class AndroidStoreBillingClient(
 		}
 	}
 
+	private suspend fun refreshProductDetails(plan: SubscriptionPlan): Result<ProductDetails> {
+		val client = connectedClient().getOrElse { return Result.failure(it) }
+		return suspendCancellableCoroutine { continuation ->
+			client.queryProductDetailsAsync(
+				QueryProductDetailsParams.newBuilder()
+					.setProductList(
+						listOf(
+							QueryProductDetailsParams.Product.newBuilder()
+								.setProductId(plan.productId)
+								.setProductType(ProductType.SUBS)
+								.build(),
+						),
+					)
+					.build(),
+			) { result, details ->
+				client.endConnection()
+				if (result.responseCode != BillingResponseCode.OK) {
+					continuation.resume(Result.failure(result.toSubscriptionException(SubscriptionError.PRODUCT_UNAVAILABLE)))
+					return@queryProductDetailsAsync
+				}
+				val detail = details.productDetailsList.firstOrNull { it.productId == plan.productId }
+				val offer = detail?.subscriptionOfferDetails?.firstOrNull {
+					it.offerToken.isNotBlank() && it.pricingPhases.pricingPhaseList.isNotEmpty()
+				}
+				if (detail == null || offer == null) {
+					continuation.resume(Result.failure(SubscriptionException(SubscriptionError.PRODUCT_UNAVAILABLE)))
+					return@queryProductDetailsAsync
+				}
+				continuation.resume(Result.success(detail))
+			}
+			continuation.invokeOnCancellation { client.endConnection() }
+		}
+	}
+
 	override suspend fun restorePurchases(): Result<Entitlement> {
 		val client = connectedClient().getOrElse { return Result.failure(it) }
 		return suspendCancellableCoroutine { continuation ->
@@ -200,17 +242,37 @@ private class AndroidStoreBillingClient(
 	override suspend fun openManageSubscriptions(): Result<Unit> {
 		val intent = Intent(
 			Intent.ACTION_VIEW,
-			Uri.parse("https://play.google.com/store/account/subscriptions?package=${context.packageName}&sku=$PremiumProductId"),
+			Uri.parse("https://play.google.com/store/account/subscriptions?package=${context.packageName}"),
 		).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-		return runCatching { context.startActivity(intent) }
+		return try {
+			context.startActivity(intent)
+			Result.success(Unit)
+		} catch (_: ActivityNotFoundException) {
+			Result.failure(SubscriptionException(SubscriptionError.STORE_UNAVAILABLE))
+		} catch (_: SecurityException) {
+			Result.failure(SubscriptionException(SubscriptionError.STORE_UNAVAILABLE))
+		}
 	}
 
 	private fun handlePurchases(
 		purchases: List<Purchase>,
 		continuation: CancellableContinuation<Result<Entitlement>>,
 		client: BillingClient? = null,
+		expectedPlan: SubscriptionPlan? = null,
 	) {
-		val purchase = purchases.firstOrNull { PremiumProductId in it.products }
+		val matchingPurchases = purchases.filter { candidate ->
+			if (expectedPlan == null) {
+				candidate.products.any { SubscriptionPlan.fromProductId(it) != null }
+			} else {
+				expectedPlan.productId in candidate.products
+			}
+		}
+		val purchase = if (expectedPlan == null) {
+			matchingPurchases.firstOrNull { it.purchaseState == Purchase.PurchaseState.PURCHASED }
+				?: matchingPurchases.firstOrNull()
+		} else {
+			matchingPurchases.firstOrNull()
+		}
 		when {
 			purchase == null -> finish(Result.success(lockedEntitlement()), continuation, client)
 			purchase.purchaseState == Purchase.PurchaseState.PENDING ->

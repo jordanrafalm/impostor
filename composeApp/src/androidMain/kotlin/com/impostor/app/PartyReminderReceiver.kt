@@ -16,6 +16,8 @@ import java.util.Calendar
 private const val PARTY_REMINDER_CHANNEL_ID = "party_reminders"
 private const val PARTY_REMINDER_NOTIFICATION_ID = 2200
 private const val PARTY_REMINDER_REQUEST_CODE = 2200
+private const val PARTY_REMINDER_PREFERENCES = "party_reminder_preferences"
+private const val NOTIFICATION_PERMISSION_REQUESTED = "notification_permission_requested"
 
 internal class PartyReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -33,17 +35,37 @@ internal class PartyReminderBootReceiver : BroadcastReceiver() {
 internal class AndroidNotificationScheduler(
     private val context: Context,
 ) : NotificationScheduler {
-    override fun requestPermissionAndSchedulePartyReminder() {
-        scheduleMonthlyPartyReminder()
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-            ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) !=
+    override fun requestPermissionAndSchedulePartyReminder(
+        onPermissionPromptStatusChanged: (NotificationPermissionPromptStatus) -> Unit,
+    ) {
+        onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.PENDING_CHECK)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(context, android.Manifest.permission.POST_NOTIFICATIONS) ==
             PackageManager.PERMISSION_GRANTED
         ) {
-            (context as? MainActivity)?.requestPermissions(
-                arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
-                PARTY_REMINDER_REQUEST_CODE,
+            scheduleMonthlyPartyReminder()
+            onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
+            return
+        }
+
+        val preferences = context.getSharedPreferences(PARTY_REMINDER_PREFERENCES, Context.MODE_PRIVATE)
+        val alreadyRequested = preferences.getBoolean(NOTIFICATION_PERMISSION_REQUESTED, false)
+        val activity = context as? MainActivity
+        if (alreadyRequested || activity == null ||
+            androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale(
+                activity,
+                android.Manifest.permission.POST_NOTIFICATIONS,
             )
+        ) {
+            onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
+            return
+        }
+
+        preferences.edit().putBoolean(NOTIFICATION_PERMISSION_REQUESTED, true).apply()
+        onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.PROMPT_REQUIRED_OR_IN_PROGRESS)
+        activity.requestNotificationPermission { granted ->
+            if (granted) scheduleMonthlyPartyReminder()
+            onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
         }
     }
 
@@ -122,5 +144,9 @@ actual fun platformNotificationScheduler(): NotificationScheduler {
 }
 
 private object NoOpNotificationScheduler : NotificationScheduler {
-    override fun requestPermissionAndSchedulePartyReminder() = Unit
+    override fun requestPermissionAndSchedulePartyReminder(
+        onPermissionPromptStatusChanged: (NotificationPermissionPromptStatus) -> Unit,
+    ) {
+        onPermissionPromptStatusChanged(NotificationPermissionPromptStatus.NO_PROMPT_REQUIRED)
+    }
 }

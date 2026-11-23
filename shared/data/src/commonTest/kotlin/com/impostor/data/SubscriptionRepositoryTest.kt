@@ -2,10 +2,11 @@ package com.impostor.data
 
 import com.impostor.domain.Entitlement
 import com.impostor.domain.EntitlementSource
-import com.impostor.domain.PremiumProductId
+import com.impostor.domain.MonthlyPriceNoticeEligibility
 import com.impostor.domain.SubscriptionError
 import com.impostor.domain.SubscriptionException
 import com.impostor.domain.SubscriptionProduct
+import com.impostor.domain.SubscriptionPlan
 import com.impostor.domain.SubscriptionState
 import com.impostor.domain.unlocksAllCategories
 import kotlin.test.Test
@@ -13,6 +14,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
@@ -21,6 +23,62 @@ import kotlinx.coroutines.test.runTest
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SubscriptionRepositoryTest {
+    @Test
+    fun `notice result is independent of cached entitlement and does not change it`() = runTest {
+        val eligibility = MonthlyPriceNoticeEligibility.Eligible("old", "new")
+        val store = FakeEntitlementStore(CachedEntitlement(true, null, 1_000))
+        val repository = SubscriptionRepositoryImpl(
+            FakeBillingClient(noticeResult = eligibility), store, nowMillis = { 1_500 },
+        )
+        assertEquals(eligibility, repository.monthlyPriceNoticeEligibility())
+        assertFalse(repository.entitlement.first().unlocksAllCategories())
+        assertEquals(CachedEntitlement(true, null, 1_000), store.value)
+    }
+
+    @Test
+    fun `unsupported and unknown notice outcomes stay distinct`() = runTest {
+        val unsupported = SubscriptionRepositoryImpl(unavailableStoreBillingClient(), FakeEntitlementStore())
+        val unknown = SubscriptionRepositoryImpl(
+            FakeBillingClient(noticeResult = MonthlyPriceNoticeEligibility.Unknown), FakeEntitlementStore(),
+        )
+        assertEquals(MonthlyPriceNoticeEligibility.Ineligible, unsupported.monthlyPriceNoticeEligibility())
+        assertEquals(MonthlyPriceNoticeEligibility.Unknown, unknown.monthlyPriceNoticeEligibility())
+    }
+
+    @Test
+    fun `blank formatted prices are unknown`() = runTest {
+        val repository = SubscriptionRepositoryImpl(
+            FakeBillingClient(noticeResult = MonthlyPriceNoticeEligibility.Eligible("", "new")),
+            FakeEntitlementStore(),
+        )
+        assertEquals(MonthlyPriceNoticeEligibility.Unknown, repository.monthlyPriceNoticeEligibility())
+    }
+
+    @Test
+    fun `notice errors are unknown without altering entitlement`() = runTest {
+        val store = FakeEntitlementStore()
+        val repository = SubscriptionRepositoryImpl(
+            FakeBillingClient(noticeError = IllegalStateException()), store,
+        )
+        assertEquals(MonthlyPriceNoticeEligibility.Unknown, repository.monthlyPriceNoticeEligibility())
+        assertEquals(SubscriptionState.LOCKED, repository.entitlement.first().state)
+        assertEquals(null, store.value)
+    }
+
+    @Test
+    fun `notice cancellation propagates`() = runTest {
+        val repository = SubscriptionRepositoryImpl(
+            FakeBillingClient(noticeError = CancellationException("cancelled")), FakeEntitlementStore(),
+        )
+        var cancelled = false
+        try {
+            repository.monthlyPriceNoticeEligibility()
+        } catch (_: CancellationException) {
+            cancelled = true
+        }
+        assertTrue(cancelled)
+    }
+
     @Test
     fun `should expose cached active entitlement without granting store source`() = runTest {
         val store = FakeEntitlementStore(CachedEntitlement(true, 2_000, 1_000))
@@ -108,17 +166,42 @@ internal class SubscriptionRepositoryTest {
     @Test
     fun `should replace cache with active verified store entitlement`() = runTest {
         val store = FakeEntitlementStore()
+        val billing = FakeBillingClient(purchaseResult = Result.success(activeEntitlement))
         val repository = SubscriptionRepositoryImpl(
-            FakeBillingClient(purchaseResult = Result.success(activeEntitlement)),
+            billing,
             store,
             nowMillis = { 1_500 },
         )
 
-        val result = repository.purchase()
+        repository.loadProducts()
+        val result = repository.purchase(SubscriptionPlan.MONTHLY)
 
         assertTrue(result.isSuccess)
+        assertEquals(SubscriptionPlan.MONTHLY, billing.purchasedPlan)
         assertEquals(EntitlementSource.STORE, repository.entitlement.first().source)
         assertTrue(store.value!!.entitled)
+    }
+
+    @Test
+    fun `should not purchase a plan that was not loaded from the store`() = runTest {
+        val billing = FakeBillingClient(availablePlans = listOf(SubscriptionPlan.MONTHLY))
+        val repository = SubscriptionRepositoryImpl(billing, FakeEntitlementStore())
+        repository.loadProducts()
+
+        val result = repository.purchase(SubscriptionPlan.YEARLY)
+
+        assertEquals(SubscriptionError.PRODUCT_UNAVAILABLE, (result.exceptionOrNull() as SubscriptionException).error)
+        assertEquals(null, billing.purchasedPlan)
+    }
+
+    @Test
+    fun `should pass the selected yearly plan through to billing`() = runTest {
+        val billing = FakeBillingClient()
+        val repository = SubscriptionRepositoryImpl(billing, FakeEntitlementStore())
+        repository.loadProducts()
+
+        assertTrue(repository.purchase(SubscriptionPlan.YEARLY).isSuccess)
+        assertEquals(SubscriptionPlan.YEARLY, billing.purchasedPlan)
     }
 
     @Test
@@ -132,9 +215,10 @@ internal class SubscriptionRepositoryTest {
             FakeEntitlementStore(),
         )
 
+        pending.loadProducts()
         assertEquals(
             SubscriptionError.PURCHASE_PENDING,
-            (pending.purchase().exceptionOrNull() as SubscriptionException).error,
+            (pending.purchase(SubscriptionPlan.MONTHLY).exceptionOrNull() as SubscriptionException).error,
         )
         assertFalse(none.restorePurchases().getOrThrow().state == SubscriptionState.ACTIVE)
     }
@@ -150,7 +234,8 @@ internal class SubscriptionRepositoryTest {
         )
 
         // When
-        repository.purchase()
+        repository.loadProducts()
+        repository.purchase(SubscriptionPlan.MONTHLY)
 
         // Then
         val entitlement = repository.entitlement.first()
@@ -169,7 +254,8 @@ internal class SubscriptionRepositoryTest {
         )
 
         // When
-        val result = repository.purchase()
+        repository.loadProducts()
+        val result = repository.purchase(SubscriptionPlan.MONTHLY)
 
         // Then
         assertEquals(SubscriptionError.NETWORK_UNAVAILABLE, (result.exceptionOrNull() as SubscriptionException).error)
@@ -187,12 +273,27 @@ internal class SubscriptionRepositoryTest {
         private val restoreResult: Result<Entitlement> = Result.success(lockedEntitlement),
         private val queryResult: Result<Entitlement> = Result.success(lockedEntitlement),
         private val updates: Flow<Entitlement>? = null,
+        private val availablePlans: List<SubscriptionPlan> = SubscriptionPlan.entries,
+        private val noticeResult: MonthlyPriceNoticeEligibility = MonthlyPriceNoticeEligibility.Ineligible,
+        private val noticeError: Exception? = null,
     ) : StoreBillingClient {
         override val entitlementUpdates: Flow<Entitlement>? get() = updates
+        var purchasedPlan: SubscriptionPlan? = null
 
-        override suspend fun loadProduct() = Result.success(SubscriptionProduct(PremiumProductId, "Premium", "$1", "month"))
+        override suspend fun monthlyPriceNoticeEligibility(): MonthlyPriceNoticeEligibility {
+            noticeError?.let { throw it }
+            return noticeResult
+        }
+        override suspend fun loadProducts() = Result.success(
+            availablePlans.map { plan ->
+                SubscriptionProduct(plan, plan.productId, "Premium", "$1", "month")
+            },
+        )
         override suspend fun queryCurrentEntitlement() = queryResult
-        override suspend fun purchase() = purchaseResult
+        override suspend fun purchase(plan: SubscriptionPlan): Result<Entitlement> {
+            purchasedPlan = plan
+            return purchaseResult
+        }
         override suspend fun restorePurchases() = restoreResult
         override suspend fun openManageSubscriptions() = Result.success(Unit)
     }

@@ -26,7 +26,7 @@ class CategoryPreferencesTest {
     }
 
     @Test
-    fun `should restore all saved category ids`() {
+    fun `should decode all saved category ids before catalog migration`() {
         assertEquals(
             setOf("animals", "places", "sports"),
             decodeSelectedCategoryIds(
@@ -34,6 +34,30 @@ class CategoryPreferencesTest {
                 legacyId = null,
             ),
         )
+    }
+
+    @Test
+    fun `should migrate multiple saved categories using catalog order and ignore invalid ids`() {
+        val decoded = decodeSelectedCategoryIds(
+            encodedIds = "places,unknown,sports",
+            legacyId = null,
+        )
+
+        assertEquals(
+            setOf("sports"),
+            normalizeSelectedCategoryIds(
+                selectedCategoryIds = decoded.orEmpty(),
+                categoryIdsInCatalogOrder = listOf("sports", "animals", "places"),
+            ),
+        )
+    }
+
+    @Test
+    fun `should preserve an empty selection and default invalid selections to animals`() {
+        val catalogOrder = listOf("sports", "animals", "places")
+
+        assertEquals(emptySet(), normalizeSelectedCategoryIds(emptySet(), catalogOrder))
+        assertEquals(setOf("animals"), normalizeSelectedCategoryIds(setOf("unknown"), catalogOrder))
     }
 
     @Test
@@ -47,10 +71,8 @@ class CategoryPreferencesTest {
     }
 
     @Test
-    fun `should add and remove categories without replacing the selected set`() {
-        val selected = setOf("animals", "places")
-
-        assertEquals(setOf("animals", "places", "sports"), toggleCategorySelection(selected, "sports"))
-        assertEquals(setOf("places"), toggleCategorySelection(selected, "animals"))
+    fun `should select one category or clear it when tapped again`() {
+        assertEquals(setOf("sports"), toggleCategorySelection(setOf("animals", "places"), "sports"))
+        assertEquals(emptySet(), toggleCategorySelection(setOf("animals"), "animals"))
     }
 }
