@@ -53,6 +53,7 @@
     <string name="premium_monthly_period">În fiecare lună</string>
     <string name="premium_yearly_plan">Anual</string>
     <string name="premium_yearly_period">În fiecare an</string>
+    <string name="premium_yearly_savings">Economisești %1$d%% față de planul lunar</string>
     <string name="premium_plan_unavailable">Indisponibil în acest magazin</string>
     <string name="premium_product_fallback">Impostor Premium</string>
     <string name="premium_benefit_description">Premium deblochează fiecare categorie și elimină limita de joc gratuită.</string>

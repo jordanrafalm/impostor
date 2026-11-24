@@ -114,12 +114,25 @@ private class AndroidStoreBillingClient(
 							?: return@mapNotNull null
 						val phase = offer.pricingPhases.pricingPhaseList.lastOrNull()
 							?: return@mapNotNull null
+						val expectedPeriod = if (plan == SubscriptionPlan.MONTHLY) "P1M" else "P1Y"
+						val comparablePrice = if (
+							offer.pricingPhases.pricingPhaseList.size == 1 &&
+							phase.recurrenceMode == ProductDetails.RecurrenceMode.INFINITE_RECURRING &&
+							phase.billingPeriod == expectedPeriod &&
+							phase.priceAmountMicros > 0 && phase.priceCurrencyCode.isNotBlank()
+						) {
+							com.impostor.domain.SubscriptionComparablePrice(
+								amount = phase.priceAmountMicros.toDouble() / 1_000_000.0,
+								currencyCode = phase.priceCurrencyCode,
+							)
+						} else null
 						SubscriptionProduct(
 							plan = plan,
 							productId = detail.productId,
 							title = detail.title,
 							formattedPrice = phase.formattedPrice,
 							periodLabel = phase.billingPeriod.toPeriodLabel(),
+							comparablePrice = comparablePrice,
 						)
 					}
 					continuation.resume(Result.success(products))

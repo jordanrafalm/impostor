@@ -4,6 +4,7 @@ import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertNull
 
 internal class SubscriptionTest {
     @Test
@@ -61,6 +62,22 @@ internal class SubscriptionTest {
         assertEquals(null, SubscriptionPlan.fromProductId("com.impostor.app.premium.unknown"))
         assertEquals("com.impostor.app.premium.monthly", SubscriptionPlan.MONTHLY.productId)
         assertEquals("com.impostor.app.premium.yearly", SubscriptionPlan.YEARLY.productId)
+    }
+
+    @Test
+    fun `yearly savings compare twelve monthly payments and round down`() {
+        fun product(plan: SubscriptionPlan, price: Double, currency: String = "PLN") =
+            SubscriptionProduct(plan, plan.productId, "Premium", "price", "", SubscriptionComparablePrice(price, currency))
+
+        assertEquals(66, yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, 14.99), product(SubscriptionPlan.YEARLY, 59.99)))
+        assertEquals(72, yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, 17.99), product(SubscriptionPlan.YEARLY, 59.99)))
+        assertNull(yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, 10.0), product(SubscriptionPlan.YEARLY, 120.0)))
+        assertNull(yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, 10.0), product(SubscriptionPlan.YEARLY, 121.0)))
+        assertNull(yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, 10.0), product(SubscriptionPlan.YEARLY, 50.0, "USD")))
+        assertNull(yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, 0.0), product(SubscriptionPlan.YEARLY, 50.0)))
+        assertNull(yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, Double.NaN), product(SubscriptionPlan.YEARLY, 50.0)))
+        assertNull(yearlySavingsPercent(null, product(SubscriptionPlan.YEARLY, 50.0)))
+        assertNull(yearlySavingsPercent(product(SubscriptionPlan.MONTHLY, 10.0).copy(comparablePrice = null), product(SubscriptionPlan.YEARLY, 50.0)))
     }
 
     @Test

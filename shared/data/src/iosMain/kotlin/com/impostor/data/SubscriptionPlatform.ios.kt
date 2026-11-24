@@ -5,6 +5,7 @@ import com.impostor.domain.EntitlementSource
 import com.impostor.domain.MonthlyPriceNoticeEligibility
 import com.impostor.domain.SubscriptionError
 import com.impostor.domain.SubscriptionException
+import com.impostor.domain.SubscriptionComparablePrice
 import com.impostor.domain.SubscriptionProduct
 import com.impostor.domain.SubscriptionPlan
 import com.impostor.domain.SubscriptionState
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import platform.Foundation.NSNotification
 import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSNumber
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.NSUUID
 import kotlin.coroutines.resume
@@ -75,6 +77,11 @@ private class IosStoreKitBillingClient : StoreBillingClient {
 							title = response["title"] as? String ?: "Impostor Premium",
 							formattedPrice = response["price"] as? String ?: "",
 							periodLabel = response["period"] as? String ?: "",
+							comparablePrice = (response["comparisonPrice"] as? NSNumber)?.doubleValue?.let { amount ->
+								(response["comparisonCurrency"] as? String)?.let { currency ->
+									SubscriptionComparablePrice(amount, currency)
+								}
+							},
 						),
 					)
 				} else {

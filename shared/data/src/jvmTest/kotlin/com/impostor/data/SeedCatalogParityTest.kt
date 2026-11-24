@@ -13,6 +13,17 @@ import kotlin.test.assertTrue
 
 internal class SeedCatalogParityTest {
     @Test
+    fun `removed objects category is absent from every locale`() {
+        for (locale in listOf("pl", "en", "uk", "ar", "el", "es", "it", "pt", "ro")) {
+            val document = Json.parseToJsonElement(resource("/seed/prompts-$locale.json")).jsonObject
+            assertTrue(document.getValue("activeCategoryIds").jsonArray.none { it.jsonPrimitive.content == "objects" }, locale)
+            assertTrue(document.getValue("categories").jsonArray.none { it.jsonObject.text("id") == "objects" }, locale)
+            val repository = SeedCatalogRepository(resource("/seed/prompts-$locale.json"))
+            assertTrue(repository.prompts(setOf("objects")).isEmpty(), locale)
+        }
+    }
+
+    @Test
     fun `Christmas category contains fifty distinct prompts with explicit hints in every locale`() {
         val catalogs = listOf("pl", "en", "uk").map { locale ->
             val json = resource("/seed/prompts-$locale.json")

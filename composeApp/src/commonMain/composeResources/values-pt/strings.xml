@@ -53,6 +53,7 @@
     <string name="premium_monthly_period">Todos os meses</string>
     <string name="premium_yearly_plan">Anual</string>
     <string name="premium_yearly_period">Todos os anos</string>
+    <string name="premium_yearly_savings">Poupa %1$d%% face ao plano mensal</string>
     <string name="premium_plan_unavailable">Indisponível nesta loja</string>
     <string name="premium_product_fallback">Impostor Premium</string>
     <string name="premium_benefit_description">Premium desbloqueia todas as categorias e remove o limite de jogo gratuito.</string>

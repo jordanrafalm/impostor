@@ -53,6 +53,7 @@
     <string name="premium_monthly_period">Κάθε μήνα</string>
     <string name="premium_yearly_plan">Ετήσιο</string>
     <string name="premium_yearly_period">Κάθε χρόνο</string>
+    <string name="premium_yearly_savings">Εξοικονόμησε %1$d%% σε σχέση με το μηνιαίο</string>
     <string name="premium_plan_unavailable">Μη διαθέσιμο σε αυτό το κατάστημα</string>
     <string name="premium_product_fallback">Εισαγωγέας Premium</string>
     <string name="premium_benefit_description">Premium ξεκλειδώνει κάθε κατηγορία και αφαιρεί το ελεύθερο όριο παιχνιδιού.</string>

@@ -25,6 +25,10 @@ fun <T> sortByPopularity(items: List<T>, id: (T) -> String): List<T> =
 
 internal fun <T> categorySections(items: List<T>, id: (T) -> String): Pair<List<T>, List<T>> {
     val christmas = items.filter { id(it) == "christmas" }
-    val otherCategories = items.filterNot { id(it) == "christmas" }
-    return otherCategories.take(3) to (christmas + otherCategories.drop(3))
+    val sex = items.filter { id(it) == "sex" }
+    val otherCategories = items.filterNot { id(it) == "christmas" || id(it) == "sex" }
+    val remaining = christmas + otherCategories.drop(3)
+    val sexPosition = minOf(3, remaining.size)
+    return otherCategories.take(3) to
+        (remaining.take(sexPosition) + sex + remaining.drop(sexPosition))
 }

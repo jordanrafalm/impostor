@@ -25,6 +25,8 @@ The Polish screen target is exactly `14,99 zł / Co miesiąc` for monthly and `5
 
 Both plans grant the existing `premium_all_categories` entitlement. Keep entitlement state and reconciliation plan-agnostic: a verified, active purchase of either SKU unlocks Premium; cached state alone does not. Restore and current-entitlement queries must recognize both SKUs.
 
+The yearly card displays the percentage saved against twelve monthly payments, calculated from store-provided prices in the same currency and rounded down to avoid overstating savings. Show no badge if either price or currency is unavailable, the periods are not exactly one month and one year, either offer has introductory pricing, or the yearly price is not cheaper. Never calculate from formatted text or assume a fixed price.
+
 ### Boundaries and responsibilities
 
 - **Compose common UI** — In `composeApp/src/commonMain`, render two selectable plan options with localized period labels, selected state, store-formatted prices, and a purchase action bound to the selected plan. Retain the current restore/manage actions, loading/error handling, accessibility, and responsive layout. Add/update Compose string resources for Polish and the other supported locales. Keep the purchase action disabled when the selected offer is unavailable or a purchase/restore is already in progress.
@@ -48,6 +50,7 @@ Configure both App Store products in the same `Impostor Premium` auto-renewable 
 - Store-localized price/period data avoids claiming a charge that differs from the purchase sheet. The requested Polish prices require matching store configuration before launch.
 - Missing product configuration becomes a per-plan unavailable state, not permission to purchase the other plan.
 - There is no new entitlement tier, Firebase dependency, or local-cache grant.
+- Firebase Analytics records available products, explicit plan selection, and purchase start/result with an allowlisted `plan` value (`monthly` or `yearly`); it never receives store prices, product IDs, or transaction data.
 - Changing an already-active subscription between plans (including Play replacement parameters and the desired upgrade/downgrade UX) is not inferred by this decision and needs explicit product/store-flow acceptance before implementation.
 
 ## Follow-ups

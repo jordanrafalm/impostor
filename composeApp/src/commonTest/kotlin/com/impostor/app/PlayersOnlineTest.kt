@@ -32,4 +32,17 @@ class PlayersOnlineTest {
         assertEquals(listOf("adult", "animals", "places"), popular)
         assertEquals(listOf("food"), others)
     }
+
+    @Test fun sexIsFourthInOtherCategoriesWithoutReorderingOthers() {
+        val ids = listOf("adult", "animals", "flirt", "places", "sex", "sports", "christmas", "food")
+        val (popular, others) = categorySections(ids) { it }
+        assertEquals(listOf("adult", "animals", "flirt"), popular)
+        assertEquals(listOf("christmas", "places", "sports", "sex", "food"), others)
+    }
+
+    @Test fun sexIsKeptInOtherCategoriesWhenThereAreFewerThanFourOthers() {
+        val (popular, others) = categorySections(listOf("adult", "sex", "animals", "places", "food")) { it }
+        assertEquals(listOf("adult", "animals", "places"), popular)
+        assertEquals(listOf("food", "sex"), others)
+    }
 }

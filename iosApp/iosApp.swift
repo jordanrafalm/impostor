@@ -84,13 +84,24 @@ private final class StoreKitBridge {
                     respond(requestId, ["status": "error", "error": "unavailable"])
                     return
                 }
-                respond(requestId, [
+                var payload: [String: Any] = [
                     "status": "success",
                     "productId": product.id,
                     "title": product.displayName,
                     "price": product.displayPrice,
                     "period": periodLabel(product.subscription?.subscriptionPeriod),
-                ])
+                ]
+                if let subscription = product.subscription,
+                   subscription.introductoryOffer == nil,
+                   subscription.subscriptionPeriod.value == 1,
+                   ((productId == Self.monthlyProductId && subscription.subscriptionPeriod.unit == .month) ||
+                    (productId == Self.yearlyProductId && subscription.subscriptionPeriod.unit == .year)),
+                   !product.price.isNaN, product.price > 0,
+                   !product.priceFormatStyle.currencyCode.isEmpty {
+                    payload["comparisonPrice"] = NSDecimalNumber(decimal: product.price)
+                    payload["comparisonCurrency"] = product.priceFormatStyle.currencyCode
+                }
+                respond(requestId, payload)
             case "purchase":
                 guard let productId = requestedProductId, Self.productIds.contains(productId) else {
                     respond(requestId, ["status": "error", "error": "unavailable"])

@@ -223,10 +223,55 @@ internal val routeSaver = listSaver<Route, String>(
     restore = ::restoreRoute,
 )
 
+internal fun saveRouteStack(routes: List<Route>): List<String> = buildList {
+    add(routes.size.toString())
+    routes.forEach { route ->
+        val savedRoute = saveRoute(route)
+        add(savedRoute.size.toString())
+        addAll(savedRoute)
+    }
+}
+
+internal fun restoreRouteStack(saved: List<String>): List<Route>? {
+    val routeCount = saved.firstOrNull()?.toIntOrNull()?.takeIf { it >= 0 } ?: return null
+    val routes = mutableListOf<Route>()
+    var offset = 1
+    repeat(routeCount) {
+        val routeSize = saved.getOrNull(offset++)?.toIntOrNull()?.takeIf { it > 0 } ?: return null
+        if (routeSize > saved.size - offset) return null
+        val end = offset + routeSize
+        routes += restoreRoute(saved.subList(offset, end)) ?: return null
+        offset = end
+    }
+    return routes.takeIf { offset == saved.size }
+}
+
+internal val routeStackSaver = listSaver<List<Route>, String>(
+    save = { routes -> saveRouteStack(routes) },
+    restore = { saved -> restoreRouteStack(saved) },
+)
+
 @OptIn(ExperimentalResourceApi::class)
 @Composable
 fun ImpostorApp(debugUnlockCategories: Boolean = false) {
     var route by rememberSaveable(stateSaver = routeSaver) { mutableStateOf<Route>(Route.Splash) }
+    var routeBackStack by rememberSaveable(stateSaver = routeStackSaver) { mutableStateOf(emptyList()) }
+    fun navigateTo(destination: Route) {
+        if (route != destination) {
+            routeBackStack = routeBackStack + route
+            route = destination
+        }
+    }
+    fun navigateBack() {
+        val previous = routeBackStack.lastOrNull()
+        if (previous != null) {
+            routeBackStack = routeBackStack.dropLast(1)
+            route = previous
+        } else if (route != Route.Home && route != Route.Splash) {
+            route = Route.Home
+        }
+    }
+    PlatformBackHandler(enabled = route != Route.Home && route != Route.Splash, onBack = ::navigateBack)
     var launchSoundRequested by rememberSaveable { mutableStateOf(false) }
     val launchSoundPlayer = remember { platformLaunchSoundPlayer() }
     var holidaySequencePhase by remember { mutableStateOf(HomeHolidaySequencePhase.IDLE) }
@@ -368,7 +413,10 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
         notificationPermissionPromptStatus = notificationPermissionPromptStatus,
     )
     LaunchedEffect(showMonthlyPriceNotice) {
-        if (showMonthlyPriceNotice) priceNoticeShownThisLaunch = true
+        if (showMonthlyPriceNotice) {
+            priceNoticeShownThisLaunch = true
+            analytics.log(AnalyticsEvent.MONTHLY_PRICE_NOTICE_SHOWN)
+        }
     }
     val categories = remember { repository.categories() }
     val allCategoryIds = remember(categories) { categories.map { it.id }.toSet() }
@@ -397,7 +445,10 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
     }
 
     LaunchedEffect(Unit) {
-        if (route == Route.Splash) route = Route.Home
+        if (route == Route.Splash) {
+            route = Route.Home
+            routeBackStack = emptyList()
+        }
     }
     LaunchedEffect(route) {
         if (route != Route.Splash && !reviewLaunchChecked) {
@@ -505,8 +556,8 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                     Route.Home -> HomeScreen(players, impostorCount, hintsEnabled, error,
                         selectedCategorySummary = categories.filter { it.id in selectedCategories }
                             .map { it.displayName }.takeIf { it.isNotEmpty() }?.joinToString(", "),
-                        onPlayers = { route = Route.Players }, onCategories = { route = Route.Categories },
-                        onCodes = { route = Route.Premium }, onImpostorDecrease = {
+                        onPlayers = { navigateTo(Route.Players) }, onCategories = { navigateTo(Route.Categories) },
+                        onCodes = { navigateTo(Route.Premium) }, onImpostorDecrease = {
                             error = null
                             impostorCount = (impostorCount - 1).coerceAtLeast(1)
                         }, onImpostorIncrease = {
@@ -544,7 +595,7 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                             if (startingGame || route != Route.Home) return@start
                             if (selectedCategories.isEmpty()) {
                                 error = null
-                                route = Route.Categories
+                                navigateTo(Route.Categories)
                                 return@start
                             }
                             val usesOnlyAlwaysFreeCategories =
@@ -557,7 +608,7 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                                 )
                             ) {
                                 showFreeLimitDialog = true
-                                route = Route.Categories
+                                navigateTo(Route.Categories)
                                 return@start
                             }
                             val setup = GameSetup(players, selectedCategories, impostorCount, hintsEnabled)
@@ -580,7 +631,8 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                                             ) {
                                                 RecordStartedGameUseCase(trialRepository).invoke(session.sessionId)
                                             }
-                                            route = Route.Reveal(session)
+                                            navigateTo(Route.Reveal(session))
+                                            reportGameStartedCategories(setup.selectedCategoryIds, analytics)
                                         } finally {
                                             startingGame = false
                                         }
@@ -589,7 +641,7 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                                 is SetupValidation.Invalid -> error = validation.reason
                             }
                         })
-                    Route.Players -> PlayersScreen(players, onBack = { route = Route.Home }, onPlayers = {
+                    Route.Players -> PlayersScreen(players, onBack = ::navigateBack, onPlayers = {
                         error = null
                         players = it
                         savePlayers(it)
@@ -601,8 +653,8 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                         unlocked = unlockedCategories,
                         trialState = trialState,
                         premiumUnlocked = premiumUnlocked || debugUnlockCategories,
-                        onBack = { route = Route.Home },
-                        onOpenPremium = { route = Route.Premium },
+                        onBack = ::navigateBack,
+                        onOpenPremium = { navigateTo(Route.Premium) },
                         onSelected = {
                             error = null
                             selectedCategories = it
@@ -611,15 +663,16 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                     Route.Premium -> PremiumSubscriptionScreen(
                         repository = subscriptionRepository,
                         analytics = analytics,
-                        onClose = { route = Route.Home },
+                        onClose = ::navigateBack,
                     )
-                    is Route.Reveal -> RevealScreen(current.session, players) { next -> route = next }
+                    is Route.Reveal -> RevealScreen(current.session, players) { next -> navigateTo(next) }
                     is Route.GameStart -> GameStartScreen(
                         session = current.session,
                         players = players,
                         onCompleted = {
                             reviewPreferences.recordCompletedGame()
                             route = Route.Home
+                            routeBackStack = emptyList()
                         },
                     )
                 }
@@ -665,6 +718,7 @@ fun ImpostorApp(debugUnlockCategories: Boolean = false) {
                     onAcknowledge = {
                         monthlyPriceNoticePreferences.acknowledge()
                         priceNoticeAcknowledged = true
+                        analytics.log(AnalyticsEvent.MONTHLY_PRICE_NOTICE_ACKNOWLEDGED)
                     },
                 )
                 else -> Unit
@@ -1049,14 +1103,15 @@ private fun Shell(
         val verticalPadding = if (compactLayout) 8.dp else 20.dp
         val snowmanLaneHeight = if (compactLayout) 40.dp else 52.dp
         val settingsDownshift = 88.dp / 3
+        val screenWidth = maxWidth
         val screenWidthPx = with(density) { maxWidth.toPx() }
         if (hasTwoPanes(maxWidth.value, minPaneWidth = 280f, horizontalGaps = 72f)) {
             Row(
-                Modifier.fillMaxSize().padding(horizontal = 24.dp, vertical = 16.dp),
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(24.dp),
             ) {
                 Column(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 56.dp),
+                    Modifier.weight(1f).padding(top = 56.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(stringResource(Res.string.home_tagline), color = Frost.copy(alpha = .78f),
@@ -1067,7 +1122,10 @@ private fun Shell(
                     val playingNow = remember { playersOnline(currentLocalMoment()) }
                     Text("${stringResource(Res.string.home_playing_now)}: $playingNow",
                         color = Cyan, fontSize = 13.sp, letterSpacing = 2.sp)
-                    Box(Modifier.widthIn(max = 480.dp).fillMaxWidth().aspectRatio(1125f / 647f)) {
+                    Box(
+                        Modifier.fullWidthHolidayLane(screenWidth, 24.dp)
+                            .fillMaxWidth().aspectRatio(1125f / 647f),
+                    ) {
                         HolidayLottie(
                             assetName = "christmas_sleigh.json",
                             modifier = Modifier.fillMaxSize(),
@@ -1077,7 +1135,7 @@ private fun Shell(
                     }
                 }
                 Column(
-                    Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top = 56.dp + settingsDownshift)
+                    Modifier.weight(1f).padding(top = 56.dp + settingsDownshift)
                         .graphicsLayer { translationX = buttonOffset.value * screenWidthPx },
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
@@ -1110,7 +1168,10 @@ private fun Shell(
                         Text(stringResource(Res.string.home_validation_error, reasonLabel),
                             color = Color(0xFFFFA5B3), fontSize = 13.sp)
                     }
-                    SnowmanLane(height = snowmanLaneHeight)
+                    SnowmanLane(
+                        height = snowmanLaneHeight,
+                        modifier = Modifier.fullWidthHolidayLane(screenWidth, screenWidth / 2 + 12.dp),
+                    )
                     FrostButton(stringResource(Res.string.play), onStart, Modifier.fillMaxWidth(),
                         style = FrostButtonStyle.Primary, autoPulse = true, pulseDelayMillis = 1200L)
                     Spacer(Modifier.height(10.dp))
@@ -1141,7 +1202,7 @@ private fun Shell(
         } else Column(
             modifier = Modifier.fillMaxSize()
                 .imePadding()
-                .padding(horizontal = 24.dp, vertical = verticalPadding),
+                .padding(vertical = verticalPadding),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Column(
@@ -1178,7 +1239,7 @@ private fun Shell(
                         val height = (placeable.height * 3 / 10)
                             .coerceIn(constraints.minHeight, constraints.maxHeight)
                         layout(placeable.width, height) { placeable.placeRelative(0, 0) }
-                    }.widthIn(max = 480.dp).fillMaxWidth().aspectRatio(1125f / 647f),
+                    }.fillMaxWidth().aspectRatio(1125f / 647f),
                 ) {
                     HolidayLottie(
                         assetName = "christmas_sleigh.json",
@@ -1189,7 +1250,7 @@ private fun Shell(
                 }
                 Spacer(Modifier.height(settingsDownshift))
                 Column(
-                    Modifier.fillMaxWidth().graphicsLayer {
+                    Modifier.fillMaxWidth().padding(horizontal = 24.dp).graphicsLayer {
                         translationX = buttonOffset.value * screenWidthPx
                     },
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1252,7 +1313,7 @@ private fun Shell(
                     text = stringResource(Res.string.play),
                     onClick = onStart,
                     style = FrostButtonStyle.Primary,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     autoPulse = true,
                     pulseDelayMillis = 1200L,
                 )
@@ -1261,7 +1322,7 @@ private fun Shell(
                     text = stringResource(Res.string.unlock_full_version),
                     onClick = onCodes,
                     style = FrostButtonStyle.Subtle,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
                     autoPulse = true,
                     pulseDelayMillis = 1800L,
                 )
@@ -1541,7 +1602,7 @@ private fun HolidayLottie(
 }
 
 @Composable
-private fun SnowmanLane(height: androidx.compose.ui.unit.Dp) {
+private fun SnowmanLane(height: androidx.compose.ui.unit.Dp, modifier: Modifier = Modifier) {
     val transition = rememberInfiniteTransition(label = "snowman-crossing")
     val progress by transition.animateFloat(
         initialValue = 0f,
@@ -1558,7 +1619,7 @@ private fun SnowmanLane(height: androidx.compose.ui.unit.Dp) {
         else -> 1f
     }
 
-    BoxWithConstraints(Modifier.fillMaxWidth().height(height).clipToBounds()) {
+    BoxWithConstraints(modifier.fillMaxWidth().height(height).clipToBounds()) {
         HolidayLottie(
             assetName = "snowman_dance_and_sing.json",
             modifier = Modifier
@@ -1568,6 +1629,17 @@ private fun SnowmanLane(height: androidx.compose.ui.unit.Dp) {
             iterations = Int.MAX_VALUE,
             contentScale = ContentScale.Fit,
         )
+    }
+}
+
+private fun Modifier.fullWidthHolidayLane(
+    screenWidth: androidx.compose.ui.unit.Dp,
+    startInset: androidx.compose.ui.unit.Dp,
+): Modifier = layout { measurable, constraints ->
+    val width = screenWidth.roundToPx()
+    val placeable = measurable.measure(constraints.copy(minWidth = width, maxWidth = width))
+    layout(placeable.width.coerceIn(constraints.minWidth, constraints.maxWidth), placeable.height) {
+        placeable.placeRelative(-startInset.roundToPx(), 0)
     }
 }
 
@@ -2208,12 +2280,15 @@ private fun CategoriesScreen(
         val categoryButtonHeight = 72.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)
         val categoryButton: @Composable (Pair<String, String>, Modifier) -> Unit = { (name, id), modifier ->
             val isUnlocked = id in unlocked
+            val buttonName = if (id == "polish_influencers" && name == "Polscy influencerzy") {
+                "Polscy\ninfluencerzy"
+            } else name
             FrostButton(
                 text = when {
-                    !isUnlocked && id in selected -> "🔒  ✓  $name"
-                    !isUnlocked -> "🔒  $name"
-                    id in selected -> "✓  $name"
-                    else -> name
+                    !isUnlocked && id in selected -> "🔒  ✓  $buttonName"
+                    !isUnlocked -> "🔒  $buttonName"
+                    id in selected -> "✓  $buttonName"
+                    else -> buttonName
                 },
                 onClick = {
                     if (isUnlocked || id in selected) {
@@ -2225,7 +2300,25 @@ private fun CategoriesScreen(
                 onLongPress = if (id == "adult") ({ showWalkingLady = true }) else null,
                 enabled = true,
                 modifier = modifier.height(categoryButtonHeight),
-                backgroundImage = if (id == "christmas") painterResource(Res.drawable.christmas_category_background) else null,
+                backgroundImage = when (id) {
+                    "christmas" -> painterResource(Res.drawable.christmas_category_background)
+                    "sex" -> painterResource(Res.drawable.sex_button_background)
+                    "adult" -> painterResource(Res.drawable.adult_button_background)
+                    "sports" -> painterResource(Res.drawable.sports_button_background)
+                    "technology" -> painterResource(Res.drawable.technology_button_background)
+                    "food" -> painterResource(Res.drawable.food_button_background)
+                    "polish_influencers" -> painterResource(Res.drawable.influencers_button_background)
+                    "animals" -> painterResource(Res.drawable.animals_button_background)
+                    "places" -> painterResource(Res.drawable.places_button_background)
+                    "international_stars" -> painterResource(Res.drawable.international_stars_button_background)
+                    "flirt" -> painterResource(Res.drawable.flirt_button_background)
+                    "professions" -> painterResource(Res.drawable.professions_button_background)
+                    "nature" -> painterResource(Res.drawable.nature_button_background)
+                    "music" -> painterResource(Res.drawable.music_button_background)
+                    "polish_actors" -> painterResource(Res.drawable.actors_button_background)
+                    "everyday" -> painterResource(Res.drawable.everyday_button_background)
+                    else -> null
+                },
                 selected = id in selected,
             )
         }
@@ -2300,7 +2393,12 @@ private fun PremiumSubscriptionScreen(
                         else -> null
                     }
                 }
-                if (products.isNotEmpty()) analytics.log(AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED)
+                products.keys.forEach { plan ->
+                    analytics.log(
+                        AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED,
+                        mapOf("plan" to plan.name.lowercase()),
+                    )
+                }
             }
             .onFailure { message = subscriptionError(it) }
     }
@@ -2375,18 +2473,26 @@ private fun PremiumSubscriptionScreen(
                     modifier = Modifier.widthIn(max = 520.dp).fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    PremiumPlanCard(
-                        plan = SubscriptionPlan.MONTHLY,
-                        product = products[SubscriptionPlan.MONTHLY],
-                        selected = selectedPlan == SubscriptionPlan.MONTHLY,
-                        onSelect = { selectedPlan = SubscriptionPlan.MONTHLY },
-                    )
-                    PremiumPlanCard(
-                        plan = SubscriptionPlan.YEARLY,
-                        product = products[SubscriptionPlan.YEARLY],
-                        selected = selectedPlan == SubscriptionPlan.YEARLY,
-                        onSelect = { selectedPlan = SubscriptionPlan.YEARLY },
-                    )
+                    SubscriptionPlan.entries.forEach { plan ->
+                        PremiumPlanCard(
+                            plan = plan,
+                            product = products[plan],
+                            selected = selectedPlan == plan,
+                            savingsPercent = if (plan == SubscriptionPlan.YEARLY) {
+                                com.impostor.domain.yearlySavingsPercent(
+                                    products[SubscriptionPlan.MONTHLY],
+                                    products[SubscriptionPlan.YEARLY],
+                                )
+                            } else null,
+                            onSelect = {
+                                selectedPlan = plan
+                                analytics.log(
+                                    AnalyticsEvent.SUBSCRIPTION_PLAN_SELECTED,
+                                    mapOf("plan" to plan.name.lowercase()),
+                                )
+                            },
+                        )
+                    }
 
                     Text(
                         text = subscriptionStateLabel(entitlement.state),
@@ -2424,7 +2530,11 @@ private fun PremiumSubscriptionScreen(
                             role = SemanticsRole.Button,
                         ) {
                             val plan = selectedPlan ?: return@clickable
-                            analytics.log(AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED)
+                            val planName = plan.name.lowercase()
+                            analytics.log(
+                                AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED,
+                                mapOf("plan" to planName),
+                            )
                             message = null
                             scope.launch {
                                 purchase.invoke(plan)
@@ -2432,13 +2542,19 @@ private fun PremiumSubscriptionScreen(
                                         message = subscriptionError(it)
                                         analytics.log(
                                             AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT,
-                                            mapOf("result" to purchaseFailureResult(it)),
+                                            mapOf(
+                                                "plan" to planName,
+                                                "result" to purchaseFailureResult(it),
+                                            ),
                                         )
                                     }
                                     .onSuccess {
                                         analytics.log(
                                             AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT,
-                                            mapOf("result" to purchaseResult(it.state)),
+                                            mapOf(
+                                                "plan" to planName,
+                                                "result" to purchaseResult(it.state),
+                                            ),
                                         )
                                     }
                             }
@@ -2552,6 +2668,7 @@ private fun PremiumPlanCard(
     plan: SubscriptionPlan,
     product: com.impostor.domain.SubscriptionProduct?,
     selected: Boolean,
+    savingsPercent: Int?,
     onSelect: () -> Unit,
 ) {
     val available = product != null
@@ -2603,6 +2720,19 @@ private fun PremiumPlanCard(
                 fontSize = 13.sp,
                 modifier = Modifier.padding(top = 3.dp),
             )
+            if (savingsPercent != null) {
+                Text(
+                    text = stringResource(Res.string.premium_yearly_savings, savingsPercent),
+                    color = Color(0xFF111322),
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .padding(top = 6.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(PremiumGold)
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                )
+            }
         }
         Text(
             text = product?.formattedPrice ?: stringResource(Res.string.subscription_unavailable),

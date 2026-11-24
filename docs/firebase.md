@@ -111,14 +111,18 @@ reports. Event counts record language selections, not the current distribution o
 
 The legacy adapter may still contain mappings for historical events, but the production navigation no longer emits them. The subscription release emits:
 
+- `game_started_category` with `category_id`, once per selected, nonblank category after a valid game starts. Selecting no category does not emit the event. Counts represent selected categories, not necessarily distinct games when multiple categories are selected.
 - `premium_screen_opened`
-- `subscription_product_loaded`
-- `subscription_purchase_started`
-- `subscription_purchase_result` with allowlisted result values
+- `subscription_product_loaded` with `plan` (`monthly` or `yearly`), once per available store product
+- `subscription_plan_selected` with `plan` (`monthly` or `yearly`) after an explicit selection
+- `subscription_purchase_started` with `plan` (`monthly` or `yearly`)
+- `subscription_purchase_result` with `plan` and allowlisted `result` values (`success`, `cancelled`, `pending`, or `failed`)
 - `subscription_restore_result` with `active`, `none`, or `failed`
 - `premium_entitlement_changed` with `active`, `expired`, `revoked`, or `locked`
+- `monthly_price_notice_shown`
+- `monthly_price_notice_acknowledged` when the user taps **„Super, dzięki”**
 
-Firebase Analytics is telemetry only and never decides entitlement. Never send receipts, transaction IDs, purchase tokens, product payloads, account identifiers, promo codes, or raw store errors.
+Firebase Analytics is telemetry only and never decides entitlement. Register `category_id` and `plan` as event-scoped custom dimensions to compare category and subscription-plan engagement. Never send prices, product IDs, receipts, transaction IDs, purchase tokens, product payloads, account identifiers, promo codes, or raw store errors.
 
 ## Player-name uploads
 

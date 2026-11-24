@@ -1,5 +1,7 @@
 package com.impostor.app
 
+import com.impostor.domain.AnalyticsEvent
+import com.impostor.domain.AnalyticsService
 import com.impostor.domain.Entitlement
 import com.impostor.domain.TrialState
 import com.impostor.domain.canStartGame
@@ -13,6 +15,16 @@ internal fun shouldRecordCategoryTrial(
     categoryIds: Set<String>,
     entitlement: Entitlement,
 ): Boolean = !debugUnlockCategories && requiresTrialGame(categoryIds, entitlement)
+
+internal fun reportGameStartedCategories(categoryIds: Set<String>, analytics: AnalyticsService) {
+    categoryIds.forEach { categoryId ->
+        if (categoryId.isBlank()) {
+            println("Cannot report game start: category ID is blank")
+        } else {
+            analytics.log(AnalyticsEvent.GAME_STARTED_CATEGORY, mapOf("category_id" to categoryId))
+        }
+    }
+}
 
 internal fun readSelectedCategoryIds(): Set<String>? {
     val store = platformPreferenceStore()

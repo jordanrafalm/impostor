@@ -37,7 +37,24 @@ data class SubscriptionProduct(
     val title: String,
     val formattedPrice: String,
     val periodLabel: String,
+    val comparablePrice: SubscriptionComparablePrice? = null,
 )
+
+data class SubscriptionComparablePrice(val amount: Double, val currencyCode: String)
+
+fun yearlySavingsPercent(monthly: SubscriptionProduct?, yearly: SubscriptionProduct?): Int? {
+    if (monthly?.plan != SubscriptionPlan.MONTHLY || yearly?.plan != SubscriptionPlan.YEARLY) return null
+    val monthlyPrice = monthly.comparablePrice ?: return null
+    val yearlyPrice = yearly.comparablePrice ?: return null
+    if (monthlyPrice.currencyCode.isBlank() || monthlyPrice.currencyCode != yearlyPrice.currencyCode ||
+        !monthlyPrice.amount.isFinite() || !yearlyPrice.amount.isFinite() ||
+        monthlyPrice.amount <= 0 || yearlyPrice.amount <= 0
+    ) return null
+    val ratio = (yearlyPrice.amount / monthlyPrice.amount) / 12.0
+    if (!ratio.isFinite() || ratio >= 1.0) return null
+    val percent = kotlin.math.floor((1.0 - ratio) * 100.0).toInt()
+    return percent.takeIf { it in 1..99 }
+}
 
 data class Entitlement(
     val key: String = PremiumEntitlementKey,

@@ -230,14 +230,17 @@ Retain Firebase Analytics only for privacy-safe product events:
 
 ```text
 premium_screen_opened
-subscription_product_loaded
-subscription_purchase_started
-subscription_purchase_result { result: success|cancelled|pending|failed }
+subscription_product_loaded { plan: monthly|yearly }
+subscription_plan_selected { plan: monthly|yearly }
+subscription_purchase_started { plan: monthly|yearly }
+subscription_purchase_result { plan: monthly|yearly, result: success|cancelled|pending|failed }
 subscription_restore_result { result: active|none|failed }
 premium_entitlement_changed { state: active|expired|revoked|locked }
+monthly_price_notice_shown
+monthly_price_notice_acknowledged
 ```
 
-Never log product receipt, transaction ID, purchase token, email, player name, prompt, promo code, or raw store error payload. Remove `codes_opened` and `code_validated` once the promo-code UI is removed, or retain them only during a short migration release if historical analytics continuity is required.
+`plan` is an allowlisted `monthly`/`yearly` value. Never log prices, product IDs, product receipt, transaction ID, purchase token, email, player name, prompt, promo code, or raw store error payload. Remove `codes_opened` and `code_validated` once the promo-code UI is removed, or retain them only during a short migration release if historical analytics continuity is required.
 
 ## Firestore and promo-code migration
 

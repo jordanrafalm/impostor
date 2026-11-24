@@ -53,6 +53,7 @@
     <string name="premium_monthly_period">كل شهر</string>
     <string name="premium_yearly_plan">سنوي</string>
     <string name="premium_yearly_period">كل عام</string>
+    <string name="premium_yearly_savings">وفّر %1$d%% مقارنة بالاشتراك الشهري</string>
     <string name="premium_plan_unavailable">غير متاح في هذا المتجر</string>
     <string name="premium_product_fallback">Impostor Premium</string>
     <string name="premium_benefit_description">بريميوم يفتح كل فئة ويزيل الحد الأقصى للعبة الحرة.</string>

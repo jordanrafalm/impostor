@@ -61,10 +61,24 @@ internal class FirebaseAnalyticsService : AnalyticsService {
                 AnalyticsEvent.REVIEW_PROMPT_SHOWN -> Firebase.analytics.logEvent("review_prompt_shown")
                 AnalyticsEvent.REVIEW_PROMPT_RATE_CLICKED -> Firebase.analytics.logEvent("review_prompt_rate_clicked")
                 AnalyticsEvent.REVIEW_PROMPT_DISMISSED -> Firebase.analytics.logEvent("review_prompt_dismissed")
-                AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED -> Firebase.analytics.logEvent("subscription_product_loaded")
-                AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED -> Firebase.analytics.logEvent("subscription_purchase_started")
+                AnalyticsEvent.SUBSCRIPTION_PRODUCT_LOADED -> {
+                    val plan = safeSubscriptionPlan(parameters) ?: return@runCatching
+                    Firebase.analytics.logEvent("subscription_product_loaded", mapOf("plan" to plan))
+                }
+                AnalyticsEvent.SUBSCRIPTION_PLAN_SELECTED -> {
+                    val plan = safeSubscriptionPlan(parameters) ?: return@runCatching
+                    Firebase.analytics.logEvent("subscription_plan_selected", mapOf("plan" to plan))
+                }
+                AnalyticsEvent.SUBSCRIPTION_PURCHASE_STARTED -> {
+                    val plan = safeSubscriptionPlan(parameters) ?: return@runCatching
+                    Firebase.analytics.logEvent("subscription_purchase_started", mapOf("plan" to plan))
+                }
                 AnalyticsEvent.SUBSCRIPTION_PURCHASE_RESULT -> {
-                    Firebase.analytics.logEvent("subscription_purchase_result", mapOf("result" to safeResult(parameters)))
+                    val plan = safeSubscriptionPlan(parameters) ?: return@runCatching
+                    Firebase.analytics.logEvent(
+                        "subscription_purchase_result",
+                        mapOf("plan" to plan, "result" to safeResult(parameters)),
+                    )
                 }
                 AnalyticsEvent.SUBSCRIPTION_RESTORE_RESULT -> {
                     Firebase.analytics.logEvent("subscription_restore_result", mapOf("result" to safeResult(parameters)))
@@ -72,6 +86,9 @@ internal class FirebaseAnalyticsService : AnalyticsService {
                 AnalyticsEvent.PREMIUM_ENTITLEMENT_CHANGED -> {
                     Firebase.analytics.logEvent("premium_entitlement_changed", mapOf("state" to safeResult(parameters)))
                 }
+                AnalyticsEvent.MONTHLY_PRICE_NOTICE_SHOWN -> Firebase.analytics.logEvent("monthly_price_notice_shown")
+                AnalyticsEvent.MONTHLY_PRICE_NOTICE_ACKNOWLEDGED ->
+                    Firebase.analytics.logEvent("monthly_price_notice_acknowledged")
                 AnalyticsEvent.GAME_STARTED_CATEGORY -> {
                     val categoryId = parameters["category_id"] ?: return@runCatching
                     Firebase.analytics.logEvent("game_started_category", mapOf("category_id" to categoryId))
@@ -85,3 +102,6 @@ internal class FirebaseAnalyticsService : AnalyticsService {
             ?: parameters["state"]?.takeIf { it in setOf("active", "expired", "revoked", "locked") }
             ?: "failed"
 }
+
+internal fun safeSubscriptionPlan(parameters: Map<String, String>): String? =
+    parameters["plan"]?.takeIf { it == "monthly" || it == "yearly" }
