@@ -8,7 +8,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
 internal actual suspend fun isAppUpdateAvailable(): Boolean {
-    if (com.rafal.impostorparty.BuildConfig.DEBUG) return true
     val activity = MainActivity.currentActivity ?: run {
         println("App update check unavailable: no active Android activity")
         return false

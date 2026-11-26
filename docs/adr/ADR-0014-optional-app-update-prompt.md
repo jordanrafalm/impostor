@@ -14,10 +14,6 @@ or continue without updating. Back and outside dismissal also continue. Do not
 show it again during the current app process; opening a listing does not prove an
 update was installed. An opening failure remains visible and can be retried.
 
-For local debug builds only, simulate an available update without consulting the
-stores so the dialog can be previewed. Existing startup prompt ordering and
-once-per-process dismissal still apply. Release builds use the real checks.
-
 Do not interrupt other startup dialogs or notification permission requests.
 If an update is available, defer the review prompt to a later launch, consistent
 with ADR-0010. A bounded check prevents store access from indefinitely delaying

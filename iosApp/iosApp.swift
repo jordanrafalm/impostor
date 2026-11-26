@@ -54,13 +54,6 @@ private final class AppUpdateLookup {
     }
 
     private static func lookup() async -> [String: Any] {
-        #if DEBUG
-        guard let installed = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String else {
-            print("App update preview unavailable: missing installed version")
-            return [:]
-        }
-        return ["version": installed + ".1"]
-        #else
         guard let country = await Storefront.current?.countryCode,
               country.count == 3,
               country.allSatisfy({ $0.isASCII && $0.isLetter }),
@@ -101,7 +94,6 @@ private final class AppUpdateLookup {
             print("App update check failed: \(error.localizedDescription)")
             return [:]
         }
-        #endif
     }
 }
 
