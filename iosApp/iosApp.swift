@@ -12,6 +12,7 @@ struct iosApp: App {
             FirebaseApp.configure()
         }
         StoreKitBridge.install()
+        AppUpdateLookup.install()
     }
 
     var body: some Scene {
@@ -19,6 +20,79 @@ struct iosApp: App {
             ComposeRootView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .ignoresSafeArea(.all)
+        }
+    }
+}
+
+@MainActor
+private final class AppUpdateLookup {
+    private static var shared: AppUpdateLookup?
+    private var observer: NSObjectProtocol?
+
+    static func install() {
+        shared = AppUpdateLookup()
+    }
+
+    private init() {
+        observer = NotificationCenter.default.addObserver(
+            forName: Notification.Name("com.impostor.update.request"),
+            object: nil,
+            queue: .main
+        ) { notification in
+            guard let requestId = notification.userInfo?["requestId"] as? String else { return }
+            Task { @MainActor in
+                let result = await Self.lookup()
+                var response = result
+                response["requestId"] = requestId
+                NotificationCenter.default.post(
+                    name: Notification.Name("com.impostor.update.response"),
+                    object: nil,
+                    userInfo: response
+                )
+            }
+        }
+    }
+
+    private static func lookup() async -> [String: Any] {
+        guard let country = await Storefront.current?.countryCode,
+              country.count == 3,
+              country.allSatisfy({ $0.isASCII && $0.isLetter }),
+              let region = Locale(identifier: "und_\(country)").region?.identifier,
+              region.count == 2,
+              region.allSatisfy({ $0.isASCII && $0.isLetter }) else {
+            print("App update check unavailable: no valid App Store storefront")
+            return [:]
+        }
+        var components = URLComponents(string: "https://itunes.apple.com/lookup")
+        components?.queryItems = [
+            URLQueryItem(name: "id", value: "6811896797"),
+            URLQueryItem(name: "country", value: region)
+        ]
+        guard let url = components?.url else {
+            print("App update check failed: invalid lookup URL")
+            return [:]
+        }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 3
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard (response as? HTTPURLResponse)?.statusCode == 200,
+                  let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let results = json["results"] as? [[String: Any]],
+                  results.count == 1, let result = results.first,
+                  (result["trackId"] as? NSNumber)?.int64Value == 6811896797,
+                  let version = result["version"] as? String else {
+                print("App update check failed: invalid App Store response")
+                return [:]
+            }
+            var payload: [String: Any] = ["version": version]
+            if let minimum = result["minimumOsVersion"] {
+                payload["minimumOs"] = minimum as? String ?? "invalid"
+            }
+            return payload
+        } catch {
+            print("App update check failed: \(error.localizedDescription)")
+            return [:]
         }
     }
 }

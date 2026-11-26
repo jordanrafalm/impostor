@@ -56,20 +56,4 @@ class AppStateSaveableTest {
         routes.forEach { assertEquals(it, restoreRoute(saveRoute(it))) }
         assertNull(restoreRoute(listOf("reveal", "invalid")))
     }
-
-    @Test
-    fun `route back stack restores routes including game sessions`() {
-        val session = GameSession(
-            sessionId = "session-3",
-            prompt = Prompt("prompt-3", "animals", "Otter", "River"),
-            assignments = listOf(Assignment("p1", Role.AGENT), Assignment("p2", Role.IMPOSTOR)),
-            starterPlayerId = "p2",
-            revealIndex = 1,
-        )
-        val routes = listOf(Route.Home, Route.Categories, Route.Reveal(session))
-
-        assertEquals(routes, restoreRouteStack(saveRouteStack(routes)))
-        assertEquals(emptyList(), restoreRouteStack(saveRouteStack(emptyList())))
-        assertNull(restoreRouteStack(listOf("1", "2", "home")))
-    }
 }

@@ -124,4 +124,8 @@
     <string name="period_years_unit">ani</string>
     <string name="period_other">perioadă</string>
     <string name="free_limit_dialog_message">Schimbă categoria sau cumpără Premium.</string>
+    <string name="update_prompt">Este posibil să fie disponibilă o versiune mai nouă. Deschizi magazinul pentru actualizare?</string>
+    <string name="update_open_store">Deschide magazinul</string>
+    <string name="update_not_now">Nu acum</string>
+    <string name="update_open_failed">Magazinul nu a putut fi deschis. Încearcă din nou.</string>
 </resources>

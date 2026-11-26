@@ -124,4 +124,8 @@
     <string name="period_years_unit">años</string>
     <string name="period_other">período de sesiones</string>
     <string name="free_limit_dialog_message">Cambiar la categoría o comprar Premium.</string>
+    <string name="update_prompt">Puede haber una versión más reciente. ¿Abrir la tienda para actualizar?</string>
+    <string name="update_open_store">Abrir tienda</string>
+    <string name="update_not_now">Ahora no</string>
+    <string name="update_open_failed">No se pudo abrir la tienda. Inténtalo de nuevo.</string>
 </resources>

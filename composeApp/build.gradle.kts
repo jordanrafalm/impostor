@@ -41,6 +41,7 @@ kotlin {
         androidMain.dependencies {
             implementation("androidx.activity:activity-compose:1.10.1")
             implementation("androidx.core:core-splashscreen:1.0.1")
+            implementation("com.google.android.play:app-update:2.1.0")
         }
     }
 
@@ -65,8 +66,8 @@ android {
         applicationId = "com.rafal.impostorparty"
         minSdk = 26
         targetSdk = 36
-        versionCode = 27
-        versionName = "1.1.15"
+        versionCode = 28
+        versionName = "1.1.16"
     }
     buildFeatures {
         compose = true

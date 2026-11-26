@@ -124,4 +124,8 @@
     <string name="period_years_unit">anni</string>
     <string name="period_other">periodo</string>
     <string name="free_limit_dialog_message">Cambia la categoria o acquista Premium.</string>
+    <string name="update_prompt">Potrebbe essere disponibile una versione più recente. Aprire lo store per aggiornare?</string>
+    <string name="update_open_store">Apri lo store</string>
+    <string name="update_not_now">Non ora</string>
+    <string name="update_open_failed">Impossibile aprire lo store. Riprova.</string>
 </resources>

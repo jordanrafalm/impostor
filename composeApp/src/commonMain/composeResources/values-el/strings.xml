@@ -124,4 +124,8 @@
     <string name="period_years_unit">έτη</string>
     <string name="period_other">προθεσμία</string>
     <string name="free_limit_dialog_message">Αλλάξτε την κατηγορία ή αγοράστε Premium.</string>
+    <string name="update_prompt">Ίσως υπάρχει νεότερη έκδοση. Άνοιγμα καταστήματος για ενημέρωση;</string>
+    <string name="update_open_store">Άνοιγμα καταστήματος</string>
+    <string name="update_not_now">Όχι τώρα</string>
+    <string name="update_open_failed">Δεν ήταν δυνατό το άνοιγμα του καταστήματος. Δοκιμάστε ξανά.</string>
 </resources>

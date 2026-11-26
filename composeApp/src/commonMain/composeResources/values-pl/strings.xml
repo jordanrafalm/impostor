@@ -123,4 +123,8 @@
     <string name="black_friday_gift">5 GIER W PREZENCIE</string>
     <string name="black_friday_accept">Skorzystaj za darmo</string>
     <string name="black_friday_cancel">Anuluj</string>
+    <string name="update_prompt">Może być dostępna nowsza wersja. Otworzyć sklep, aby zaktualizować?</string>
+    <string name="update_open_store">Otwórz sklep</string>
+    <string name="update_not_now">Nie teraz</string>
+    <string name="update_open_failed">Nie udało się otworzyć sklepu. Spróbuj ponownie.</string>
 </resources>

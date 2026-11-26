@@ -124,4 +124,8 @@
     <string name="period_years_unit">السنوات</string>
     <string name="period_other">الفترة</string>
     <string name="free_limit_dialog_message">تغيير الفئة أو شراء بريميوم.</string>
+    <string name="update_prompt">قد يتوفر إصدار أحدث. هل تريد فتح المتجر للتحديث؟</string>
+    <string name="update_open_store">فتح المتجر</string>
+    <string name="update_not_now">ليس الآن</string>
+    <string name="update_open_failed">تعذر فتح المتجر. حاول مرة أخرى.</string>
 </resources>

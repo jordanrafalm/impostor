@@ -123,4 +123,8 @@
     <string name="black_friday_gift">5 ІГОР У ПОДАРУНОК</string>
     <string name="black_friday_accept">Отримати безкоштовно</string>
     <string name="black_friday_cancel">Скасувати</string>
+    <string name="update_prompt">Можливо, доступна нова версія. Відкрити магазин для оновлення?</string>
+    <string name="update_open_store">Відкрити магазин</string>
+    <string name="update_not_now">Не зараз</string>
+    <string name="update_open_failed">Не вдалося відкрити магазин. Спробуйте ще раз.</string>
 </resources>
