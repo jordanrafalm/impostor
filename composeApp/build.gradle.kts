@@ -67,8 +67,8 @@ android {
         applicationId = "com.rafal.impostorparty"
         minSdk = 26
         targetSdk = 36
-        versionCode = 28
-        versionName = "1.1.16"
+        versionCode = 29
+        versionName = "1.1.17"
     }
     buildFeatures {
         compose = true
